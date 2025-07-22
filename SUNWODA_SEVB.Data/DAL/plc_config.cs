@@ -45,31 +45,33 @@ namespace SUNWODA_SEVB.Data.DAL
             StringBuilder strSql = new StringBuilder();
             strSql.Append("insert into plc_config(");
             strSql.Append(
-                "plc_name,equipment_id,address,address_para,protocol_name,state,remark,enabled)"
+                "name,device_id,ip,port,brand_specification_protocal,data_sort_rule,state,remark,enabled)"
             );
             strSql.Append(" values (");
             strSql.Append(
-                "@plc_name,@equipment_id,@address,@address_para,@protocol_name,@state,@remark,@enabled)"
+                "@plc_name,@equipment_id,@ip,@port,@brand_specification_protocal,@data_sort_rule,@state,@remark,@enabled)"
             );
             MySqlParameter[] parameters =
             {
                 new MySqlParameter("@plc_name", MySqlDbType.VarChar, 30),
                 new MySqlParameter("@equipment_id", MySqlDbType.VarChar, 30),
-                new MySqlParameter("@address", MySqlDbType.VarChar, 20),
-                new MySqlParameter("@address_para", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@protocol_name", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@ip", MySqlDbType.VarChar, 20),
+                new MySqlParameter("@port", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@brand_specification_protocal", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@data_sort_rule", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@state", MySqlDbType.Int32, 11),
                 new MySqlParameter("@remark", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@enabled", MySqlDbType.Int32, 11),
             };
-            parameters[0].Value = model.plc_name;
-            parameters[1].Value = model.equipment_id;
-            parameters[2].Value = model.address;
-            parameters[3].Value = model.address_para;
-            parameters[4].Value = model.protocol_name;
-            parameters[5].Value = model.state;
-            parameters[6].Value = model.remark;
-            parameters[7].Value = model.enabled;
+            parameters[0].Value = model.name;
+            parameters[1].Value = model.device_id;
+            parameters[2].Value = model.ip;
+            parameters[3].Value = model.port;
+            parameters[4].Value = model.brand_specification_protocal;
+            parameters[5].Value = model.data_sort_rule;
+            parameters[6].Value = model.state;
+            parameters[7].Value = model.remark;
+            parameters[8].Value = model.enabled;
 
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
@@ -89,36 +91,39 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("update plc_config set ");
-            strSql.Append("plc_name=@plc_name,");
-            strSql.Append("equipment_id=@equipment_id,");
-            strSql.Append("address=@address,");
-            strSql.Append("address_para=@address_para,");
-            strSql.Append("protocol_name=@protocol_name,");
+            strSql.Append("name=@name,");
+            strSql.Append("device_id=@device_id,");
+            strSql.Append("ip=@ip,");
+            strSql.Append("port=@port,");
+            strSql.Append("brand_specification_protocal=@brand_specification_protocal,");
+            strSql.Append("data_sort_rule=@data_sort_rule,");
             strSql.Append("state=@state,");
             strSql.Append("remark=@remark,");
             strSql.Append("enabled=@enabled");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters =
             {
-                new MySqlParameter("@plc_name", MySqlDbType.VarChar, 30),
-                new MySqlParameter("@equipment_id", MySqlDbType.VarChar, 30),
-                new MySqlParameter("@address", MySqlDbType.VarChar, 20),
-                new MySqlParameter("@address_para", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@protocol_name", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@name", MySqlDbType.VarChar, 30),
+                new MySqlParameter("@device_id", MySqlDbType.VarChar, 30),
+                new MySqlParameter("@ip", MySqlDbType.VarChar, 20),
+                new MySqlParameter("@port", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@brand_specification_protocal", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@data_sort_rule", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@state", MySqlDbType.Int32, 11),
                 new MySqlParameter("@remark", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@enabled", MySqlDbType.Int32, 11),
                 new MySqlParameter("@id", MySqlDbType.Int32, 11),
             };
-            parameters[0].Value = model.plc_name;
-            parameters[1].Value = model.equipment_id;
-            parameters[2].Value = model.address;
-            parameters[3].Value = model.address_para;
-            parameters[4].Value = model.protocol_name;
-            parameters[5].Value = model.state;
-            parameters[6].Value = model.remark;
-            parameters[7].Value = model.enabled;
-            parameters[8].Value = model.id;
+            parameters[0].Value = model.name;
+            parameters[1].Value = model.device_id;
+            parameters[2].Value = model.ip;
+            parameters[3].Value = model.port;
+            parameters[4].Value = model.brand_specification_protocal;
+            parameters[5].Value = model.data_sort_rule;
+            parameters[6].Value = model.state;
+            parameters[7].Value = model.remark;
+            parameters[8].Value = model.enabled;
+            parameters[9].Value = model.id;
 
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
@@ -179,7 +184,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,plc_name,equipment_id,address,address_para,protocol_name,state,remark,enabled from plc_config "
+                "select id,name,device_id,ip,port,brand_specification_protocal,data_sort_rule,state,remark,enabled from plc_config "
             );
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
@@ -209,25 +214,29 @@ namespace SUNWODA_SEVB.Data.DAL
                 {
                     model.id = int.Parse(row["id"].ToString()!);
                 }
-                if (row["plc_name"] != null)
+                if (row["name"] != null)
                 {
-                    model.plc_name = row["plc_name"].ToString()!;
+                    model.name = row["name"].ToString()!;
                 }
-                if (row["equipment_id"] != null)
+                if (row["device_id"] != null)
                 {
-                    model.equipment_id = row["equipment_id"].ToString()!;
+                    model.device_id = row["device_id"].ToString()!;
                 }
-                if (row["address"] != null)
+                if (row["ip"] != null)
                 {
-                    model.address = row["address"].ToString()!;
+                    model.ip = row["ip"].ToString()!;
                 }
-                if (row["address_para"] != null)
+                if (row["port"] != null)
                 {
-                    model.address_para = row["address_para"].ToString()!;
+                    model.port = row["port"].ToString()!;
                 }
-                if (row["protocol_name"] != null)
+                if (row["brand_specification_protocal"] != null)
                 {
-                    model.protocol_name = row["protocol_name"].ToString()!;
+                    model.brand_specification_protocal = row["brand_specification_protocal"].ToString()!;
+                }
+                if (row["data_sort_rule"] != null)
+                {
+                    model.data_sort_rule = row["data_sort_rule"].ToString()!;
                 }
                 if (row["state"] != null && row["state"].ToString() != "")
                 {
@@ -252,7 +261,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,plc_name,equipment_id,address,address_para,protocol_name,state,remark,enabled "
+                "select id,name,device_id,ip,port,brand_specification_protocal,data_sort_rule,state,remark,enabled "
             );
             strSql.Append(" FROM plc_config ");
             if (strWhere.Trim() != "")

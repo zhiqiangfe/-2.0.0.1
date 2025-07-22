@@ -21,7 +21,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Exists(string id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) from device");
+            strSql.Append("select count(1) from device_production");
             strSql.Append(" where id=@id ");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.VarChar, 50) };
             parameters[0].Value = id;
@@ -35,7 +35,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Add(SUNWODA_SEVB.Data.Model.device_production model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("insert into device(");
+            strSql.Append("insert into device_production(");
             strSql.Append("id,plc_config_id,name,enabled,group_code,group_alias,remark)");
             strSql.Append(" values (");
             strSql.Append("@id,@plc_config_id,@name,@enabled,@group_code,@group_alias,@remark)");
@@ -74,7 +74,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Update(SUNWODA_SEVB.Data.Model.device_production model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("update device set ");
+            strSql.Append("update device_production set ");
             strSql.Append("plc_config_id=@plc_config_id,");
             strSql.Append("name=@name,");
             strSql.Append("enabled=@enabled,");
@@ -117,7 +117,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Delete(string id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from device ");
+            strSql.Append("delete from device_production ");
             strSql.Append(" where id=@id ");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.VarChar, 50) };
             parameters[0].Value = id;
@@ -139,7 +139,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool DeleteList(string idlist)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from device ");
+            strSql.Append("delete from device_production ");
             strSql.Append(" where id in (" + idlist + ")  ");
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
             if (rows > 0)
@@ -159,7 +159,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,plc_config_id,name,enabled,group_code,group_alias,remark from device "
+                "select id,plc_config_id,name,enabled,group_code,group_alias,remark from device_production "
             );
             strSql.Append(" where id=@id ");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.VarChar, 50) };
@@ -224,7 +224,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("select id,plc_config_id,name,enabled,group_code,group_alias,remark ");
-            strSql.Append(" FROM device ");
+            strSql.Append(" FROM device_production ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -238,7 +238,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public int GetRecordCount(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) FROM device ");
+            strSql.Append("select count(1) FROM device_production ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -270,7 +270,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append("order by T.id desc");
             }
-            strSql.Append(")AS Row, T.*  from device T ");
+            strSql.Append(")AS Row, T.*  from device_production T ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);

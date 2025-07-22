@@ -21,7 +21,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Exists(string value_type)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) from valuetypes");
+            strSql.Append("select count(1) from value_types");
             strSql.Append(" where value_type=@value_type ");
             MySqlParameter[] parameters =
             {
@@ -38,7 +38,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Add(SUNWODA_SEVB.Data.Model.value_types model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("insert into valuetypes(");
+            strSql.Append("insert into value_types(");
             strSql.Append("value_type,remark)");
             strSql.Append(" values (");
             strSql.Append("@value_type,@remark)");
@@ -67,7 +67,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Update(SUNWODA_SEVB.Data.Model.value_types model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("update valuetypes set ");
+            strSql.Append("update value_types set ");
             strSql.Append("remark=@remark");
             strSql.Append(" where value_type=@value_type ");
             MySqlParameter[] parameters =
@@ -95,7 +95,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Delete(string value_type)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from valuetypes ");
+            strSql.Append("delete from value_types ");
             strSql.Append(" where value_type=@value_type ");
             MySqlParameter[] parameters =
             {
@@ -120,7 +120,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool DeleteList(string value_typelist)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from valuetypes ");
+            strSql.Append("delete from value_types ");
             strSql.Append(" where value_type in (" + value_typelist + ")  ");
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
             if (rows > 0)
@@ -139,7 +139,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public SUNWODA_SEVB.Data.Model.value_types? GetModel(string value_type)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select value_type,remark from valuetypes ");
+            strSql.Append("select value_type,remark from value_types ");
             strSql.Append(" where value_type=@value_type ");
             MySqlParameter[] parameters =
             {
@@ -186,7 +186,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("select value_type,remark ");
-            strSql.Append(" FROM valuetypes ");
+            strSql.Append(" FROM value_types ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -200,7 +200,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public int GetRecordCount(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) FROM valuetypes ");
+            strSql.Append("select count(1) FROM value_types ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -232,7 +232,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append("order by T.value_type desc");
             }
-            strSql.Append(")AS Row, T.*  from valuetypes T ");
+            strSql.Append(")AS Row, T.*  from value_types T ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);

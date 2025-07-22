@@ -20,7 +20,7 @@ namespace SUNWODA_SEVB.Data.DAL
         /// </summary>
         public int GetMaxId()
         {
-            return DbHelperMySQL.GetMaxID("id", "users");
+            return DbHelperMySQL.GetMaxID("id", "users_info");
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Exists(int id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) from users");
+            strSql.Append("select count(1) from users_info");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
@@ -43,7 +43,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Add(SUNWODA_SEVB.Data.Model.users_info model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("insert into users(");
+            strSql.Append("insert into users_info(");
             strSql.Append(
                 "user_name,password,name,role_id,create_time,gender,last_login_time,remark)"
             );
@@ -88,7 +88,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Update(SUNWODA_SEVB.Data.Model.users_info model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("update users set ");
+            strSql.Append("update users_info set ");
             strSql.Append("user_name=@user_name,");
             strSql.Append("password=@password,");
             strSql.Append("name=@name,");
@@ -137,7 +137,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Delete(int id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from users ");
+            strSql.Append("delete from users_info ");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
@@ -159,7 +159,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool DeleteList(string idlist)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from users ");
+            strSql.Append("delete from users_info ");
             strSql.Append(" where id in (" + idlist + ")  ");
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
             if (rows > 0)
@@ -179,7 +179,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,user_name,password,name,role_id,create_time,gender,last_login_time,remark from users "
+                "select id,user_name,password,name,role_id,create_time,gender,last_login_time,remark from users_info "
             );
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
@@ -254,7 +254,7 @@ namespace SUNWODA_SEVB.Data.DAL
             strSql.Append(
                 "select id,user_name,password,name,role_id,create_time,gender,last_login_time,remark "
             );
-            strSql.Append(" FROM users ");
+            strSql.Append(" FROM users_info ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -268,7 +268,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public int GetRecordCount(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) FROM users ");
+            strSql.Append("select count(1) FROM users_info ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -300,7 +300,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append("order by T.id desc");
             }
-            strSql.Append(")AS Row, T.*  from users T ");
+            strSql.Append(")AS Row, T.*  from users_info T ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);

@@ -12,11 +12,12 @@ namespace SUNWODA_SEVB.Data.Model
 
         #region Model
         private int _id;
-        private string? _plc_name;
-        private string? _equipment_id;
-        private string? _address;
-        private string? _address_para;
-        private string? _protocol_name;
+        private string? _name;
+        private string? _device_id;
+        private string? _ip;
+        private string? _port;
+        private string? _brand_specification_protocal;
+        private string? _data_sort_rule;
         private int? _state;
         private string? _remark;
         private int _enabled = 1;
@@ -31,52 +32,58 @@ namespace SUNWODA_SEVB.Data.Model
         }
 
         /// <summary>
-        ///
+        /// PLC名称
         /// </summary>
-        public string? plc_name
+        public string? name
         {
-            set { _plc_name = value; }
-            get { return _plc_name; }
+            set { _name = value; }
+            get { return _name; }
         }
 
         /// <summary>
-        ///
+        /// 设备ID
         /// </summary>
-        public string? equipment_id
+        public string? device_id
         {
-            set { _equipment_id = value; }
-            get { return _equipment_id; }
+            set { _device_id = value; }
+            get { return _device_id; }
         }
 
         /// <summary>
-        ///
+        /// IP地址
         /// </summary>
-        public string? address
+        public string? ip
         {
-            set { _address = value; }
-            get { return _address; }
+            set { _ip = value; }
+            get { return _ip; }
         }
 
         /// <summary>
-        ///
+        /// 端口号
         /// </summary>
-        public string? address_para
+        public string? port
         {
-            set { _address_para = value; }
-            get { return _address_para; }
+            set { _port = value; }
+            get { return _port; }
         }
 
         /// <summary>
-        ///
+        /// 品牌_规格_协议
         /// </summary>
-        public string? protocol_name
+        public string? brand_specification_protocal
         {
-            set { _protocol_name = value; }
-            get { return _protocol_name; }
+            set { _brand_specification_protocal = value; }
+            get { return _brand_specification_protocal; }
+        }
+
+        public string? data_sort_rule
+        {
+            set { _data_sort_rule = value; }
+            get { return _data_sort_rule; }
         }
 
         /// <summary>
-        ///
+        /// PLC状态
         /// </summary>
         public int? state
         {
@@ -85,7 +92,7 @@ namespace SUNWODA_SEVB.Data.Model
         }
 
         /// <summary>
-        ///
+        /// 注释
         /// </summary>
         public string? remark
         {
@@ -94,7 +101,7 @@ namespace SUNWODA_SEVB.Data.Model
         }
 
         /// <summary>
-        ///
+        /// 是否启用
         /// </summary>
         public int enabled
         {

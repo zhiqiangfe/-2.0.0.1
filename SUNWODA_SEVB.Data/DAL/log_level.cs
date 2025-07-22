@@ -21,7 +21,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Exists(string level)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) from loglevel");
+            strSql.Append("select count(1) from log_level");
             strSql.Append(" where level=@level ");
             MySqlParameter[] parameters = { new MySqlParameter("@level", MySqlDbType.VarChar, 50) };
             parameters[0].Value = level;
@@ -35,7 +35,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Add(SUNWODA_SEVB.Data.Model.log_level model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("insert into loglevel(");
+            strSql.Append("insert into log_level(");
             strSql.Append("level)");
             strSql.Append(" values (");
             strSql.Append("@level)");
@@ -59,7 +59,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Update(SUNWODA_SEVB.Data.Model.log_level model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("update loglevel set ");
+            strSql.Append("update log_level set ");
             strSql.Append("level=@level");
             strSql.Append(" where level=@level ");
             MySqlParameter[] parameters = { new MySqlParameter("@level", MySqlDbType.VarChar, 50) };
@@ -82,7 +82,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Delete(string level)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from loglevel ");
+            strSql.Append("delete from log_level ");
             strSql.Append(" where level=@level ");
             MySqlParameter[] parameters = { new MySqlParameter("@level", MySqlDbType.VarChar, 50) };
             parameters[0].Value = level;
@@ -104,7 +104,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool DeleteList(string levellist)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from loglevel ");
+            strSql.Append("delete from log_level ");
             strSql.Append(" where level in (" + levellist + ")  ");
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
             if (rows > 0)
@@ -123,7 +123,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public SUNWODA_SEVB.Data.Model.log_level? GetModel(string level)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select level from loglevel ");
+            strSql.Append("select level from log_level ");
             strSql.Append(" where level=@level ");
             MySqlParameter[] parameters = { new MySqlParameter("@level", MySqlDbType.VarChar, 50) };
             parameters[0].Value = level;
@@ -163,7 +163,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("select level ");
-            strSql.Append(" FROM loglevel ");
+            strSql.Append(" FROM log_level ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -177,7 +177,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public int GetRecordCount(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) FROM loglevel ");
+            strSql.Append("select count(1) FROM log_level ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -209,7 +209,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append("order by T.level desc");
             }
-            strSql.Append(")AS Row, T.*  from loglevel T ");
+            strSql.Append(")AS Row, T.*  from log_level T ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);
