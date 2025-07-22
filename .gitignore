@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/SUNWODA_SEVB.Logging/Configuration
+/SUNWODA_SEVB.Logging/Core/Interfaces
+/SUNWODA_SEVB.Logging/Core
+/SUNWODA_SEVB.Logging/Datebase
+/SUNWODA_SEVB.Logging/Targets
