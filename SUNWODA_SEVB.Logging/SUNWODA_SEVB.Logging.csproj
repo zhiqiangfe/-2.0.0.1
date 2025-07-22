@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -6,5 +6,30 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Configuration\**" />
+    <Compile Remove="Core\**" />
+    <Compile Remove="Datebase\**" />
+    <Compile Remove="Targets\**" />
+    <EmbeddedResource Remove="Configuration\**" />
+    <EmbeddedResource Remove="Core\**" />
+    <EmbeddedResource Remove="Datebase\**" />
+    <EmbeddedResource Remove="Targets\**" />
+    <None Remove="Configuration\**" />
+    <None Remove="Core\**" />
+    <None Remove="Datebase\**" />
+    <None Remove="Targets\**" />
+    <Page Remove="Configuration\**" />
+    <Page Remove="Core\**" />
+    <Page Remove="Datebase\**" />
+    <Page Remove="Targets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="9.4.0" />
+    <PackageReference Include="NLog" Version="6.0.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="6.0.2" />
+  </ItemGroup>
 
 </Project>
