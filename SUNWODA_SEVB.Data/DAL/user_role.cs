@@ -20,7 +20,7 @@ namespace SUNWODA_SEVB.Data.DAL
         /// </summary>
         public int GetMaxId()
         {
-            return DbHelperMySQL.GetMaxID("id", "role");
+            return DbHelperMySQL.GetMaxID("id", "user_role");
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Exists(int id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) from role");
+            strSql.Append("select count(1) from user_role");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
@@ -43,7 +43,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Add(SUNWODA_SEVB.Data.Model.user_role model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("insert into role(");
+            strSql.Append("insert into user_role(");
             strSql.Append(
                 "role_name,mes_user_level,user_level_plc_value,permission_codes,create_time,modify_time,remark)"
             );
@@ -86,7 +86,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Update(SUNWODA_SEVB.Data.Model.user_role model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("update role set ");
+            strSql.Append("update user_role set ");
             strSql.Append("role_name=@role_name,");
             strSql.Append("mes_user_level=@mes_user_level,");
             strSql.Append("user_level_plc_value=@user_level_plc_value,");
@@ -132,7 +132,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Delete(int id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from role ");
+            strSql.Append("delete from user_role ");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
@@ -154,7 +154,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool DeleteList(string idlist)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from role ");
+            strSql.Append("delete from user_role ");
             strSql.Append(" where id in (" + idlist + ")  ");
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
             if (rows > 0)
@@ -174,7 +174,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,role_name,mes_user_level,user_level_plc_value,permission_codes,create_time,modify_time,remark from role "
+                "select id,role_name,mes_user_level,user_level_plc_value,permission_codes,create_time,modify_time,remark from user_role "
             );
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
@@ -248,7 +248,7 @@ namespace SUNWODA_SEVB.Data.DAL
             strSql.Append(
                 "select id,role_name,mes_user_level,user_level_plc_value,permission_codes,create_time,modify_time,remark "
             );
-            strSql.Append(" FROM role ");
+            strSql.Append(" FROM user_role ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -262,7 +262,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public int GetRecordCount(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) FROM role ");
+            strSql.Append("select count(1) FROM user_role ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -294,7 +294,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append("order by T.id desc");
             }
-            strSql.Append(")AS Row, T.*  from role T ");
+            strSql.Append(")AS Row, T.*  from user_role T ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);

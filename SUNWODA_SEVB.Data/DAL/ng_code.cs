@@ -21,7 +21,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Exists(string code)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) from ngcode");
+            strSql.Append("select count(1) from ng_code");
             strSql.Append(" where code=@code ");
             MySqlParameter[] parameters = { new MySqlParameter("@code", MySqlDbType.VarChar, 50) };
             parameters[0].Value = code;
@@ -35,7 +35,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Add(SUNWODA_SEVB.Data.Model.ng_code model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("insert into ngcode(");
+            strSql.Append("insert into ng_code(");
             strSql.Append("code,reason)");
             strSql.Append(" values (");
             strSql.Append("@code,@reason)");
@@ -64,7 +64,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Update(SUNWODA_SEVB.Data.Model.ng_code model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("update ngcode set ");
+            strSql.Append("update ng_code set ");
             strSql.Append("reason=@reason");
             strSql.Append(" where code=@code ");
             MySqlParameter[] parameters =
@@ -92,7 +92,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Delete(string code)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from ngcode ");
+            strSql.Append("delete from ng_code ");
             strSql.Append(" where code=@code ");
             MySqlParameter[] parameters = { new MySqlParameter("@code", MySqlDbType.VarChar, 50) };
             parameters[0].Value = code;
@@ -114,7 +114,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool DeleteList(string codelist)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from ngcode ");
+            strSql.Append("delete from ng_code ");
             strSql.Append(" where code in (" + codelist + ")  ");
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
             if (rows > 0)
@@ -133,7 +133,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public SUNWODA_SEVB.Data.Model.ng_code? GetModel(string code)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select code,reason from ngcode ");
+            strSql.Append("select code,reason from ng_code ");
             strSql.Append(" where code=@code ");
             MySqlParameter[] parameters = { new MySqlParameter("@code", MySqlDbType.VarChar, 50) };
             parameters[0].Value = code;
@@ -177,7 +177,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("select code,reason ");
-            strSql.Append(" FROM ngcode ");
+            strSql.Append(" FROM ng_code ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -191,7 +191,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public int GetRecordCount(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) FROM ngcode ");
+            strSql.Append("select count(1) FROM ng_code ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -223,7 +223,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append("order by T.code desc");
             }
-            strSql.Append(")AS Row, T.*  from ngcode T ");
+            strSql.Append(")AS Row, T.*  from ng_code T ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);

@@ -1,18 +1,16 @@
-﻿using System;
-using System.Data;
-using System.Text;
-using Maticsoft.DBUtility;
+﻿using Maticsoft.DBUtility;
 using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SUNWODA_SEVB.Data.DAL
 {
-    /// <summary>
-    /// 数据访问类:probably
-    /// </summary>
-    public partial class production_status
+    public partial class plc_address_config
     {
-        public production_status() { }
-
         #region  BasicMethod
 
         /// <summary>
@@ -20,7 +18,7 @@ namespace SUNWODA_SEVB.Data.DAL
         /// </summary>
         public int GetMaxId()
         {
-            return DbHelperMySQL.GetMaxID("id", "production_status");
+            return DbHelperMySQL.GetMaxID("id", "plc_address_config");
         }
 
         /// <summary>
@@ -29,7 +27,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Exists(int id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) from production_status");
+            strSql.Append("select count(1) from plc_address_config");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
@@ -40,38 +38,40 @@ namespace SUNWODA_SEVB.Data.DAL
         /// <summary>
         /// 增加一条数据
         /// </summary>
-        public bool Add(SUNWODA_SEVB.Data.Model.production_status model)
+        public bool Add(SUNWODA_SEVB.Data.Model.plc_address_config model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("insert into production_status(");
+            strSql.Append("insert into plc_address_config(");
             strSql.Append(
-                "plc_config_id,user_name,ok_count,ng_count,is_baking,ppm,model,feed_count,discharge_count)"
+                "plc_config_id,plc_rw_config_id,category_id,parameter_name,type,length,address,unit,remark,is_monitor)"
             );
             strSql.Append(" values (");
             strSql.Append(
-                "@plc_config_id,@user_name,@ok_count,@ng_count,@is_baking,@ppm,@model,@feed_count,@discharge_count)"
+                "@plc_config_id,@plc_rw_config_id,@category_id,@parameter_name,@type,@length,@address,@unit,@remark,@is_monitor)"
             );
             MySqlParameter[] parameters =
             {
                 new MySqlParameter("@plc_config_id", MySqlDbType.Int32, 11),
-                new MySqlParameter("@user_name", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@ok_count", MySqlDbType.Int32, 11),
-                new MySqlParameter("@ng_count", MySqlDbType.Int32, 11),
-                new MySqlParameter("@is_baking", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@ppm", MySqlDbType.Int32, 11),
-                new MySqlParameter("@model", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@feed_count", MySqlDbType.Int32, 11),
-                new MySqlParameter("@discharge_count", MySqlDbType.Int32, 11),
+                new MySqlParameter("@plc_rw_config_id", MySqlDbType.Int32, 11),
+                new MySqlParameter("@category_id", MySqlDbType.Int32, 11),
+                new MySqlParameter("@parameter_name", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@type", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@length", MySqlDbType.Int32, 11),
+                new MySqlParameter("@address", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@unit", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@remark", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@is_monitor", MySqlDbType.Int32, 11),
             };
             parameters[0].Value = model.plc_config_id;
-            parameters[1].Value = model.user_name;
-            parameters[2].Value = model.ok_count;
-            parameters[3].Value = model.ng_count;
-            parameters[4].Value = model.is_baking;
-            parameters[5].Value = model.ppm;
-            parameters[6].Value = model.model;
-            parameters[7].Value = model.feed_count;
-            parameters[8].Value = model.discharge_count;
+            parameters[1].Value = model.plc_rw_config_id;
+            parameters[2].Value = model.category_id;
+            parameters[3].Value = model.parameter_name;
+            parameters[4].Value = model.type;
+            parameters[5].Value = model.length;
+            parameters[6].Value = model.address;
+            parameters[7].Value = model.unit;
+            parameters[8].Value = model.remark;
+            parameters[9].Value = model.is_monitor;
 
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
@@ -87,43 +87,46 @@ namespace SUNWODA_SEVB.Data.DAL
         /// <summary>
         /// 更新一条数据
         /// </summary>
-        public bool Update(SUNWODA_SEVB.Data.Model.production_status model)
+        public bool Update(SUNWODA_SEVB.Data.Model.plc_address_config model)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("update production_status set ");
+            strSql.Append("update plc_address_config set ");
             strSql.Append("plc_config_id=@plc_config_id,");
-            strSql.Append("user_name=@user_name,");
-            strSql.Append("ok_count=@ok_count,");
-            strSql.Append("ng_count=@ng_count,");
-            strSql.Append("is_baking=@is_baking,");
-            strSql.Append("ppm=@ppm,");
-            strSql.Append("model=@model,");
-            strSql.Append("feed_count=@feed_count,");
-            strSql.Append("discharge_count=@discharge_count");
+            strSql.Append("plc_rw_config_id=@plc_rw_config_id,");
+            strSql.Append("category_id=@category_id,");
+            strSql.Append("parameter_name=@parameter_name,");
+            strSql.Append("type=@type,");
+            strSql.Append("length=@length,");
+            strSql.Append("address=@address,");
+            strSql.Append("unit=@unit,");
+            strSql.Append("remark=@remark,");
+            strSql.Append("is_monitor=@is_monitor,");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters =
             {
                 new MySqlParameter("@plc_config_id", MySqlDbType.Int32, 11),
-                new MySqlParameter("@user_name", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@ok_count", MySqlDbType.Int32, 11),
-                new MySqlParameter("@ng_count", MySqlDbType.Int32, 11),
-                new MySqlParameter("@is_baking", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@ppm", MySqlDbType.Int32, 11),
-                new MySqlParameter("@model", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@feed_count", MySqlDbType.Int32, 11),
-                new MySqlParameter("@discharge_count", MySqlDbType.Int32, 11),
+                new MySqlParameter("@plc_rw_config_id", MySqlDbType.Int32, 11),
+                new MySqlParameter("@category_id", MySqlDbType.Int32, 11),
+                new MySqlParameter("@parameter_name", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@type", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@length", MySqlDbType.Int32, 11),
+                new MySqlParameter("@address", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@unit", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@remark", MySqlDbType.VarChar, 50),
+                new MySqlParameter("@is_monitor", MySqlDbType.Int32, 11),
                 new MySqlParameter("@id", MySqlDbType.Int32, 11),
             };
             parameters[0].Value = model.plc_config_id;
-            parameters[1].Value = model.user_name;
-            parameters[2].Value = model.ok_count;
-            parameters[3].Value = model.ng_count;
-            parameters[4].Value = model.is_baking;
-            parameters[5].Value = model.ppm;
-            parameters[6].Value = model.model;
-            parameters[7].Value = model.feed_count;
-            parameters[8].Value = model.discharge_count;
-            parameters[9].Value = model.id;
+            parameters[1].Value = model.plc_rw_config_id;
+            parameters[2].Value = model.category_id;
+            parameters[3].Value = model.parameter_name;
+            parameters[4].Value = model.type;
+            parameters[5].Value = model.length;
+            parameters[6].Value = model.address;
+            parameters[7].Value = model.unit;
+            parameters[8].Value = model.remark;
+            parameters[9].Value = model.is_monitor;
+            parameters[10].Value = model.id;
 
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
@@ -142,7 +145,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool Delete(int id)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from production_status ");
+            strSql.Append("delete from plc_address_config ");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
@@ -164,7 +167,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public bool DeleteList(string idlist)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("delete from production_status ");
+            strSql.Append("delete from plc_address_config ");
             strSql.Append(" where id in (" + idlist + ")  ");
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
             if (rows > 0)
@@ -180,17 +183,17 @@ namespace SUNWODA_SEVB.Data.DAL
         /// <summary>
         /// 得到一个对象实体
         /// </summary>
-        public SUNWODA_SEVB.Data.Model.production_status? GetModel(int id)
+        public SUNWODA_SEVB.Data.Model.plc_address_config? GetModel(int id)
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,plc_config_id,user_name,ok_count,ng_count,is_baking,ppm,model,feed_count,discharge_count from production_status "
+                "select id,plc_config_id,plc_rw_config_id,category_id,parameter_name,type,length,address,unit,remark,is_monitor from plc_address_config "
             );
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
 
-            SUNWODA_SEVB.Data.Model.production_status model = new SUNWODA_SEVB.Data.Model.production_status();
+            SUNWODA_SEVB.Data.Model.plc_address_config model = new SUNWODA_SEVB.Data.Model.plc_address_config();
             DataSet ds = DbHelperMySQL.Query(strSql.ToString(), parameters);
             if (ds.Tables[0].Rows.Count > 0)
             {
@@ -205,9 +208,9 @@ namespace SUNWODA_SEVB.Data.DAL
         /// <summary>
         /// 得到一个对象实体
         /// </summary>
-        public SUNWODA_SEVB.Data.Model.production_status DataRowToModel(DataRow row)
+        public SUNWODA_SEVB.Data.Model.plc_address_config DataRowToModel(DataRow row)
         {
-            SUNWODA_SEVB.Data.Model.production_status model = new SUNWODA_SEVB.Data.Model.production_status();
+            SUNWODA_SEVB.Data.Model.plc_address_config model = new SUNWODA_SEVB.Data.Model.plc_address_config();
             if (row != null)
             {
                 if (row["id"] != null && row["id"].ToString() != "")
@@ -218,37 +221,41 @@ namespace SUNWODA_SEVB.Data.DAL
                 {
                     model.plc_config_id = int.Parse(row["plc_config_id"].ToString()!);
                 }
-                if (row["user_name"] != null)
+                if (row["plc_rw_config_id"] != null && row["plc_rw_config_id"].ToString() != "")
                 {
-                    model.user_name = row["user_name"].ToString()!;
+                    model.plc_rw_config_id = int.Parse(row["plc_rw_config_id"].ToString()!);
                 }
-                if (row["ok_count"] != null && row["ok_count"].ToString() != "")
+                if (row["category_id"] != null && row["category_id"].ToString() != "")
                 {
-                    model.ok_count = int.Parse(row["ok_count"].ToString()!);
+                    model.category_id = int.Parse(row["category_id"].ToString()!);
                 }
-                if (row["ng_count"] != null && row["ng_count"].ToString() != "")
+                if (row["parameter_name"] != null)
                 {
-                    model.ng_count = int.Parse(row["ng_count"].ToString()!);
+                    model.parameter_name = row["parameter_name"].ToString()!;
                 }
-                if (row["is_baking"] != null)
+                if (row["type"] != null)
                 {
-                    model.is_baking = row["is_baking"].ToString()!;
+                    model.type = row["type"].ToString()!;
                 }
-                if (row["ppm"] != null && row["ppm"].ToString() != "")
+                if (row["length"] != null && row["length"].ToString() != "")
                 {
-                    model.ppm = int.Parse(row["ppm"].ToString()!);
+                    model.length = int.Parse(row["length"].ToString()!);
                 }
-                if (row["model"] != null)
+                if (row["address"] != null)
                 {
-                    model.model = row["model"].ToString()!;
+                    model.address = row["address"].ToString()!;
                 }
-                if (row["feed_count"] != null && row["feed_count"].ToString() != "")
+                if (row["unit"] != null)
                 {
-                    model.feed_count = int.Parse(row["feed_count"].ToString()!);
+                    model.unit = row["unit"].ToString()!;
                 }
-                if (row["discharge_count"] != null && row["discharge_count"].ToString() != "")
+                if (row["remark"] != null)
                 {
-                    model.discharge_count = int.Parse(row["discharge_count"].ToString()!);
+                    model.remark = row["remark"].ToString()!;
+                }
+                if (row["is_monitor"] != null && row["is_monitor"].ToString() != "")
+                {
+                    model.is_monitor = int.Parse(row["is_monitor"].ToString()!);
                 }
             }
             return model;
@@ -261,9 +268,9 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,plc_config_id,user_name,ok_count,ng_count,is_baking,ppm,model,feed_count,discharge_count "
+                "select id,plc_config_id,plc_rw_config_id,category_id,parameter_name,type,length,address,unit,remark,is_monitor "
             );
-            strSql.Append(" FROM production_status ");
+            strSql.Append(" FROM plc_address_config ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -277,7 +284,7 @@ namespace SUNWODA_SEVB.Data.DAL
         public int GetRecordCount(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select count(1) FROM production_status ");
+            strSql.Append("select count(1) FROM plc_address_config ");
             if (strWhere.Trim() != "")
             {
                 strSql.Append(" where " + strWhere);
@@ -309,7 +316,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append("order by T.id desc");
             }
-            strSql.Append(")AS Row, T.*  from production_status T ");
+            strSql.Append(")AS Row, T.*  from plc_address_config T ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);
@@ -318,31 +325,6 @@ namespace SUNWODA_SEVB.Data.DAL
             strSql.AppendFormat(" WHERE TT.Row between {0} and {1}", startIndex, endIndex);
             return DbHelperMySQL.Query(strSql.ToString());
         }
-
-        /*
-        /// <summary>
-        /// 分页获取数据列表
-        /// </summary>
-        public DataSet GetList(int PageSize,int PageIndex,string strWhere)
-        {
-            MySqlParameter[] parameters = {
-                    new MySqlParameter("@tblName", MySqlDbType.VarChar, 255),
-                    new MySqlParameter("@fldName", MySqlDbType.VarChar, 255),
-                    new MySqlParameter("@PageSize", MySqlDbType.Int32),
-                    new MySqlParameter("@PageIndex", MySqlDbType.Int32),
-                    new MySqlParameter("@IsReCount", MySqlDbType.Bit),
-                    new MySqlParameter("@OrderType", MySqlDbType.Bit),
-                    new MySqlParameter("@strWhere", MySqlDbType.VarChar,1000),
-                    };
-            parameters[0].Value = "probably";
-            parameters[1].Value = "id";
-            parameters[2].Value = PageSize;
-            parameters[3].Value = PageIndex;
-            parameters[4].Value = 0;
-            parameters[5].Value = 0;
-            parameters[6].Value = strWhere;
-            return DbHelperMySQL.RunProcedure("UP_GetRecordByPage",parameters,"ds");
-        }*/
 
         #endregion  BasicMethod
         #region  ExtensionMethod

@@ -11,6 +11,9 @@
     <Folder Include="Models\" />
     <Folder Include="Services\" />
     <Folder Include="Common\" />
+    <Folder Include="Common\" />
+    <Folder Include="Models\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
