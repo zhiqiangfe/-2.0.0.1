@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SUNWODA.Engine.Core
+namespace SUNWODA_SEVB.PLC.Core
 {
     public class CoreBase : INotifyPropertyChanged
     {

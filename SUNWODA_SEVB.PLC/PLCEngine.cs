@@ -16,18 +16,17 @@ using HslCommunication.Profinet.Melsec;
 using HslCommunication.Profinet.Omron;
 using HslCommunication.Profinet.Panasonic;
 using HslCommunication.Profinet.Siemens;
-using SUNWODA.Engine.Core;
 using SUNWODA_SEVB.PLC.Core;
 using SUNWODA_SEVB.PLC.Enumerations;
 
-namespace SUNWODA.Engine
+namespace SUNWODA_SEVB.PLC
 {
-    public class EngineCore
+    public class PLCEngine
     {
         /// <summary>
         /// 设备列表
         /// </summary>
-        public static List<PLC> PLCs { get; set; } = new List<PLC>();
+        public static List<Core.PLC> PLCs { get; set; } = new List<Core.PLC>();
 
         public static object RWAddressTableLock = new object();
         public static ObservableCollection<PLCRWAddress> PLCRWAddressTable { get; set; } = new ObservableCollection<PLCRWAddress>();
@@ -46,9 +45,9 @@ namespace SUNWODA.Engine
         /// 添加PLC
         /// </summary>
         /// <param name="plc">PLC</param>
-        public static void AddPLC(PLC plc)
+        public static void AddPLC(Core.PLC plc)
         {
-            if (PLCs.FirstOrDefault(it => it.Name == plc.Name) != default(PLC))
+            if (PLCs.FirstOrDefault(it => it.Name == plc.Name) != default(Core.PLC))
                 return;
             switch (plc.BrandSpecificationProtocal)
             {

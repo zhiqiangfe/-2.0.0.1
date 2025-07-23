@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using HslCommunication.Core;
 
-namespace SUNWODA.Engine.Core
+namespace SUNWODA_SEVB.PLC.Core
 {
     public class PLCRWAddress : CoreBase
     {
