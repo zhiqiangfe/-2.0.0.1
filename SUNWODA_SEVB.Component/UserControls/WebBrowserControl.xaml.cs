@@ -122,7 +122,7 @@ namespace SUNWODA_SEVB.Component.UserControls
                     Navigate(Source);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show($"WebView2初始化失败：{ex.Message}", "错误",
                 //    MessageBoxButton.OK, MessageBoxImage.Error);

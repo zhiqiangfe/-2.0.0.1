@@ -314,14 +314,22 @@ namespace SUNWODA_SEVB.Component.UserControls
         /// </summary>
         private void UpdateTimeInfo()
         {
-            if (_mediaPlayer == null)
-                return;
-            Dispatcher.Invoke(() =>
+            try
             {
-                VideoState = _mediaPlayer.State.ToString();
-                Fps = _mediaPlayer.Fps;
-                IsPlaying = _mediaPlayer.IsPlaying;
-            });
+                if (_mediaPlayer == null)
+                    return;
+                Dispatcher.Invoke(() =>
+                {
+                    VideoState = _mediaPlayer.State.ToString();
+                    Fps = _mediaPlayer.Fps;
+                    IsPlaying = _mediaPlayer.IsPlaying;
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger?.Error(ex, "更新视频信息错误");
+            }
+            
         }
 
         #region 事件处理
