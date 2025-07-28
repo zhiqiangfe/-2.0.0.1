@@ -3,24 +3,27 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Data;
 using MySql.Data.MySqlClient;
-using System.Configuration;
 using System.Data.Common;
 using System.Collections.Generic;
-namespace Maticsoft.DBUtility
+using Microsoft.Extensions.Configuration;
+
+namespace SUNWODA_SEVB.Data.DBUtility
 {
     /// <summary>
     /// 数据访问抽象基础类
     /// Copyright (C) Maticsoft
     /// </summary>
-    public  class DbHelperMySQL
+    public  class DbHelperMySQL : IDbHelperMySQL
     {
         //数据库连接字符串(web.config来配置)，可以动态更改connectionString支持多数据库.		
-        public static string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
+        //public static string connectionString = ConfigurationManager.ConnectionStrings["connectionString"].ConnectionString;
+        private readonly string _conn;        // 只读实例字段保存连接串
 
-
-        public DbHelperMySQL()
-        {       
-            
+        public DbHelperMySQL(IConfiguration configuration)
+        {
+            // 读取 appsettings.json 里 ConnectionStrings:DefaultConnection
+            _conn = configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("未找到连接串: ConnectionStrings:DefaultConnection");
         }
 
         #region 公用方法
@@ -30,7 +33,7 @@ namespace Maticsoft.DBUtility
         /// <param name="FieldName"></param>
         /// <param name="TableName"></param>
         /// <returns></returns>
-        public static int GetMaxID(string FieldName, string TableName)
+        public int GetMaxID(string FieldName, string TableName)
         {
             string strsql = "select max(" + FieldName + ")+1 from " + TableName;
             object? obj = GetSingle(strsql);
@@ -48,11 +51,11 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="strSql"></param>
         /// <returns></returns>
-        public static bool Exists(string strSql)
+        public bool Exists(string strSql)
         {
             object? obj = GetSingle(strSql);
             int cmdresult;
-            if ((Object.Equals(obj, null)) || (Object.Equals(obj, System.DBNull.Value)))
+            if (Equals(obj, null) || Equals(obj, DBNull.Value))
             {
                 cmdresult = 0;
             }
@@ -75,11 +78,11 @@ namespace Maticsoft.DBUtility
         /// <param name="strSql"></param>
         /// <param name="cmdParms"></param>
         /// <returns></returns>
-        public static bool Exists(string strSql, params MySqlParameter[] cmdParms)
+        public bool Exists(string strSql, params MySqlParameter[] cmdParms)
         {
             object? obj = GetSingle(strSql, cmdParms);
             int cmdresult;
-            if ((Object.Equals(obj, null)) || (Object.Equals(obj, System.DBNull.Value)))
+            if (Equals(obj, null) || Equals(obj, DBNull.Value))
             {
                 cmdresult = 0;
             }
@@ -105,9 +108,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="SQLString">SQL语句</param>
         /// <returns>影响的记录数</returns>
-        public static int ExecuteSql(string SQLString)
+        public int ExecuteSql(string SQLString)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 using (MySqlCommand cmd = new MySqlCommand(SQLString, connection))
                 {
@@ -117,7 +120,7 @@ namespace Maticsoft.DBUtility
                         int rows = cmd.ExecuteNonQuery();
                         return rows;
                     }
-                    catch (MySql.Data.MySqlClient.MySqlException)
+                    catch (MySqlException)
                     {
                         connection.Close();
                         throw;
@@ -126,9 +129,9 @@ namespace Maticsoft.DBUtility
             }
         }
 
-        public static int ExecuteSqlByTime(string SQLString, int Times)
+        public int ExecuteSqlByTime(string SQLString, int Times)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 using (MySqlCommand cmd = new MySqlCommand(SQLString, connection))
                 {
@@ -139,7 +142,7 @@ namespace Maticsoft.DBUtility
                         int rows = cmd.ExecuteNonQuery();
                         return rows;
                     }
-                    catch (MySql.Data.MySqlClient.MySqlException)
+                    catch (MySqlException)
                     {
                         connection.Close();
                         throw;
@@ -154,9 +157,9 @@ namespace Maticsoft.DBUtility
         /// <param name="list">SQL命令行列表</param>
         /// <param name="oracleCmdSqlList">Oracle命令行列表</param>
         /// <returns>执行结果 0-由于SQL造成事务失败 -1 由于Oracle造成事务失败 1-整体事务执行成功</returns>
-        public static int ExecuteSqlTran(List<CommandInfo> list, List<CommandInfo> oracleCmdSqlList)
+        public int ExecuteSqlTran(List<CommandInfo> list, List<CommandInfo> oracleCmdSqlList)
         {
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            using (MySqlConnection conn = new(_conn))
             {
                 conn.Open();
                 MySqlCommand cmd = new MySqlCommand();
@@ -243,7 +246,7 @@ namespace Maticsoft.DBUtility
                     //tx.Commit();
                     return 1;
                 }
-                catch (MySql.Data.MySqlClient.MySqlException)
+                catch (MySqlException)
                 {
                     tx.Rollback();
                     throw;
@@ -259,9 +262,9 @@ namespace Maticsoft.DBUtility
         /// 执行多条SQL语句，实现数据库事务。
         /// </summary>
         /// <param name="SQLStringList">多条SQL语句</param>		
-        public static int ExecuteSqlTran(List<String> SQLStringList)
+        public int ExecuteSqlTran(List<string> SQLStringList)
         {
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            using (MySqlConnection conn = new(_conn))
             {
                 conn.Open();
                 MySqlCommand cmd = new MySqlCommand();
@@ -296,12 +299,12 @@ namespace Maticsoft.DBUtility
         /// <param name="SQLString">SQL语句</param>
         /// <param name="content">参数内容,比如一个字段是格式复杂的文章，有特殊符号，可以通过这个方式添加</param>
         /// <returns>影响的记录数</returns>
-        public static int ExecuteSql(string SQLString, string content)
+        public int ExecuteSql(string SQLString, string content)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 MySqlCommand cmd = new MySqlCommand(SQLString, connection);
-                MySql.Data.MySqlClient.MySqlParameter myParameter = new MySql.Data.MySqlClient.MySqlParameter("@content", SqlDbType.NText);
+                MySqlParameter myParameter = new MySqlParameter("@content", SqlDbType.NText);
                 myParameter.Value = content;
                 cmd.Parameters.Add(myParameter);
                 try
@@ -310,7 +313,7 @@ namespace Maticsoft.DBUtility
                     int rows = cmd.ExecuteNonQuery();
                     return rows;
                 }
-                catch (MySql.Data.MySqlClient.MySqlException)
+                catch (MySqlException)
                 {
                     throw;
                 }
@@ -321,16 +324,16 @@ namespace Maticsoft.DBUtility
                 }
             }
         }
-        public static object? ExecuteSql1(string SQLString)
+        public object? ExecuteSql1(string SQLString)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 MySqlCommand cmd = new MySqlCommand(SQLString, connection);
                 try
                 {
                     connection.Open();
                     object obj = cmd.ExecuteScalar();
-                    if ((Object.Equals(obj, null)) || (Object.Equals(obj, System.DBNull.Value)))
+                    if (Equals(obj, null) || Equals(obj, DBNull.Value))
                     {
                         return null;
                     }
@@ -339,7 +342,7 @@ namespace Maticsoft.DBUtility
                         return obj;
                     }
                 }
-                catch (MySql.Data.MySqlClient.MySqlException)
+                catch (MySqlException)
                 {
                     throw;
                 }
@@ -356,19 +359,19 @@ namespace Maticsoft.DBUtility
         /// <param name="SQLString">SQL语句</param>
         /// <param name="content">参数内容,比如一个字段是格式复杂的文章，有特殊符号，可以通过这个方式添加</param>
         /// <returns>影响的记录数</returns>
-        public static object? ExecuteSqlGet(string SQLString, string content)
+        public object? ExecuteSqlGet(string SQLString, string content)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 MySqlCommand cmd = new MySqlCommand(SQLString, connection);
-                MySql.Data.MySqlClient.MySqlParameter myParameter = new MySql.Data.MySqlClient.MySqlParameter("@content", SqlDbType.NText);
+                MySqlParameter myParameter = new MySqlParameter("@content", SqlDbType.NText);
                 myParameter.Value = content;
                 cmd.Parameters.Add(myParameter);
                 try
                 {
                     connection.Open();
                     object obj = cmd.ExecuteScalar();
-                    if ((Object.Equals(obj, null)) || (Object.Equals(obj, System.DBNull.Value)))
+                    if (Equals(obj, null) || Equals(obj, DBNull.Value))
                     {
                         return null;
                     }
@@ -377,7 +380,7 @@ namespace Maticsoft.DBUtility
                         return obj;
                     }
                 }
-                catch (MySql.Data.MySqlClient.MySqlException)
+                catch (MySqlException)
                 {
                     throw;
                 }
@@ -394,12 +397,12 @@ namespace Maticsoft.DBUtility
         /// <param name="strSQL">SQL语句</param>
         /// <param name="fs">图像字节,数据库的字段类型为image的情况</param>
         /// <returns>影响的记录数</returns>
-        public static int ExecuteSqlInsertImg(string strSQL, byte[] fs)
+        public int ExecuteSqlInsertImg(string strSQL, byte[] fs)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 MySqlCommand cmd = new MySqlCommand(strSQL, connection);
-                MySql.Data.MySqlClient.MySqlParameter myParameter = new MySql.Data.MySqlClient.MySqlParameter("@fs", SqlDbType.Image);
+                MySqlParameter myParameter = new MySqlParameter("@fs", SqlDbType.Image);
                 myParameter.Value = fs;
                 cmd.Parameters.Add(myParameter);
                 try
@@ -408,7 +411,7 @@ namespace Maticsoft.DBUtility
                     int rows = cmd.ExecuteNonQuery();
                     return rows;
                 }
-                catch (MySql.Data.MySqlClient.MySqlException)
+                catch (MySqlException)
                 {
                     throw;
                 }
@@ -425,9 +428,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="SQLString">计算查询结果语句</param>
         /// <returns>查询结果（object）</returns>
-        public static object? GetSingle(string SQLString)
+        public  object? GetSingle(string SQLString)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 using (MySqlCommand cmd = new MySqlCommand(SQLString, connection))
                 {
@@ -435,7 +438,7 @@ namespace Maticsoft.DBUtility
                     {
                         connection.Open();
                         object obj = cmd.ExecuteScalar();
-                        if ((Object.Equals(obj, null)) || (Object.Equals(obj, System.DBNull.Value)))
+                        if (Equals(obj, null) || Equals(obj, DBNull.Value))
                         {
                             return null;
                         }
@@ -444,7 +447,7 @@ namespace Maticsoft.DBUtility
                             return obj;
                         }
                     }
-                    catch (MySql.Data.MySqlClient.MySqlException)
+                    catch (MySqlException)
                     {
                         connection.Close();
                         throw;
@@ -452,9 +455,9 @@ namespace Maticsoft.DBUtility
                 }
             }
         }
-        public static object? GetSingle(string SQLString, int Times)
+        public  object? GetSingle(string SQLString, int Times)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 using (MySqlCommand cmd = new MySqlCommand(SQLString, connection))
                 {
@@ -463,7 +466,7 @@ namespace Maticsoft.DBUtility
                         connection.Open();
                         cmd.CommandTimeout = Times;
                         object obj = cmd.ExecuteScalar();
-                        if ((Object.Equals(obj, null)) || (Object.Equals(obj, System.DBNull.Value)))
+                        if (Equals(obj, null) || Equals(obj, DBNull.Value))
                         {
                             return null;
                         }
@@ -472,7 +475,7 @@ namespace Maticsoft.DBUtility
                             return obj;
                         }
                     }
-                    catch (MySql.Data.MySqlClient.MySqlException)
+                    catch (MySqlException)
                     {
                         connection.Close();
                         throw;
@@ -485,9 +488,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="strSQL">查询语句</param>
         /// <returns>MySqlDataReader</returns>
-        public static MySqlDataReader ExecuteReader(string strSQL)
+        public  MySqlDataReader ExecuteReader(string strSQL)
         {
-            MySqlConnection connection = new MySqlConnection(connectionString);
+            MySqlConnection connection = new(_conn);
             MySqlCommand cmd = new MySqlCommand(strSQL, connection);
             try
             {
@@ -495,7 +498,7 @@ namespace Maticsoft.DBUtility
                 MySqlDataReader myReader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
                 return myReader;
             }
-            catch (MySql.Data.MySqlClient.MySqlException)
+            catch (MySqlException)
             {
                 throw;
             }   
@@ -506,9 +509,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="SQLString">查询语句</param>
         /// <returns>DataSet</returns>
-        public static DataSet Query(string SQLString)
+        public  DataSet Query(string SQLString)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 DataSet ds = new DataSet();
                 try
@@ -517,16 +520,16 @@ namespace Maticsoft.DBUtility
                     MySqlDataAdapter command = new MySqlDataAdapter(SQLString, connection);
                     command.Fill(ds, "ds");
                 }
-                catch (MySql.Data.MySqlClient.MySqlException ex)
+                catch (MySqlException ex)
                 {
                     throw new Exception(ex.Message);
                 }
                 return ds;
             }
         }
-        public static DataSet Query(string SQLString, int Times)
+        public  DataSet Query(string SQLString, int Times)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 DataSet ds = new DataSet();
                 try
@@ -536,7 +539,7 @@ namespace Maticsoft.DBUtility
                     command.SelectCommand.CommandTimeout = Times;
                     command.Fill(ds, "ds");
                 }
-                catch (MySql.Data.MySqlClient.MySqlException ex)
+                catch (MySqlException ex)
                 {
                     throw new Exception(ex.Message);
                 }
@@ -555,9 +558,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="SQLString">SQL语句</param>
         /// <returns>影响的记录数</returns>
-        public static int ExecuteSql(string SQLString, params MySqlParameter[] cmdParms)
+        public  int ExecuteSql(string SQLString, params MySqlParameter[] cmdParms)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 using (MySqlCommand cmd = new MySqlCommand())
                 {
@@ -568,7 +571,7 @@ namespace Maticsoft.DBUtility
                         cmd.Parameters.Clear();
                         return rows;
                     }
-                    catch (MySql.Data.MySqlClient.MySqlException)
+                    catch (MySqlException)
                     {
                         throw;
                     }
@@ -581,9 +584,9 @@ namespace Maticsoft.DBUtility
         /// 执行多条SQL语句，实现数据库事务。
         /// </summary>
         /// <param name="SQLStringList">SQL语句的哈希表（key为sql语句，value是该语句的MySqlParameter[]）</param>
-        public static void ExecuteSqlTran(Hashtable SQLStringList)
+        public  void ExecuteSqlTran(Hashtable SQLStringList)
         {
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            using (MySqlConnection conn = new(_conn))
             {
                 conn.Open();
                 using (MySqlTransaction trans = conn.BeginTransaction())
@@ -614,9 +617,9 @@ namespace Maticsoft.DBUtility
         /// 执行多条SQL语句，实现数据库事务。
         /// </summary>
         /// <param name="SQLStringList">SQL语句的哈希表（key为sql语句，value是该语句的MySqlParameter[]）</param>
-        public static int ExecuteSqlTran(System.Collections.Generic.List<CommandInfo> cmdList)
+        public  int ExecuteSqlTran(List<CommandInfo> cmdList)
         {
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            using (MySqlConnection conn = new(_conn))
             {
                 conn.Open();
                 using (MySqlTransaction trans = conn.BeginTransaction())
@@ -683,9 +686,9 @@ namespace Maticsoft.DBUtility
         /// 执行多条SQL语句，实现数据库事务。
         /// </summary>
         /// <param name="SQLStringList">SQL语句的哈希表（key为sql语句，value是该语句的MySqlParameter[]）</param>
-        public static void ExecuteSqlTranWithIndentity(System.Collections.Generic.List<CommandInfo> SQLStringList)
+        public  void ExecuteSqlTranWithIndentity(List<CommandInfo> SQLStringList)
         {
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            using (MySqlConnection conn = new(_conn))
             {
                 conn.Open();
                 using (MySqlTransaction trans = conn.BeginTransaction())
@@ -734,9 +737,9 @@ namespace Maticsoft.DBUtility
         /// 执行多条SQL语句，实现数据库事务。
         /// </summary>
         /// <param name="SQLStringList">SQL语句的哈希表（key为sql语句，value是该语句的MySqlParameter[]）</param>
-        public static void ExecuteSqlTranWithIndentity(Hashtable SQLStringList)
+        public  void ExecuteSqlTranWithIndentity(Hashtable SQLStringList)
         {
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            using (MySqlConnection conn = new(_conn))
             {
                 conn.Open();
                 using (MySqlTransaction trans = conn.BeginTransaction())
@@ -786,9 +789,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="SQLString">计算查询结果语句</param>
         /// <returns>查询结果（object）</returns>
-        public static object? GetSingle(string SQLString, params MySqlParameter[] cmdParms)
+        public  object? GetSingle(string SQLString, params MySqlParameter[] cmdParms)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 using (MySqlCommand cmd = new MySqlCommand())
                 {
@@ -797,7 +800,7 @@ namespace Maticsoft.DBUtility
                         PrepareCommand(cmd, connection, null, SQLString, cmdParms);
                         object obj = cmd.ExecuteScalar();
                         cmd.Parameters.Clear();
-                        if ((Object.Equals(obj, null)) || (Object.Equals(obj, System.DBNull.Value)))
+                        if (Equals(obj, null) || Equals(obj, DBNull.Value))
                         {
                             return null;
                         }
@@ -806,7 +809,7 @@ namespace Maticsoft.DBUtility
                             return obj;
                         }
                     }
-                    catch (MySql.Data.MySqlClient.MySqlException)
+                    catch (MySqlException)
                     {
                         throw;
                     }
@@ -819,9 +822,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="strSQL">查询语句</param>
         /// <returns>MySqlDataReader</returns>
-        public static MySqlDataReader ExecuteReader(string SQLString, params MySqlParameter[] cmdParms)
+        public  MySqlDataReader ExecuteReader(string SQLString, params MySqlParameter[] cmdParms)
         {
-            MySqlConnection connection = new MySqlConnection(connectionString);
+            MySqlConnection connection = new(_conn);
             MySqlCommand cmd = new MySqlCommand();
             try
             {
@@ -830,7 +833,7 @@ namespace Maticsoft.DBUtility
                 cmd.Parameters.Clear();
                 return myReader;
             }
-            catch (MySql.Data.MySqlClient.MySqlException)
+            catch (MySqlException)
             {
                 throw;
             }
@@ -847,9 +850,9 @@ namespace Maticsoft.DBUtility
         /// </summary>
         /// <param name="SQLString">查询语句</param>
         /// <returns>DataSet</returns>
-        public static DataSet Query(string SQLString, params MySqlParameter[] cmdParms)
+        public  DataSet Query(string SQLString, params MySqlParameter[] cmdParms)
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new(_conn))
             {
                 MySqlCommand cmd = new MySqlCommand();
                 PrepareCommand(cmd, connection, null, SQLString, cmdParms);
@@ -861,7 +864,7 @@ namespace Maticsoft.DBUtility
                         da.Fill(ds, "ds");
                         cmd.Parameters.Clear();
                     }
-                    catch (MySql.Data.MySqlClient.MySqlException ex)
+                    catch (MySqlException ex)
                     {
                         throw new Exception(ex.Message);
                     }
@@ -887,7 +890,7 @@ namespace Maticsoft.DBUtility
                 foreach (MySqlParameter parameter in cmdParms)
                 {
                     if ((parameter.Direction == ParameterDirection.InputOutput || parameter.Direction == ParameterDirection.Input) &&
-                        (parameter.Value == null))
+                        parameter.Value == null)
                     {
                         parameter.Value = DBNull.Value;
                     }

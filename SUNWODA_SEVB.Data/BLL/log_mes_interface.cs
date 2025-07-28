@@ -12,9 +12,9 @@ namespace SUNWODA_SEVB.Data.BLL
     /// </summary>
     public partial class log_mes_interface
     {
-        private readonly DAL.log_mes_interface _dal = new DAL.log_mes_interface();
+        private readonly DAL.log_mes_interface _dal;
 
-        public log_mes_interface() { }
+        public log_mes_interface(DAL.log_mes_interface dal) { _dal = dal; }
 
         #region BasicMethod
 

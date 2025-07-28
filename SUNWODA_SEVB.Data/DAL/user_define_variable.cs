@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Data;
 using System.Text;
-using Maticsoft.DBUtility; //Please add references
 using MySql.Data.MySqlClient;
+using SUNWODA_SEVB.Data.DBUtility;
 
 namespace SUNWODA_SEVB.Data.DAL
 {
@@ -11,7 +11,8 @@ namespace SUNWODA_SEVB.Data.DAL
     /// </summary>
     public partial class user_define_variable
     {
-        public user_define_variable() { }
+        private readonly DbHelperMySQL _dbHelper;
+        public user_define_variable(DbHelperMySQL dbHelper) { _dbHelper = dbHelper; }
 
         #region  BasicMethod
 
@@ -20,7 +21,7 @@ namespace SUNWODA_SEVB.Data.DAL
         /// </summary>
         public int GetMaxId()
         {
-            return DbHelperMySQL.GetMaxID("id", "user_define_variable");
+            return _dbHelper.GetMaxID("id", "user_define_variable");
         }
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace SUNWODA_SEVB.Data.DAL
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
 
-            return DbHelperMySQL.Exists(strSql.ToString(), parameters);
+            return _dbHelper.Exists(strSql.ToString(), parameters);
         }
 
         public bool ExistsName(string variable_name)
@@ -47,7 +48,7 @@ namespace SUNWODA_SEVB.Data.DAL
                 new MySqlParameter("@variable_name", MySqlDbType.String),
             };
             parameters[0].Value = variable_name;
-            return DbHelperMySQL.Exists(strSql.ToString(), parameters);
+            return _dbHelper.Exists(strSql.ToString(), parameters);
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace SUNWODA_SEVB.Data.DAL
             parameters[10].Value = model.remark;
             parameters[11].Value = model.datatime;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -113,7 +114,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             string sql =
                 $"update user_define_variable set value='{value}' where variable_name ='{variable_name}'";
-            int rows = DbHelperMySQL.ExecuteSql(sql);
+            int rows = _dbHelper.ExecuteSql(sql);
             if (rows > 0)
             {
                 return true;
@@ -174,7 +175,7 @@ namespace SUNWODA_SEVB.Data.DAL
             parameters[11].Value = model.datatime;
             parameters[12].Value = model.id;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -202,7 +203,7 @@ namespace SUNWODA_SEVB.Data.DAL
             parameters[0].Value = model.value;
             parameters[1].Value = model.id;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -224,7 +225,7 @@ namespace SUNWODA_SEVB.Data.DAL
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -249,7 +250,7 @@ namespace SUNWODA_SEVB.Data.DAL
             };
             parameters[0].Value = variable_name;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -268,7 +269,7 @@ namespace SUNWODA_SEVB.Data.DAL
             StringBuilder strSql = new StringBuilder();
             strSql.Append("delete from user_define_variable ");
             strSql.Append(" where id in (" + idlist + ")  ");
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
+            int rows = _dbHelper.ExecuteSql(strSql.ToString());
             if (rows > 0)
             {
                 return true;
@@ -293,7 +294,7 @@ namespace SUNWODA_SEVB.Data.DAL
             parameters[0].Value = id;
 
             SUNWODA_SEVB.Data.Model.user_define_variable model = new SUNWODA_SEVB.Data.Model.user_define_variable();
-            DataSet ds = DbHelperMySQL.Query(strSql.ToString(), parameters);
+            DataSet ds = _dbHelper.Query(strSql.ToString(), parameters);
             if (ds.Tables[0].Rows.Count > 0)
             {
                 return DataRowToModel(ds.Tables[0].Rows[0]);
@@ -392,7 +393,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append(" where " + strWhere);
             }
-            return DbHelperMySQL.Query(strSql.ToString());
+            return _dbHelper.Query(strSql.ToString());
         }
 
         /// <summary>
@@ -406,7 +407,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append(" where " + strWhere);
             }
-            object? obj = DbHelperSQL.GetSingle(strSql.ToString());
+            object? obj = _dbHelper.GetSingle(strSql.ToString());
             if (obj == null)
             {
                 return 0;
@@ -440,7 +441,7 @@ namespace SUNWODA_SEVB.Data.DAL
             }
             strSql.Append(" ) TT");
             strSql.AppendFormat(" WHERE TT.Row between {0} and {1}", startIndex, endIndex);
-            return DbHelperMySQL.Query(strSql.ToString());
+            return _dbHelper.Query(strSql.ToString());
         }
 
         /*

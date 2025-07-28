@@ -2,8 +2,8 @@
 using System.Data;
 using System.Linq;
 using System.Text;
-using Maticsoft.DBUtility;
 using MySql.Data.MySqlClient;
+using SUNWODA_SEVB.Data.DBUtility;
 
 namespace SUNWODA_SEVB.Data.DAL
 {

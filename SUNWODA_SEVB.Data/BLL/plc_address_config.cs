@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -14,29 +14,16 @@ namespace SUNWODA_SEVB.Data.BLL
     /// </summary>
     public partial class plc_address_config
     {
-        private readonly DAL.plc_address_config _dal = new DAL.plc_address_config();
+        private readonly DAL.plc_address_config _dal ;
         private readonly IMemoryCache _memoryCache;
         private readonly int _cacheDurationMinutes;
 
-        public plc_address_config()
+        public plc_address_config(DAL.plc_address_config dal, IMemoryCache memoryCache, IConfiguration configuration)
         {
-            var cacheOptions = new MemoryCacheOptions();
-            _memoryCache = new MemoryCache(cacheOptions);
-
-            // 从 app.config 读取缓存持续时间，默认回退时间为 5 分钟
-            if (
-                int.TryParse(
-                    ConfigurationManager.AppSettings["ModelCacheMinutes"],
-                    out int cacheDurationMinutes
-                )
-            )
-            {
-                _cacheDurationMinutes = cacheDurationMinutes;
-            }
-            else
-            {
-                _cacheDurationMinutes = 5;
-            }
+            _dal = dal;
+            _memoryCache = memoryCache;
+            // 从配置中读取缓存持续时间，默认回退时间为 5 分钟
+            _cacheDurationMinutes = configuration.GetValue<int>("AppSettings:ModelCacheMinutes", 5);
         }
 
         #region BasicMethod

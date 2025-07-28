@@ -2,14 +2,15 @@
 using System.Data;
 using System.Linq;
 using System.Text;
-using Maticsoft.DBUtility;
 using MySql.Data.MySqlClient;
+using SUNWODA_SEVB.Data.DBUtility;
 
 namespace SUNWODA_SEVB.Data.DAL
 {
     public partial class log_web_interface
     {
-        public log_web_interface() { }
+        private readonly DbHelperMySQL _dbHelper;
+        public log_web_interface(DbHelperMySQL dbHelper) { _dbHelper = dbHelper; }
 
         #region  BasicMethod
 
@@ -18,7 +19,7 @@ namespace SUNWODA_SEVB.Data.DAL
         /// </summary>
         public int GetMaxId()
         {
-            return DbHelperMySQL.GetMaxID("id", "log_web_interface");
+            return _dbHelper.GetMaxID("id", "log_web_interface");
         }
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace SUNWODA_SEVB.Data.DAL
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
 
-            return DbHelperMySQL.Exists(strSql.ToString(), parameters);
+            return _dbHelper.Exists(strSql.ToString(), parameters);
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace SUNWODA_SEVB.Data.DAL
             parameters[5].Value = model.end_time;
             parameters[6].Value = model.consuming_time;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -113,7 +114,7 @@ namespace SUNWODA_SEVB.Data.DAL
             parameters[6].Value = model.consuming_time;
             parameters[7].Value = model.id;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -135,7 +136,7 @@ namespace SUNWODA_SEVB.Data.DAL
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
             parameters[0].Value = id;
 
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
+            int rows = _dbHelper.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
             {
                 return true;
@@ -154,7 +155,7 @@ namespace SUNWODA_SEVB.Data.DAL
             StringBuilder strSql = new StringBuilder();
             strSql.Append("delete from log_web_interface ");
             strSql.Append(" where id in (" + idlist + ")  ");
-            int rows = DbHelperMySQL.ExecuteSql(strSql.ToString());
+            int rows = _dbHelper.ExecuteSql(strSql.ToString());
             if (rows > 0)
             {
                 return true;
@@ -179,7 +180,7 @@ namespace SUNWODA_SEVB.Data.DAL
             parameters[0].Value = id;
 
             SUNWODA_SEVB.Data.Model.log_web_interface model = new SUNWODA_SEVB.Data.Model.log_web_interface();
-            DataSet ds = DbHelperMySQL.Query(strSql.ToString(), parameters);
+            DataSet ds = _dbHelper.Query(strSql.ToString(), parameters);
             if (ds.Tables[0].Rows.Count > 0)
             {
                 return DataRowToModel(ds.Tables[0].Rows[0]);
@@ -248,7 +249,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append(" where " + strWhere);
             }
-            return DbHelperMySQL.Query(strSql.ToString());
+            return _dbHelper.Query(strSql.ToString());
         }
 
         /// <summary>
@@ -262,7 +263,7 @@ namespace SUNWODA_SEVB.Data.DAL
             {
                 strSql.Append(" where " + strWhere);
             }
-            object? obj = DbHelperSQL.GetSingle(strSql.ToString());
+            object? obj = _dbHelper.GetSingle(strSql.ToString());
             if (obj == null)
             {
                 return 0;
@@ -296,7 +297,7 @@ namespace SUNWODA_SEVB.Data.DAL
             }
             strSql.Append(" ) TT");
             strSql.AppendFormat(" WHERE TT.Row between {0} and {1}", startIndex, endIndex);
-            return DbHelperMySQL.Query(strSql.ToString());
+            return _dbHelper.Query(strSql.ToString());
         }
 
         /*

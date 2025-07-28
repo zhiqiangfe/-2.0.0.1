@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
-using Maticsoft.DBUtility; //Please add references
 using MySql.Data.MySqlClient;
+using SUNWODA_SEVB.Data.DBUtility;
 
 namespace SUNWODA_SEVB.Data.DAL
 {

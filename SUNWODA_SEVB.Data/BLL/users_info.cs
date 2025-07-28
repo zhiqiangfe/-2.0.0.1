@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
+﻿using System.Data;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using SUNWODA_SEVB.Data.DAL;
 using SUNWODA_SEVB.Data.Model;
 
@@ -14,29 +12,16 @@ namespace SUNWODA_SEVB.Data.BLL
     /// </summary>
     public partial class users_info
     {
-        private readonly DAL.users_info _dal = new DAL.users_info();
+        private readonly DAL.users_info _dal ;
         private readonly IMemoryCache _memoryCache;
         private readonly int _cacheDurationMinutes;
 
-        public users_info()
+        public users_info(DAL.users_info dal, IMemoryCache memoryCache, IConfiguration configuration)
         {
-            var cacheOptions = new MemoryCacheOptions();
-            _memoryCache = new MemoryCache(cacheOptions);
-
-            // 从 app.config 读取缓存持续时间，默认回退时间为 5 分钟
-            if (
-                int.TryParse(
-                    ConfigurationManager.AppSettings["ModelCacheMinutes"],
-                    out int cacheDurationMinutes
-                )
-            )
-            {
-                _cacheDurationMinutes = cacheDurationMinutes;
-            }
-            else
-            {
-                _cacheDurationMinutes = 5;
-            }
+            _dal = dal;
+            _memoryCache = memoryCache;
+            // 从配置中读取缓存持续时间，默认回退时间为 5 分钟
+            _cacheDurationMinutes = configuration.GetValue<int>("AppSettings:ModelCacheMinutes", 5);
         }
 
         #region BasicMethod

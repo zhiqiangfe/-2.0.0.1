@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Data.SqlClient;
-namespace Maticsoft.DBUtility
+namespace SUNWODA_SEVB.Data.DBUtility
 {
     public enum EffentNextType
     {
@@ -59,14 +59,14 @@ namespace Maticsoft.DBUtility
         }
         public CommandInfo(string sqlText, SqlParameter[] para)
         {
-            this.CommandText = sqlText;
-            this.Parameters = para;
+            CommandText = sqlText;
+            Parameters = para;
         }
         public CommandInfo(string sqlText, SqlParameter[] para, EffentNextType type)
         {
-            this.CommandText = sqlText;
-            this.Parameters = para;
-            this.EffentNextType = type;
+            CommandText = sqlText;
+            Parameters = para;
+            EffentNextType = type;
         }
     }
 }

@@ -12,9 +12,9 @@ namespace SUNWODA_SEVB.Data.BLL
     /// </summary>
     public partial class log_web_interface
     {
-        private readonly DAL.log_web_interface _dal = new DAL.log_web_interface();
+        private readonly DAL.log_web_interface _dal ;
 
-        public log_web_interface() { }
+        public log_web_interface(DAL.log_web_interface dal) { _dal = dal; }
 
         #region BasicMethod
 
