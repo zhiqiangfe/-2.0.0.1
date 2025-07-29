@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SUNWODA_SEVB.Core.Common;
 
-namespace SUNWODA_SEVB.PLC.Core
+namespace SUNWODA_SEVB.Core.Models.PLC
 {
-    public class ConnectInfo : CoreBase
+    public class ConnectInfo : ModelBase
     {
         private string? name;
         public string? Name

@@ -24,18 +24,23 @@ namespace SUNWODA_SEVB.Tool.Helper
 
         private static Dispatcher? MainThreadDispatcher { get; set; }
 
-        public ObservableCollection<ThreadTaskCancelSignal> ThreadTaskCancelSignals { get; set; } = new ObservableCollection<ThreadTaskCancelSignal>();
+        public ObservableCollection<ThreadTaskCancelSignal> ThreadTaskCancelSignals { get; set; } =
+            new ObservableCollection<ThreadTaskCancelSignal>();
 
         /// <summary>
         /// 运行的线程集合
         /// </summary>
-        public ObservableCollection<ThreadInfo> ThreadsInfo { get; private set; } = new ObservableCollection<ThreadInfo>();
+        public ObservableCollection<ThreadInfo> ThreadsInfo { get; private set; } =
+            new ObservableCollection<ThreadInfo>();
 
         public delegate void ThreadInfoEventHandler(object obj);
 
         public delegate void ThreadTask(ThreadTaskCancelSignal cancelSignal);
 
-        public delegate void ThreadTaskWithParameter(ThreadTaskCancelSignal cancelSignal, object parameter);
+        public delegate void ThreadTaskWithParameter(
+            ThreadTaskCancelSignal cancelSignal,
+            object parameter
+        );
 
         /// <summary>
         /// 创建线程
@@ -57,7 +62,11 @@ namespace SUNWODA_SEVB.Tool.Helper
         /// }
         /// </code>
         /// </example>
-        public Thread CreateThread(string name, ThreadTaskCancelSignal cancelSignal, ThreadTask threadTask)
+        public Thread CreateThread(
+            string name,
+            ThreadTaskCancelSignal cancelSignal,
+            ThreadTask threadTask
+        )
         {
             if (name == null || cancelSignal == null || threadTask == null)
             {
@@ -108,7 +117,11 @@ namespace SUNWODA_SEVB.Tool.Helper
         /// <param name="cancelSignal">任务取消信号<see cref="ThreadTaskCancelSignal"/></param>
         /// <param name="threadTask">任务</param>
         /// <returns>线程</returns>
-        public static Thread AddThread(string name, ThreadTaskCancelSignal cancelSignal, ThreadTask threadTask)
+        public static Thread AddThread(
+            string name,
+            ThreadTaskCancelSignal cancelSignal,
+            ThreadTask threadTask
+        )
         {
             Thread thread;
             if (Instance == null)
@@ -151,7 +164,9 @@ namespace SUNWODA_SEVB.Tool.Helper
                     return;
                 }
                 ThreadsInfo.Remove(ThreadsInfo.Where((t) => t.Name == name).First());
-                ThreadTaskCancelSignals.Remove(ThreadTaskCancelSignals.Where(t => t.ThreadName == name).First());
+                ThreadTaskCancelSignals.Remove(
+                    ThreadTaskCancelSignals.Where(t => t.ThreadName == name).First()
+                );
             }
         }
 
@@ -323,7 +338,11 @@ namespace SUNWODA_SEVB.Tool.Helper
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+        public void SetProperty<T>(
+            ref T field,
+            T value,
+            [CallerMemberName] string propertyName = ""
+        )
         {
             if (EqualityComparer<T>.Default.Equals(field, value))
                 return;

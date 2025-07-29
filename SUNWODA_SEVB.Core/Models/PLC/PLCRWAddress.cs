@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SUNWODA_SEVB.Core.Common;
 using System.Windows.Input;
-using HslCommunication.Core;
 
-namespace SUNWODA_SEVB.PLC.Core
+namespace SUNWODA_SEVB.Core.Models.PLC
 {
-    public class PLCRWAddress : CoreBase
+    public class PLCRWAddress : ModelBase
     {
         private int id;
         public int ID

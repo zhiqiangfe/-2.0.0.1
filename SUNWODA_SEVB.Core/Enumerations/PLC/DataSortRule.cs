@@ -1,4 +1,4 @@
-﻿namespace SUNWODA_SEVB.PLC.Enumerations
+﻿namespace SUNWODA_SEVB.Core.Enumerations.PLC
 {
     public enum DataSortRule
     {

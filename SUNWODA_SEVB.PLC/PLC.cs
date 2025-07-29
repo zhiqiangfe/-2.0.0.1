@@ -1,18 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HslCommunication;
+﻿using HslCommunication;
 using HslCommunication.Core;
 using HslCommunication.Core.Device;
-using HslCommunication.Core.Net;
-using HslCommunication.Profinet.Melsec;
-using HslCommunication.Profinet.Omron;
-using HslCommunication.Profinet.Siemens;
-using SUNWODA_SEVB.PLC.Enumerations;
+using SUNWODA_SEVB.Core.Enumerations.PLC;
 
-namespace SUNWODA_SEVB.PLC.Core
+namespace SUNWODA_SEVB.PLC
 {
     public class PLC
     {
@@ -206,7 +197,7 @@ namespace SUNWODA_SEVB.PLC.Core
                 IsConnect = result?.IsSuccess ?? false;
                 if (!IsConnect)
                     throw new Exception($"读取PLC字节数组失败，原因：{result?.Message}");
-                    //LogHelper.Error($"读取PLC字节数组失败，原因：{result?.Message}");
+                //LogHelper.Error($"读取PLC字节数组失败，原因：{result?.Message}");
                 return IsConnect ? result : null;
             }
         }

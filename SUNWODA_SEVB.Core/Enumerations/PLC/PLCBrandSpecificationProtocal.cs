@@ -1,4 +1,4 @@
-﻿namespace SUNWODA_SEVB.PLC.Enumerations
+﻿namespace SUNWODA_SEVB.Core.Enumerations.PLC
 {
     /// <summary>
     /// PLC品牌规格协议

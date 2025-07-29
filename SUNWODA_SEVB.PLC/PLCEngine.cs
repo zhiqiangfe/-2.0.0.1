@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using HslCommunication;
-using HslCommunication.BasicFramework;
 using HslCommunication.Core;
 using HslCommunication.ModBus;
 using HslCommunication.Profinet.Inovance;
@@ -16,8 +8,8 @@ using HslCommunication.Profinet.Melsec;
 using HslCommunication.Profinet.Omron;
 using HslCommunication.Profinet.Panasonic;
 using HslCommunication.Profinet.Siemens;
-using SUNWODA_SEVB.PLC.Core;
-using SUNWODA_SEVB.PLC.Enumerations;
+using SUNWODA_SEVB.Core.Enumerations.PLC;
+using SUNWODA_SEVB.Core.Models.PLC;
 
 namespace SUNWODA_SEVB.PLC
 {
@@ -26,7 +18,7 @@ namespace SUNWODA_SEVB.PLC
         /// <summary>
         /// 设备列表
         /// </summary>
-        public static List<Core.PLC> PLCs { get; set; } = new List<Core.PLC>();
+        public static List<PLC> PLCs { get; set; } = new List<PLC>();
 
         public static object RWAddressTableLock = new object();
         public static ObservableCollection<PLCRWAddress> PLCRWAddressTable { get; set; } = new ObservableCollection<PLCRWAddress>();
@@ -45,9 +37,9 @@ namespace SUNWODA_SEVB.PLC
         /// 添加PLC
         /// </summary>
         /// <param name="plc">PLC</param>
-        public static void AddPLC(Core.PLC plc)
+        public static void AddPLC(PLC plc)
         {
-            if (PLCs.FirstOrDefault(it => it.Name == plc.Name) != default(Core.PLC))
+            if (PLCs.FirstOrDefault(it => it.Name == plc.Name) != default(PLC))
                 return;
             switch (plc.BrandSpecificationProtocal)
             {

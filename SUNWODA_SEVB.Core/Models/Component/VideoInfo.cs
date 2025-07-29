@@ -1,11 +1,6 @@
-﻿using SUNWODA_SEVB.Component.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SUNWODA_SEVB.Core.Common;
 
-namespace SUNWODA_SEVB.Component.Model
+namespace SUNWODA_SEVB.Core.Models.Component
 {
     public class VideoInfo : ModelBase
     {

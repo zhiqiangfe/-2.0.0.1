@@ -1,10 +1,5 @@
-﻿using SUNWODA_SEVB.Tool.Enumeration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
+using SUNWODA_SEVB.Core.Enumerations.Tool;
 
 namespace SUNWODA_SEVB.Tool.Helper
 {
