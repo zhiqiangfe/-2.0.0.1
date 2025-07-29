@@ -58,39 +58,31 @@ namespace SUNWODA_SEVB.Data.DAL
             StringBuilder strSql = new StringBuilder();
             strSql.Append("insert into user_define_variable(");
             strSql.Append(
-                "variable_name,variable_type_id,value,unit,description,value_type,variable_length,plc_rw_config_id,plc_address,is_monitor,remark,datatime)"
+                "belong_id,variable_name,value,unit,description,value_type,remark,datatime)"
             );
             strSql.Append(" values (");
             strSql.Append(
-                "@variable_name,@variable_type_id,@value,@unit,@description,@value_type,@variable_length,@plc_rw_config_id,@plc_address,@is_monitor,@remark,@datatime)"
+                "@belong_id@variable_name,@value,@unit,@description,@value_type,@remark,@datatime)"
             );
             MySqlParameter[] parameters =
             {
+                new MySqlParameter("@belong_id", MySqlDbType.Int32, 11),
                 new MySqlParameter("@variable_name", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@variable_type_id", MySqlDbType.Int32, 11),
                 new MySqlParameter("@value", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@unit", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@description", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@value_type", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@variable_length", MySqlDbType.Int32, 10),
-                new MySqlParameter("@plc_rw_config_id", MySqlDbType.Int32, 10),
-                new MySqlParameter("@plc_address", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@is_monitor", MySqlDbType.Bit),
                 new MySqlParameter("@remark", MySqlDbType.VarChar, 100),
                 new MySqlParameter("@datatime", MySqlDbType.DateTime),
             };
-            parameters[0].Value = model.variable_name;
-            parameters[1].Value = model.variable_type_id;
+            parameters[0].Value = model.belong_id;
+            parameters[1].Value = model.variable_name;
             parameters[2].Value = model.value;
             parameters[3].Value = model.unit;
             parameters[4].Value = model.description;
             parameters[5].Value = model.value_type;
-            parameters[6].Value = model.variable_length;
-            parameters[7].Value = model.plc_rw_config_id;
-            parameters[8].Value = model.plc_address;
-            parameters[9].Value = model.is_monitor;
-            parameters[10].Value = model.remark;
-            parameters[11].Value = model.datatime;
+            parameters[6].Value = model.remark;
+            parameters[7].Value = model.datatime;
 
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
@@ -131,48 +123,36 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("update user_define_variable set ");
+            strSql.Append("belong_id=@belong_id,");
             strSql.Append("variable_name=@variable_name,");
-            strSql.Append("variable_type_id=@variable_type_id,");
             strSql.Append("value=@value,");
             strSql.Append("unit=@unit,");
             strSql.Append("description=@description,");
             strSql.Append("value_type=@value_type,");
-            strSql.Append("variable_length=@variable_length,");
-            strSql.Append("plc_rw_config_id=@plc_rw_config_id,");
-            strSql.Append("plc_address=@plc_address,");
-            strSql.Append("is_monitor=@is_monitor,");
             strSql.Append("remark=@remark,");
             strSql.Append("datatime=@datatime");
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters =
             {
+                new MySqlParameter("@belong_id", MySqlDbType.Int32, 11),
                 new MySqlParameter("@variable_name", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@variable_type_id", MySqlDbType.Int32, 11),
                 new MySqlParameter("@value", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@unit", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@description", MySqlDbType.VarChar, 50),
                 new MySqlParameter("@value_type", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@variable_length", MySqlDbType.Int32, 10),
-                new MySqlParameter("@plc_rw_config_id", MySqlDbType.Int32, 10),
-                new MySqlParameter("@plc_address", MySqlDbType.VarChar, 50),
-                new MySqlParameter("@is_monitor", MySqlDbType.Bit),
                 new MySqlParameter("@remark", MySqlDbType.VarChar, 100),
                 new MySqlParameter("@datatime", MySqlDbType.DateTime),
                 new MySqlParameter("@id", MySqlDbType.Int32, 11),
             };
-            parameters[0].Value = model.variable_name;
-            parameters[1].Value = model.variable_type_id;
+            parameters[0].Value = model.belong_id;
+            parameters[1].Value = model.variable_name;
             parameters[2].Value = model.value;
             parameters[3].Value = model.unit;
             parameters[4].Value = model.description;
             parameters[5].Value = model.value_type;
-            parameters[6].Value = model.variable_length;
-            parameters[7].Value = model.plc_rw_config_id;
-            parameters[8].Value = model.plc_address;
-            parameters[9].Value = model.is_monitor;
-            parameters[10].Value = model.remark;
-            parameters[11].Value = model.datatime;
-            parameters[12].Value = model.id;
+            parameters[6].Value = model.remark;
+            parameters[7].Value = model.datatime;
+            parameters[8].Value = model.id;
 
             int rows = DbHelperMySQL.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
@@ -286,7 +266,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,variable_name,variable_type_id,value,unit,description,value_type,variable_length,plc_rw_config_id,plc_address,is_monitor,remark,datatime from user_define_variable "
+                "select id,belong_id,variable_name,value,unit,description,value_type,remark,datatime from user_define_variable "
             );
             strSql.Append(" where id=@id");
             MySqlParameter[] parameters = { new MySqlParameter("@id", MySqlDbType.Int32) };
@@ -316,13 +296,13 @@ namespace SUNWODA_SEVB.Data.DAL
                 {
                     model.id = int.Parse(row["id"].ToString()!);
                 }
+                if (row["belong_id"] != null && row["belong_id"].ToString() != "")
+                {
+                    model.belong_id = int.Parse(row["belong_id"].ToString()!);
+                }
                 if (row["variable_name"] != null)
                 {
                     model.variable_name = row["variable_name"].ToString()!;
-                }
-                if (row["variable_type_id"] != null && row["variable_type_id"].ToString() != "")
-                {
-                    model.variable_type_id = int.Parse(row["variable_type_id"].ToString()!);
                 }
                 if (row["value"] != null)
                 {
@@ -339,32 +319,6 @@ namespace SUNWODA_SEVB.Data.DAL
                 if (row["value_type"] != null)
                 {
                     model.value_type = row["value_type"].ToString()!;
-                }
-                if (row["variable_length"] != null && row["variable_length"].ToString() != "")
-                {
-                    model.variable_length = int.Parse(row["variable_length"].ToString()!);
-                }
-                if (row["plc_rw_config_id"] != null && row["plc_rw_config_id"].ToString() != "")
-                {
-                    model.plc_rw_config_id = int.Parse(row["plc_rw_config_id"].ToString()!);
-                }
-                if (row["plc_address"] != null)
-                {
-                    model.plc_address = row["plc_address"].ToString()!;
-                }
-                if (row["is_monitor"] != null && row["is_monitor"].ToString() != "")
-                {
-                    if (
-                        (row["is_monitor"].ToString() == "1")
-                        || (row["is_monitor"].ToString()!.ToLower() == "true")
-                    )
-                    {
-                        model.is_monitor = true;
-                    }
-                    else
-                    {
-                        model.is_monitor = false;
-                    }
                 }
                 if (row["remark"] != null)
                 {
@@ -385,7 +339,7 @@ namespace SUNWODA_SEVB.Data.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append(
-                "select id,variable_name,variable_type_id,value,unit,description,value_type,variable_length,plc_rw_config_id,plc_address,is_monitor,remark,datatime "
+                "select id,belong_id,variable_name,variable_type_id,value,unit,description,value_type,remark,datatime "
             );
             strSql.Append(" FROM user_define_variable ");
             if (strWhere.Trim() != "")

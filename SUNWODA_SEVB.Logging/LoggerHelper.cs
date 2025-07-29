@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Google.Protobuf.WellKnownTypes;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace SUNWODA_SEVB.Logging
 {
@@ -17,7 +19,7 @@ namespace SUNWODA_SEVB.Logging
     public class LoggerHelper : ILogger
     {
         private static readonly Lazy<LoggerHelper> _instance = new Lazy<LoggerHelper>(() => new LoggerHelper());
-        private readonly Logger _logger;
+        private Logger _logger;
         private static readonly object _lock = new object();
 
         /// <summary>
@@ -235,8 +237,7 @@ namespace SUNWODA_SEVB.Logging
             LogManager.Shutdown();
         }
 
-        #region 接口      
-
+        #region 接口
         public void Trace(object? value)
         {
             lock (_lock)

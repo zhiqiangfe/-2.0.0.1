@@ -12,16 +12,12 @@ namespace SUNWODA_SEVB.Data.Model
 
         #region Model
         private int _id;
+        private int _belong_id;
         private string? _variable_name;
-        private int _variable_type_id;
         private string? _value;
         private string? _unit;
         private string? _description;
         private string? _value_type;
-        private int _variable_length = 1;
-        private int? _plc_rw_config_id;
-        private string? _plc_address;
-        private bool _is_monitor = false;
         private string? _remark;
         private DateTime _datatime;
 
@@ -34,6 +30,12 @@ namespace SUNWODA_SEVB.Data.Model
             get { return _id; }
         }
 
+        public int belong_id
+        {
+            set { _belong_id = value; }
+            get { return _belong_id; }
+        }
+
         /// <summary>
         ///
         /// </summary>
@@ -41,15 +43,6 @@ namespace SUNWODA_SEVB.Data.Model
         {
             set { _variable_name = value; }
             get { return _variable_name; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int variable_type_id
-        {
-            set { _variable_type_id = value; }
-            get { return _variable_type_id; }
         }
 
         /// <summary>
@@ -86,42 +79,6 @@ namespace SUNWODA_SEVB.Data.Model
         {
             set { _value_type = value; }
             get { return _value_type; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int variable_length
-        {
-            set { _variable_length = value; }
-            get { return _variable_length; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int? plc_rw_config_id
-        {
-            set { _plc_rw_config_id = value; }
-            get { return _plc_rw_config_id; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public string? plc_address
-        {
-            set { _plc_address = value; }
-            get { return _plc_address; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public bool is_monitor
-        {
-            set { _is_monitor = value; }
-            get { return _is_monitor; }
         }
 
         /// <summary>

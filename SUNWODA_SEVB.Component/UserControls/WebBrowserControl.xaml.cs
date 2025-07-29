@@ -283,7 +283,7 @@ namespace SUNWODA_SEVB.Component.UserControls
         private void BackButton_Click(object sender, RoutedEventArgs e) => GoBack();
         private void ForwardButton_Click(object sender, RoutedEventArgs e) => GoForward();
         private void RefreshButton_Click(object sender, RoutedEventArgs e) => Refresh();
-        private void GoButton_Click(object sender, RoutedEventArgs e) => Navigate(AddressBar.Text);
+        //private void GoButton_Click(object sender, RoutedEventArgs e) => Navigate(AddressBar.Text);
 
         private void AddressBar_KeyDown(object sender, KeyEventArgs e)
         {

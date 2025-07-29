@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SUNWODA_SEVB.Component.Base
 {
-    internal class ModelBase : INotifyPropertyChanged
+    public class ModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string propName = "")
