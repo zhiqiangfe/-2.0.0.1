@@ -31,6 +31,9 @@ namespace SUNWODA_SEVB.Component.UserControls
 
         #region Properties
 
+        /// <summary>
+        /// 原始图片
+        /// </summary>
         public Mat? Image
         {
             get => _originalImage;
@@ -42,6 +45,9 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 缩放比例
+        /// </summary>
         public double ZoomLevel
         {
             get => _zoomLevel;
@@ -57,6 +63,9 @@ namespace SUNWODA_SEVB.Component.UserControls
 
         #region Image Display Methods
 
+        /// <summary>
+        /// 显示图片
+        /// </summary>
         private void DisplayImage()
         {
             if (_originalImage == null || _originalImage.Empty())
@@ -84,6 +93,9 @@ namespace SUNWODA_SEVB.Component.UserControls
             UpdateAnnotations();
         }
 
+        /// <summary>
+        /// 更新标注
+        /// </summary>
         private void UpdateAnnotations()
         {
             foreach (var annotation in _annotations)
@@ -125,6 +137,9 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 应用停靠规则
+        /// </summary>
         private void ApplyDocking()
         {
             if (imageDisplay?.Source == null) return;
@@ -153,6 +168,9 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 图片自适应窗口
+        /// </summary>
         private void FitImageToWindow()
         {
             if (_originalImage == null || _originalImage.Empty()) return;
@@ -173,22 +191,41 @@ namespace SUNWODA_SEVB.Component.UserControls
         #endregion
 
         #region Event Handlers
-
+        /// <summary>
+        /// 放大
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnZoomIn_Click(object sender, RoutedEventArgs e)
         {
             ZoomLevel *= 1.2;
         }
 
+        /// <summary>
+        /// 缩小
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnZoomOut_Click(object sender, RoutedEventArgs e)
         {
             ZoomLevel /= 1.2;
         }
 
+        /// <summary>
+        /// 自适应窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnFitWindow_Click(object sender, RoutedEventArgs e)
         {
             FitImageToWindow();
         }
 
+        /// <summary>
+        /// 重置图片
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
             ZoomLevel = 1.0;
@@ -196,6 +233,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             scrollViewer.ScrollToVerticalOffset(0);
         }
 
+        /// <summary>
+        /// 设置停靠规则
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CmbDocking_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (cmbDocking.SelectedIndex < 0) return;
@@ -204,6 +246,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             ApplyDocking();
         }
 
+        /// <summary>
+        /// 鼠标滚轮缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
@@ -213,13 +260,23 @@ namespace SUNWODA_SEVB.Component.UserControls
                 double scaleFactor = e.Delta > 0 ? 1.1 : 0.9;
                 Point mousePosition = e.GetPosition(imageDisplay);
 
-                // Calculate new zoom level
+                // 计算缩放比例
                 double newZoom = _zoomLevel * scaleFactor;
                 newZoom = Math.Max(0.1, Math.Min(10, newZoom));
 
-                // Calculate offset to keep mouse position stable
-                double offsetX = mousePosition.X * (scaleFactor - 1);
-                double offsetY = mousePosition.Y * (scaleFactor - 1);
+                // 计算偏移量，保证鼠标稳定
+                double offsetX = 0;
+                double offsetY = 0;
+                if (newZoom >= 10 || newZoom <= 0.1)
+                {
+                    offsetX = mousePosition.X * (newZoom/_zoomLevel - 1);
+                    offsetY = mousePosition.Y * (newZoom / _zoomLevel - 1);
+                }
+                else
+                {
+                    offsetX = mousePosition.X * (scaleFactor - 1);
+                    offsetY = mousePosition.Y * (scaleFactor - 1);
+                }
 
                 ZoomLevel = newZoom;
 
@@ -262,7 +319,7 @@ namespace SUNWODA_SEVB.Component.UserControls
 
         private void ImageContainer_MouseMove(object sender, MouseEventArgs e)
         {
-            // Update mouse position
+            // 更新鼠标位置
             Point mousePos = e.GetPosition(imageDisplay);
             if (_originalImage != null && !_originalImage.Empty())
             {
@@ -275,7 +332,7 @@ namespace SUNWODA_SEVB.Component.UserControls
                 }
             }
 
-            // Handle panning
+            // 鼠标平移
             if (_isPanning && e.LeftButton == MouseButtonState.Pressed)
             {
                 Point currentPosition = e.GetPosition(scrollViewer);
@@ -291,15 +348,15 @@ namespace SUNWODA_SEVB.Component.UserControls
 
         private void ImageContainer_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Context menu for annotations
+            // 标注上下文菜单
             Point clickPoint = e.GetPosition(annotationCanvas);
 
-            // Check if click is on an annotation
+            // 检查是否点击到标注
             foreach (var annotation in _annotations)
             {
                 if (annotation.HitTest(clickPoint))
                 {
-                    // Show context menu for annotation
+                    // 显示标注上下文菜单
                     ContextMenu contextMenu = new ContextMenu();
                     MenuItem deleteItem = new MenuItem { Header = "删除标注" };
                     deleteItem.Click += (s, args) =>
@@ -314,7 +371,7 @@ namespace SUNWODA_SEVB.Component.UserControls
                         MenuItem editItem = new MenuItem { Header = "编辑文字" };
                         editItem.Click += (s, args) =>
                         {
-                            // Edit text annotation
+                            // 编辑文字标注
                             EditTextAnnotation(annotation);
                         };
                         contextMenu.Items.Add(editItem);
@@ -435,7 +492,6 @@ namespace SUNWODA_SEVB.Component.UserControls
             Canvas.SetLeft(textBox, position.X);
             Canvas.SetTop(textBox, position.Y);
 
-            // Auto select text for immediate editing
             textBox.Focus();
             textBox.SelectAll();
 
@@ -478,7 +534,7 @@ namespace SUNWODA_SEVB.Component.UserControls
                     annotationCanvas.Children.Insert(index, border);
                 }
 
-                // Update annotation reference
+                // 更新标注参考
                 var existingAnnotation = _annotations.Find(a => a.Visual == textBox);
                 if (existingAnnotation != null)
                 {
@@ -670,23 +726,23 @@ namespace SUNWODA_SEVB.Component.UserControls
         {
             if (_originalImage == null || _originalImage.Empty()) return;
 
-            // Create a copy of the original image
+            // 复制一份原图片
             Mat output = _originalImage.Clone();
 
-            // Draw annotations on the image
+            // 在图片上标注
             foreach (var annotation in _annotations)
             {
                 DrawAnnotationOnMat(output, annotation);
             }
 
-            // Save the image
+            // 保存图片
             Cv2.ImWrite(filePath, output);
             output.Dispose();
         }
 
         private void DrawAnnotationOnMat(Mat image, AnnotationItem annotation)
         {
-            // Convert WPF coordinates to image coordinates
+            // WPF坐标系转换为图片坐标系
             double scaleX = (double)image.Width / imageDisplay.Width;
             double scaleY = (double)image.Height / imageDisplay.Height;
 
