@@ -1,19 +1,16 @@
 ﻿using System.Configuration;
 using System.Data;
 using System.Windows;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NLog;
-using SUNWODA_SEVB.Core.Services;
+using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Data;
-using SUNWODA_SEVB.Data.Services;
 using SUNWODA_SEVB.Logging;
 
 namespace SUNWODA_SEVB
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         private IHost? _host;
@@ -26,9 +23,15 @@ namespace SUNWODA_SEVB
             {
                 // 创建 Host，它会自动配置 DI 和日志
                 _host = Host.CreateDefaultBuilder()
+                              .ConfigureAppConfiguration((context, config) =>
+                              {
+                                  // 添加配置文件
+                                  config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                                  config.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                              })
                             .ConfigureServices((context, services) =>
                             {
-                                ConfigureServices(services);
+                                ConfigureServices(services, context.Configuration);
                             })
                             .Build();
 
@@ -72,15 +75,18 @@ namespace SUNWODA_SEVB
             }
         }
 
-        private void ConfigureServices(IServiceCollection services)
+        private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
+            // 注册配置
+            services.AddSingleton(configuration);
+
             // 添加日志服务
             services.AddNLogServices();
 
-            // 添加内存缓存服务
+            // 内存缓存
             services.AddMemoryCache();
 
-            // 数据库 / 数据访问
+            // ★ 使用新的方法注册 SqlSugar 和所有数据服务
             services.AddDataServices();
 
             // 添加数据库服务
@@ -101,7 +107,7 @@ namespace SUNWODA_SEVB
             });
 
         }
-
+ 
         private void SetupGlobalExceptionHandling()
         {
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using NLog;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using SUNWODA_SEVB.Core.Interfaces;
 
 namespace SUNWODA_SEVB.Logging
 {
@@ -14,6 +15,13 @@ namespace SUNWODA_SEVB.Logging
         /// </summary>
         public static IServiceCollection AddNLogServices(this IServiceCollection services)
         {
+            // 配置NLog
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.ClearProviders();
+                loggingBuilder.AddNLog();
+            });
+
             // 注册日志管理服务
             services.AddSingleton<ILogManagementService, NLogManagementService>();
 

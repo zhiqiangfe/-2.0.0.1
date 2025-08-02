@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Repositories\DataSeeder.cs" />
+    <Compile Remove="Repositories\IUserService.cs" />
+    <Compile Remove="Repositories\PlcRwConfigService.cs" />
+    <Compile Remove="Repositories\UserService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mapster" Version="7.4.0" />
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.198" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SUNWODA_SEVB.Core\SUNWODA_SEVB.Core.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Logging\SUNWODA_SEVB.Logging.csproj" />
   </ItemGroup>

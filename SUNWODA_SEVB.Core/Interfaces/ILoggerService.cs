@@ -1,14 +1,20 @@
-﻿using System;
+﻿using SUNWODA_SEVB.Core.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace SUNWODA_SEVB.Logging
+namespace SUNWODA_SEVB.Core.Interfaces
 {
     /// <summary>
-    /// 日志接口
+    /// 日志服务接口
     /// </summary>
     public interface ILoggerService
     {
-        // 基础日志方法（仅消息）
+        #region 基础日志方法
+
         void Trace(string message,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
@@ -39,65 +45,91 @@ namespace SUNWODA_SEVB.Logging
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        // 带异常的日志方法（使用不同的方法名避免重载冲突）
-        void TraceException(string message, Exception exception,
+        #endregion
+
+        #region 带异常的日志方法
+
+        void Trace(string message, Exception exception,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void DebugException(string message, Exception exception,
+        void Debug(string message, Exception exception,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void InfoException(string message, Exception exception,
+        void Info(string message, Exception exception,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void WarnException(string message, Exception exception,
+        void Warn(string message, Exception exception,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void ErrorException(string message, Exception exception,
+        void Error(string message, Exception exception,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void FatalException(string message, Exception exception,
+        void Fatal(string message, Exception exception,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        // 通用日志方法
-        void Log(LogLevel level, string message,
+        #endregion
+
+        #region 通用日志方法
+
+        void Log(CoreLogLevel level, string message,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void LogException(LogLevel level, string message, Exception exception,
+        void Log(CoreLogLevel level, string message, Exception exception,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        // 特殊日志方法
-        void LogSpecial(LogLevel level, string message,
+        #endregion
+
+        #region 特殊日志方法
+
+        /// <summary>
+        /// 记录到特殊日志文件
+        /// </summary>
+        void LogToSpecialFile(string fileName, string message, CoreLogLevel level = CoreLogLevel.Info,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void LogSpecialException(LogLevel level, string message, Exception exception,
-            [CallerMemberName] string memberName = "",
-            [CallerFilePath] string filePath = "",
-            [CallerLineNumber] int lineNumber = 0);
+        /// <summary>
+        /// 记录MES接口日志
+        /// </summary>
+        void LogMesInterface(string interfaceName, string requestData, string responseData,
+            bool isSuccess, int executionTime = 0, string errorMessage = null!);
+
+        /// <summary>
+        /// 记录Web接口日志
+        /// </summary>
+        void LogWebInterface(string apiPath, string httpMethod, string requestBody,
+            string responseBody, string clientIP, int statusCode, long executionTime);
+
+        #endregion
     }
 
     /// <summary>
-    /// 供依赖注入使用的泛型日志接口，用于获取特定类型的日志记录器
+    /// 泛型日志服务接口，用于依赖注入
     /// </summary>
-    /// <typeparam name="T">需要记录日志的上下文类型（通常是类本身）</typeparam>
+    /// <typeparam name="T">日志上下文类型（通常是使用日志的类）</typeparam>
     public interface ILoggerService<T> : ILoggerService
     {
+        /// <summary>
+        /// 获取日志上下文类型
+        /// </summary>
+        Type ContextType { get; }
     }
+
 }

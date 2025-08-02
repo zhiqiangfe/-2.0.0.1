@@ -1,0 +1,41 @@
+﻿using SqlSugar;
+
+namespace SUNWODA_SEVB.Data.Models
+{
+    /// <summary>
+    /// 用户表
+    /// </summary>
+    //[SugarIndex("users_name", nameof(UserName), OrderByType.Asc, true)]
+    [SugarTable("Users", "用户表")]
+    public class UsersModel
+    {
+        [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
+        public int ID { get; set; }
+
+        [SugarColumn(ColumnName = "user_name", ColumnDescription = "用户名")]
+        public string UserName { get; set; } = null!;
+
+        [SugarColumn(ColumnName = "password", ColumnDescription = "密码（应存储哈希值）")]
+        public string Password { get; set; } = null!;
+
+        [SugarColumn(ColumnName = "role_id", ColumnDescription = "角色ID")]
+        public int RoleId { get; set; }
+
+        [SugarColumn(ColumnName = "remark", ColumnDescription = "备注", IsNullable = true)]
+        public string? Remark { get; set; }
+
+        [SugarColumn(ColumnName = "last_login_time", ColumnDescription = "最后登录时间", IsNullable = true)]
+        public DateTime? LastLoginTime { get; set; }
+
+        
+        //public Users() { }
+
+        
+        //public Users(string userName, string password, int roleId)
+        //{
+        //    UserName = userName;
+        //    Password = password;
+        //    RoleId = roleId;
+        //}
+    }
+}

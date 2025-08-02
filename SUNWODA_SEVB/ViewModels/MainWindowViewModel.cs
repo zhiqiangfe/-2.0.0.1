@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Logging;
 
 namespace SUNWODA_SEVB.ViewModels
@@ -76,7 +77,7 @@ namespace SUNWODA_SEVB.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("执行测试日志时发生错误",ex);
+                _logger.Error("执行测试日志时发生错误",ex);
                 StatusMessage = "测试操作失败";
             }
         }
@@ -102,7 +103,7 @@ namespace SUNWODA_SEVB.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("模拟错误操作", ex);
+                _logger.Error("模拟错误操作", ex);
                 StatusMessage = "错误已记录到日志";
             }
         }

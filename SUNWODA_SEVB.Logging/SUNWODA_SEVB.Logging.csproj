@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="DatabaseLogTarget.cs" />
     <Compile Remove="LoggerHelper.cs" />
   </ItemGroup>
 
@@ -33,6 +34,10 @@
     <PackageReference Include="MySql.Data" Version="9.4.0" />
     <PackageReference Include="NLog" Version="6.0.2" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SUNWODA_SEVB.Core\SUNWODA_SEVB.Core.csproj" />
   </ItemGroup>
 
 </Project>
