@@ -38,6 +38,94 @@
                 Click="BtnResetView_Click">
                 <TextBlock VerticalAlignment="Center" Text="重置视图" />
             </Button>
+            <Separator />
+            <Button
+                Name="BtnRemoveModel"
+                Margin="5,0,2,0"
+                Padding="5"
+                Click="BtnRemoveModel_Click">
+                <TextBlock VerticalAlignment="Center" Text="删除模型" />
+            </Button>
+            <Button
+                Name="BtnCenterModel"
+                Padding="5"
+                Click="BtnCenterModel_Click">
+                <TextBlock VerticalAlignment="Center" Text="模型居中" />
+            </Button>
+            <Separator />
+
+            <!--  位置设置  -->
+            <TextBlock
+                Margin="5,0,2,0"
+                VerticalAlignment="Center"
+                Text="位置: X:" />
+            <TextBox
+                Name="TxtPosX"
+                Width="50"
+                VerticalAlignment="Center"
+                Text="0" />
+            <TextBlock
+                Margin="5,0,2,0"
+                VerticalAlignment="Center"
+                Text="Y:" />
+            <TextBox
+                Name="TxtPosY"
+                Width="50"
+                VerticalAlignment="Center"
+                Text="0" />
+            <TextBlock
+                Margin="5,0,2,0"
+                VerticalAlignment="Center"
+                Text="Z:" />
+            <TextBox
+                Name="TxtPosZ"
+                Width="50"
+                VerticalAlignment="Center"
+                Text="0" />
+
+            <Separator />
+
+            <!--  旋转设置  -->
+            <TextBlock
+                Margin="5,0,2,0"
+                VerticalAlignment="Center"
+                Text="旋转: X:" />
+            <TextBox
+                Name="TxtRotX"
+                Width="50"
+                VerticalAlignment="Center"
+                Text="0" />
+            <TextBlock
+                Margin="5,0,2,0"
+                VerticalAlignment="Center"
+                Text="Y:" />
+            <TextBox
+                Name="TxtRotY"
+                Width="50"
+                VerticalAlignment="Center"
+                Text="0" />
+            <TextBlock
+                Margin="5,0,2,0"
+                VerticalAlignment="Center"
+                Text="Z:" />
+            <TextBox
+                Name="TxtRotZ"
+                Width="50"
+                VerticalAlignment="Center"
+                Text="0" />
+
+            <Separator />
+
+            <!--  缩放设置  -->
+            <TextBlock
+                Margin="5,0,2,0"
+                VerticalAlignment="Center"
+                Text="缩放:" />
+            <TextBox
+                Name="TxtScale"
+                Width="50"
+                VerticalAlignment="Center"
+                Text="1" />
         </ToolBar>
 
         <!--  3D视图  -->
@@ -45,6 +133,7 @@
             x:Name="viewport"
             Grid.Row="1"
             MouseDoubleClick="Viewport_MouseDoubleClick"
+            PreviewMouseLeftButtonDown="Viewport_PreviewMouseLeftButtonDown"
             ShowCoordinateSystem="True"
             ShowFrameRate="True">
             <!--  相机  -->

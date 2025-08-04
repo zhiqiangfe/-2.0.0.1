@@ -1,0 +1,424 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:SUNWODA_SEVB.Component.CustomControls"
+    xmlns:mdxaml="https://github.com/whistyun/MdXaml">
+
+    <LinearGradientBrush x:Key="UserMessageBackground" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF5E7CE2" />
+        <GradientStop Offset="1" Color="#FF4A67D6" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="AssistantMessageBackground" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FFF7F8FA" />
+        <GradientStop Offset="1" Color="#FFF0F2F5" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="ThinkingBackground" Color="#FFF0F4FF" />
+    <SolidColorBrush x:Key="ThinkingBorder" Color="#FFD4E2FC" />
+    <SolidColorBrush x:Key="UserMessageForeground" Color="White" />
+    <SolidColorBrush x:Key="AssistantMessageForeground" Color="#FF1F2937" />
+
+    <Storyboard x:Key="FadeInStoryboard">
+        <DoubleAnimation
+            Storyboard.TargetProperty="Opacity"
+            From="0"
+            To="1"
+            Duration="0:0:0.3">
+            <DoubleAnimation.EasingFunction>
+                <CubicEase EasingMode="EaseOut" />
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <Storyboard x:Key="SlideInStoryboard">
+        <DoubleAnimation
+            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+            From="20"
+            To="0"
+            Duration="0:0:0.3">
+            <DoubleAnimation.EasingFunction>
+                <CubicEase EasingMode="EaseOut" />
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation
+            Storyboard.TargetProperty="Opacity"
+            From="0"
+            To="1"
+            Duration="0:0:0.3" />
+    </Storyboard>
+
+    <Style x:Key="ThinkingDotStyle" TargetType="Ellipse">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Height" Value="8" />
+        <Setter Property="Fill" Value="#FF5E7CE2" />
+        <Setter Property="Margin" Value="3,0" />
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever">
+                        <DoubleAnimation
+                            AutoReverse="True"
+                            Storyboard.TargetProperty="Opacity"
+                            From="0.3"
+                            To="1"
+                            Duration="0:0:0.6" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="MinimalScrollBar" TargetType="ScrollBar">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Track Name="PART_Track" IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border
+                                                Background="#40000000"
+                                                CornerRadius="4"
+                                                Opacity="0.5">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Opacity" Value="0.8" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate x:Key="ThinkingStepTemplate">
+        <Border
+            Margin="5"
+            Padding="12,8"
+            Background="{StaticResource ThinkingBackground}"
+            BorderBrush="{StaticResource ThinkingBorder}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Path
+                    Grid.Column="0"
+                    Width="16"
+                    Height="16"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                    Fill="#FF5E7CE2" />
+
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    Foreground="#FF4B5563"
+                    Text="{Binding Step}"
+                    TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <ControlTemplate x:Key="MessageItemTemplate" TargetType="ContentControl">
+        <Grid Margin="10,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border
+                x:Name="MessageBorder"
+                Grid.Column="1"
+                MaxWidth="600"
+                Margin="50,0,0,0"
+                HorizontalAlignment="Right">
+                <Border.RenderTransform>
+                    <TranslateTransform />
+                </Border.RenderTransform>
+                <Border.Effect>
+                    <DropShadowEffect
+                        BlurRadius="10"
+                        Direction="270"
+                        ShadowDepth="2"
+                        Color="#20000000" />
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border
+                        Grid.Row="0"
+                        Padding="16,12"
+                        Background="{StaticResource UserMessageBackground}"
+                        CornerRadius="16,16,4,16">
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{StaticResource UserMessageForeground}"
+                            Opacity="0.9"
+                            Text="{Binding Role}" />
+                    </Border>
+
+                    <Border
+                        Grid.Row="1"
+                        Padding="16,0,16,12"
+                        Background="{StaticResource UserMessageBackground}">
+                        <ContentPresenter Content="{Binding}" />
+                    </Border>
+
+                    <TextBlock
+                        Grid.Row="2"
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Right"
+                        FontSize="11"
+                        Foreground="#FF9CA3AF"
+                        Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding Role}" Value="Assistant">
+                <Setter TargetName="MessageBorder" Property="Grid.Column" Value="1" />
+                <Setter TargetName="MessageBorder" Property="HorizontalAlignment" Value="Left" />
+                <Setter TargetName="MessageBorder" Property="Margin" Value="0,0,50,0" />
+                <Setter TargetName="MessageBorder" Property="Background" Value="{StaticResource AssistantMessageBackground}" />
+                <Setter TargetName="MessageBorder" Property="CornerRadius" Value="16,16,16,4" />
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+
+    <Style TargetType="{x:Type local:StreamingAIChatControl}">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="#FFE5E7EB" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:StreamingAIChatControl}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush Opacity="0.03" StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Offset="0" Color="#FF5E7CE2" />
+                                    <GradientStop Offset="1" Color="#FFE0E7FF" />
+                                </LinearGradientBrush>
+                            </Grid.Background>
+
+                            <ScrollViewer
+                                x:Name="PART_ScrollViewer"
+                                Padding="10"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer.Resources>
+                                    <Style BasedOn="{StaticResource MinimalScrollBar}" TargetType="ScrollBar" />
+                                </ScrollViewer.Resources>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <ItemsControl
+                                        x:Name="PART_MessagesContainer"
+                                        Grid.Row="0"
+                                        ItemsSource="{TemplateBinding Messages}"
+                                        ScrollViewer.CanContentScroll="True"
+                                        VirtualizingPanel.IsVirtualizing="True"
+                                        VirtualizingPanel.VirtualizationMode="Recycling">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <VirtualizingStackPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,5">
+                                                    <ContentControl Template="{StaticResource MessageItemTemplate}">
+                                                        <ContentControl.Style>
+                                                            <Style TargetType="ContentControl">
+                                                                <Style.Triggers>
+                                                                    <EventTrigger RoutedEvent="Loaded">
+                                                                        <BeginStoryboard Storyboard="{StaticResource SlideInStoryboard}" />
+                                                                    </EventTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ContentControl.Style>
+                                                    </ContentControl>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Border
+                                        x:Name="PART_LoadingIndicator"
+                                        Grid.Row="1"
+                                        Margin="10,10,0,10"
+                                        HorizontalAlignment="Left"
+                                        Visibility="Collapsed">
+                                        <Border
+                                            Padding="15,10"
+                                            Background="{StaticResource AssistantMessageBackground}"
+                                            CornerRadius="20">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock
+                                                    Margin="0,0,10,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="13"
+                                                    Foreground="#FF6B7280"
+                                                    Text="AI Thinking" />
+                                                <Grid>
+                                                    <Ellipse Style="{StaticResource ThinkingDotStyle}">
+                                                        <Ellipse.RenderTransform>
+                                                            <TranslateTransform />
+                                                        </Ellipse.RenderTransform>
+                                                        <Ellipse.Triggers>
+                                                            <EventTrigger RoutedEvent="Loaded">
+                                                                <BeginStoryboard>
+                                                                    <Storyboard RepeatBehavior="Forever">
+                                                                        <DoubleAnimation
+                                                                            AutoReverse="True"
+                                                                            BeginTime="0:0:0"
+                                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                                            From="0"
+                                                                            To="-3"
+                                                                            Duration="0:0:0.4" />
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </EventTrigger>
+                                                        </Ellipse.Triggers>
+                                                    </Ellipse>
+                                                    <Ellipse Margin="15,0,3,0" Style="{StaticResource ThinkingDotStyle}">
+                                                        <Ellipse.RenderTransform>
+                                                            <TranslateTransform />
+                                                        </Ellipse.RenderTransform>
+                                                        <Ellipse.Triggers>
+                                                            <EventTrigger RoutedEvent="Loaded">
+                                                                <BeginStoryboard>
+                                                                    <Storyboard RepeatBehavior="Forever">
+                                                                        <DoubleAnimation
+                                                                            AutoReverse="True"
+                                                                            BeginTime="0:0:0.1"
+                                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                                            From="0"
+                                                                            To="-3"
+                                                                            Duration="0:0:0.4" />
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </EventTrigger>
+                                                        </Ellipse.Triggers>
+                                                    </Ellipse>
+                                                    <Ellipse Margin="30,0,3,0" Style="{StaticResource ThinkingDotStyle}">
+                                                        <Ellipse.RenderTransform>
+                                                            <TranslateTransform />
+                                                        </Ellipse.RenderTransform>
+                                                        <Ellipse.Triggers>
+                                                            <EventTrigger RoutedEvent="Loaded">
+                                                                <BeginStoryboard>
+                                                                    <Storyboard RepeatBehavior="Forever">
+                                                                        <DoubleAnimation
+                                                                            AutoReverse="True"
+                                                                            BeginTime="0:0:0.2"
+                                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                                            From="0"
+                                                                            To="-3"
+                                                                            Duration="0:0:0.4" />
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </EventTrigger>
+                                                        </Ellipse.Triggers>
+                                                    </Ellipse>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </Border>
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:ThinkingIndicator}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:ThinkingIndicator}">
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox
+                            Width="16"
+                            Height="16"
+                            Margin="0,0,5,0">
+                            <Canvas
+                                Width="24"
+                                Height="24"
+                                Visibility="{Binding IsThinking, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Canvas.RenderTransform>
+                                    <RotateTransform x:Name="SpinnerRotate" CenterX="12" CenterY="12" />
+                                </Canvas.RenderTransform>
+                                <Canvas.Triggers>
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation
+                                                    RepeatBehavior="Forever"
+                                                    Storyboard.TargetName="SpinnerRotate"
+                                                    Storyboard.TargetProperty="Angle"
+                                                    From="0"
+                                                    To="360"
+                                                    Duration="0:0:1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Canvas.Triggers>
+                                <Path
+                                    Data="M12,2 A10,10 0 0,1 22,12"
+                                    Stroke="#2196F3"
+                                    StrokeThickness="2" />
+                            </Canvas>
+                        </Viewbox>
+
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontStyle="Italic"
+                            Foreground="#666666"
+                            Text="{TemplateBinding Text}" />
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

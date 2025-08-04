@@ -28,36 +28,36 @@ namespace SUNWODA_SEVB
             // modelViewer.LoadModel(@"C:\Models\example.obj", "示例模型");
         }
 
-        private void OpenImage_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tiff|所有文件|*.*",
-            };
+        //private void OpenImage_Click(object sender, RoutedEventArgs e)
+        //{
+        //    OpenFileDialog openFileDialog = new OpenFileDialog
+        //    {
+        //        Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tiff|所有文件|*.*",
+        //    };
 
-            if (openFileDialog.ShowDialog() == true)
-            {
-                imageViewer.LoadImage(openFileDialog.FileName);
-            }
-        }
+        //    if (openFileDialog.ShowDialog() == true)
+        //    {
+        //        imageViewer.LoadImage(openFileDialog.FileName);
+        //    }
+        //}
 
-        private void SaveAnnotatedImage_Click(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog
-            {
-                Filter = "PNG图片|*.png|JPEG图片|*.jpg|BMP图片|*.bmp",
-            };
+        //private void SaveAnnotatedImage_Click(object sender, RoutedEventArgs e)
+        //{
+        //    SaveFileDialog saveFileDialog = new SaveFileDialog
+        //    {
+        //        Filter = "PNG图片|*.png|JPEG图片|*.jpg|BMP图片|*.bmp",
+        //    };
 
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                imageViewer.SaveImageWithAnnotations(saveFileDialog.FileName);
-            }
-        }
+        //    if (saveFileDialog.ShowDialog() == true)
+        //    {
+        //        imageViewer.SaveImageWithAnnotations(saveFileDialog.FileName);
+        //    }
+        //}
 
-        private void Exit_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
+        //private void Exit_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Application.Current.Shutdown();
+        //}
 
         //private void OnModelDoubleClicked(object? sender, ModelDoubleClickEventArgs e)
         //{
