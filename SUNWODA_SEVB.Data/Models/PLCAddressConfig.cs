@@ -28,26 +28,6 @@ namespace SUNWODA_SEVB.Data.Models
         public string Remark { get; set; } = null!;
         [SugarColumn(ColumnName = "is_monitor", ColumnDescription = "是否监测")]
         public bool IsMonitor { get; set; }
-        //public PLCAddressConfig() { }
-        //public PLCAddressConfig(
-        //    int plcID,
-        //    int plcRWID,
-        //    int categoryID,
-        //    string parameterName,
-        //    string type,
-        //    ushort length,
-        //    string address,
-        //    bool isMonitor
-        //)
-        //{
-        //    PLCID = plcID;
-        //    PLCRWID = plcRWID;
-        //    CategoryID = categoryID;
-        //    ParameterName = parameterName;
-        //    Type = type;
-        //    Length = length;
-        //    Address = address;
-        //    IsMonitor = isMonitor;
-        //}
+
     }
 }

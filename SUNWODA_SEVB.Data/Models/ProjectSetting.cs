@@ -21,13 +21,6 @@ namespace SUNWODA_SEVB.Data.Models
         public string Unit { get; set; } = null!;
         [SugarColumn(ColumnName = "remark", ColumnDescription = "注释", IsNullable = true)]
         public string Remark { get; set; } = null!;
-        //public ProjectSetting() { }
-        //public ProjectSetting(string name, string belongToVM, string value, string type)
-        //{
-        //    Name = name;
-        //    BelongToVM = belongToVM;
-        //    Value = value;
-        //    Type = type;
-        //}
+
     }
 }

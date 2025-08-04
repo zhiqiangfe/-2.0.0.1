@@ -52,6 +52,7 @@ namespace SUNWODA_SEVB
                     })
                     .Build();
 
+                var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
                 // 正确加载 NLog 配置
                 var env = _host.Services.GetRequiredService<IHostEnvironment>();
                 var config = _host.Services.GetRequiredService<IConfiguration>();
@@ -85,16 +86,8 @@ namespace SUNWODA_SEVB
                 // 初始化NLog的数据库目标
                 InitializeNLogDatabaseTarget();
 
-                // 记录应用启动
-                var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
-                appLogger.Info("========== 应用程序启动 ==========");
-                appLogger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
-                appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
-                appLogger.Info($"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}");
-
                 // 测试数据库日志
-                await TestDatabaseLogging();
+                //await TestDatabaseLogging();
 
                 // 初始化数据库
                 var databaseService = _host.Services.GetRequiredService<IDatabaseService>();
@@ -107,6 +100,16 @@ namespace SUNWODA_SEVB
                 }
 
                 appLogger.Info("数据库初始化成功");
+
+                // 记录应用启动
+
+                appLogger.Info("========== 应用程序启动 ==========");
+                appLogger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
+                appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
+                appLogger.Info($"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}");
+
+
 
                 // 设置全局异常处理
                 SetupGlobalExceptionHandling();

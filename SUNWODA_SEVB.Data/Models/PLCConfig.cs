@@ -28,20 +28,6 @@ namespace SUNWODA_SEVB.Data.Models
         public string Remark { get; set; } = null!;
         [SugarColumn(ColumnName = "is_enable", ColumnDescription = "是否启用")]
         public bool IsEnable { get; set; }
-        //public PLCConfig()
-        //{
-        //    CycleReadTime = 500;
-        //    CycleWriteTime = 500;
-        //}
-        //public PLCConfig(string name, int deviceId, string ip, int port, string brandSpecificationProtocal, bool isEnable)
-        //    : this()
-        //{
-        //    Name = name;
-        //    DeviceID = deviceId;
-        //    IP = ip;
-        //    Port = port;
-        //    BrandSpecificationProtocal = brandSpecificationProtocal;
-        //    IsEnable = isEnable;
-        //}
+
     }
 }

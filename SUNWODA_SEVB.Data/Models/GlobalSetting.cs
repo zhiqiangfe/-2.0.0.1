@@ -1,9 +1,4 @@
 ﻿using SqlSugar;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SUNWODA_SEVB.Data.Models
 {
@@ -23,12 +18,6 @@ namespace SUNWODA_SEVB.Data.Models
         public string Unit { get; set; } = null!;
         [SugarColumn(ColumnName = "remark", ColumnDescription = "注释", IsNullable = true)]
         public string Remark { get; set; } = null!;
-        //public GlobalSetting() { }
-        //public GlobalSetting(string name, string value, string type)
-        //{
-        //    Name = name;
-        //    Value = value;
-        //    Type = type;
-        //}
+
     }
 }

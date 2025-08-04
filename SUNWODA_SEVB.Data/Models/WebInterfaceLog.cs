@@ -36,22 +36,5 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "success_flag", ColumnDescription = "是否成功")]
         public bool SuccessFlag { get; set; }
 
-     
-        //public WebInterfaceLog() { }
-
-        //public WebInterfaceLog(string method, string inputJson = null!)
-        //{
-        //    Method = method;
-        //    InputJson = inputJson;
-        //    StartTime = DateTime.Now;
-        //}
-        //public void WebLog(bool success, string outputJson = null!)
-        //{
-        //    SuccessFlag = success;
-        //    OutputJson = outputJson;
-        //    EndTime = DateTime.Now;
-        //    LogDate = EndTime; // 将日志日期设置为结束时间
-        //    ConsumingTime = (long)(EndTime - StartTime).TotalMilliseconds; // 自动计算耗时
-        //}
     }
 }

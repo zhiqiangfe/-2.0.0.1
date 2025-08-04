@@ -18,12 +18,5 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "is_init_show", ColumnDescription = "是否初始化显示")]
         public bool IsInitShow { get; set; }
 
-        //public WorkSpaceProject() { }
-        //public WorkSpaceProject(string vmClassName, bool isEnabled, bool isInitShow)
-        //{
-        //    VMClassName = vmClassName;
-        //    IsEnabled = isEnabled;
-        //    IsInitShow = isInitShow;
-        //}
     }
 }

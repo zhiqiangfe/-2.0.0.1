@@ -18,13 +18,6 @@ namespace SUNWODA_SEVB.Data.Models
         public string LineName { get; set; } = null!;
         [SugarColumn(ColumnName = "remark", ColumnDescription = "注释", IsNullable = true)]
         public string Remark { get; set; } = null!;
-        //public Device() { }
-        //public Device(string number, string name, string baseName, string lineName)
-        //{
-        //    Number = number;
-        //    Name = name;
-        //    BaseName = baseName;
-        //    LineName = lineName;
-        //}
+
     }
 }

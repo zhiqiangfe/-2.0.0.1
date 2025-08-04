@@ -27,15 +27,5 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "last_login_time", ColumnDescription = "最后登录时间", IsNullable = true)]
         public DateTime? LastLoginTime { get; set; }
 
-        
-        //public Users() { }
-
-        
-        //public Users(string userName, string password, int roleId)
-        //{
-        //    UserName = userName;
-        //    Password = password;
-        //    RoleId = roleId;
-        //}
     }
 }

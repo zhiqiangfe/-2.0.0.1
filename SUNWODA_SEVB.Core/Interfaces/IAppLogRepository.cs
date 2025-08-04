@@ -17,14 +17,5 @@ namespace SUNWODA_SEVB.Core.Interfaces
         /// </summary>
         Task<int> DeleteOldLogsAsync(int daysToKeep);
 
-        ///// <summary>
-        ///// 实时写入单条日志
-        ///// </summary>
-        //Task<bool> WriteAsync(AppLogModel log);
-
-        ///// <summary>
-        ///// 实时写入单条日志（立即刷新到数据库）
-        ///// </summary>
-        //Task<bool> WriteImmediateAsync(AppLogModel log);
     }
 }
