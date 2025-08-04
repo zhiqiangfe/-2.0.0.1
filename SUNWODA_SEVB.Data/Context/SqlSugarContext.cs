@@ -118,17 +118,17 @@ namespace SUNWODA_SEVB.Data.Context
         {
             return new[]
             {
-                typeof(AppLogParameters),
-                typeof(DeviceModel),
-                typeof(GlobalSettingModel),
-                typeof(MesInterfaceLogModel),
-                typeof(PLCAddressConfigModel),
-                typeof(PLCConfigModel),
-                typeof(PLCRWConfigModel),
-                typeof(ProjectSettingModel),
-                typeof(UsersModel),
-                typeof(WebInterfaceLogModel),
-                typeof(WorkSpaceProjectModel)
+                typeof(AppLog),
+                typeof(Device),
+                typeof(GlobalSetting),
+                typeof(MesInterfaceLog),
+                typeof(PLCAddressConfig),
+                typeof(PLCConfig),
+                typeof(PLCRWConfig),
+                typeof(ProjectSetting),
+                typeof(Users),
+                typeof(WebInterfaceLog),
+                typeof(WorkSpaceProject)
             };
         }
 

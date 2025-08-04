@@ -1,7 +1,7 @@
 ﻿
 namespace SUNWODA_SEVB.Core.Entities
 {
-    public class ProjectSetting
+    public class ProjectSettingModel
     {
         public int ID { get; set; }
 
@@ -16,8 +16,8 @@ namespace SUNWODA_SEVB.Core.Entities
         public string Unit { get; set; } = null!;
 
         public string Remark { get; set; } = null!;
-        public ProjectSetting() { }
-        public ProjectSetting(string name, string belongToVM, string value, string type)
+        public ProjectSettingModel() { }
+        public ProjectSettingModel(string name, string belongToVM, string value, string type)
         {
             Name = name;
             BelongToVM = belongToVM;

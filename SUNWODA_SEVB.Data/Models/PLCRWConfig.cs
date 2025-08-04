@@ -5,7 +5,7 @@ namespace SUNWODA_SEVB.Data.Models
     // 2. 使用 [SugarTable] 标记此类对应的数据表名
     //[SugarIndex("plc_rw_config_name", nameof(Name), OrderByType.Desc, true)]
     [SugarTable("plc_rw_config", "PLC读写区域设置")]
-    public class PLCRWConfigModel
+    public class PLCRWConfig
     {       
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

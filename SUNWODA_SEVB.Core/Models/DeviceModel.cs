@@ -2,7 +2,7 @@
 namespace SUNWODA_SEVB.Core.Entities
 
 {
-    public class Device
+    public class DeviceModel
     {
         public int ID { get; set; }
 
@@ -15,9 +15,9 @@ namespace SUNWODA_SEVB.Core.Entities
         public string LineName { get; set; } = null!;
 
         public string Remark { get; set; } = null!;
-        public Device() { }
+        public DeviceModel() { }
 
-        public Device(string number, string name, string baseName, string lineName)
+        public DeviceModel(string number, string name, string baseName, string lineName)
         {
             Number = number;
             Name = name;

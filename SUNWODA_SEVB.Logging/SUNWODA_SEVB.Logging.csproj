@@ -10,24 +10,22 @@
     <Compile Remove="Configuration\**" />
     <Compile Remove="Core\**" />
     <Compile Remove="Datebase\**" />
-    <Compile Remove="Targets\**" />
     <EmbeddedResource Remove="Configuration\**" />
     <EmbeddedResource Remove="Core\**" />
     <EmbeddedResource Remove="Datebase\**" />
-    <EmbeddedResource Remove="Targets\**" />
     <None Remove="Configuration\**" />
     <None Remove="Core\**" />
     <None Remove="Datebase\**" />
-    <None Remove="Targets\**" />
     <Page Remove="Configuration\**" />
     <Page Remove="Core\**" />
     <Page Remove="Datebase\**" />
-    <Page Remove="Targets\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="DatabaseLogTarget.cs" />
+    <Compile Remove="ILoggerServiceBase.cs" />
     <Compile Remove="LoggerHelper.cs" />
+    <Compile Remove="NLogSetup.cs" />
   </ItemGroup>
 
   <ItemGroup>

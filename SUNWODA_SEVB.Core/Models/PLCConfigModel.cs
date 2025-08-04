@@ -2,7 +2,7 @@
 namespace SUNWODA_SEVB.Core.Entities
 {
 
-    public class PLCConfig
+    public class PLCConfigModel
     {
         public int ID { get; set; }
         public string Name { get; set; } = null!;
@@ -15,12 +15,12 @@ namespace SUNWODA_SEVB.Core.Entities
         public int CycleWriteTime { get; set; }
         public string Remark { get; set; } = null!;
         public bool IsEnable { get; set; }
-        public PLCConfig()
+        public PLCConfigModel()
         {
             CycleReadTime = 500;
             CycleWriteTime = 500;
         }
-        public PLCConfig(string name, int deviceId, string ip, int port, string brandSpecificationProtocal, bool isEnable)
+        public PLCConfigModel(string name, int deviceId, string ip, int port, string brandSpecificationProtocal, bool isEnable)
             : this()
         {
             Name = name;

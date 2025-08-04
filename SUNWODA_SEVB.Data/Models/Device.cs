@@ -4,7 +4,7 @@ namespace SUNWODA_SEVB.Data.Models
 {
     //[SugarIndex("device_name", nameof(Name), OrderByType.Desc, true)]
     [SugarTable("device", "设备表")]
-    public class DeviceModel
+    public class Device
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

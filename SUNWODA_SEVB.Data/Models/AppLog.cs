@@ -8,7 +8,7 @@ namespace SUNWODA_SEVB.Data.Models
     //[SugarIndex("app_logs_logtime", nameof(LogTime), OrderByType.Desc)]
     //[SugarIndex("app_logs_loglevel", nameof(LogLevel), OrderByType.Asc)]
     [SugarTable("app_logs", "应用程序日志表")]
-    public class AppLogParameters
+    public class AppLog
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

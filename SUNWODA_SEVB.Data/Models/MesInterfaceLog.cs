@@ -3,11 +3,11 @@
 namespace SUNWODA_SEVB.Data.Models
 {
     /// <summary>
-    /// Web接口日志表
+    /// MES接口日志表
     /// </summary>
-    //[SugarIndex("web_interface_logs_logdate", nameof(LogDate), OrderByType.Desc)]
-    [SugarTable("web_interface_logs", "Web接口日志表")]
-    public class WebInterfaceLogModel
+    //[SugarIndex("mes_interface_logs_date", nameof(LogDate), OrderByType.Desc)]
+    [SugarTable("mes_interface_logs", "MES接口日志表")]
+    public class MesInterfaceLog
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }
@@ -36,16 +36,14 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "success_flag", ColumnDescription = "是否成功")]
         public bool SuccessFlag { get; set; }
 
-     
-        //public WebInterfaceLog() { }
-
-        //public WebInterfaceLog(string method, string inputJson = null!)
+        //public MesInterfaceLog() { }
+        //public MesInterfaceLog(string method, string inputJson = null!)
         //{
         //    Method = method;
         //    InputJson = inputJson;
         //    StartTime = DateTime.Now;
         //}
-        //public void WebLog(bool success, string outputJson = null!)
+        //public void MESLog(bool success, string outputJson = null!)
         //{
         //    SuccessFlag = success;
         //    OutputJson = outputJson;

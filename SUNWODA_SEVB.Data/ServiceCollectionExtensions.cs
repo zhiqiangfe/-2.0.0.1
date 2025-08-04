@@ -59,13 +59,23 @@ namespace SUNWODA_SEVB.Data
                 },
                 db =>
                 {
-                    // SQL执行前事件 - 简化日志，只记录表名
+                    // SQL执行前事件 - 优化日志记录
                     db.Aop.OnLogExecuting = (sql, pars) =>
                     {
                         var tableName = ExtractTableName(sql);
-                        if (!string.IsNullOrEmpty(tableName))
+
+                        // 过滤掉系统表查询的日志记录，减少噪音
+                        if (IsSystemQuery(sql, tableName))
                         {
-                            logger?.Debug($"SQL执行: 表[{tableName}]");
+                            // 系统查询不记录，或者只在Debug级别记录
+                            return;
+                        }
+
+                        // 只记录业务表操作
+                        if (!string.IsNullOrEmpty(tableName) && IsBusinessTable(tableName))
+                        {
+                            var operation = GetSqlOperation(sql);
+                            logger?.Debug($"SQL执行: {operation} 表[{tableName}]");
                         }
                     };
 
@@ -77,7 +87,8 @@ namespace SUNWODA_SEVB.Data
                         if (executionTime > 1000) // 超过1秒的慢查询
                         {
                             var tableName = ExtractTableName(sql);
-                            logger?.Warn($"慢查询警告: 表[{tableName}] - 执行时间: {executionTime:F2}ms");
+                            var operation = GetSqlOperation(sql);
+                            logger?.Warn($"慢查询警告: {operation} 表[{tableName}] - 执行时间: {executionTime:F2}ms");
                         }
                     };
 
@@ -97,6 +108,9 @@ namespace SUNWODA_SEVB.Data
             // 注册通用仓储
             services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
 
+            // 注册特定仓储
+            services.AddScoped<IAppLogRepository, AppLogRepository>();
+
             return services;
         }
 
@@ -110,37 +124,115 @@ namespace SUNWODA_SEVB.Data
 
             sql = sql.ToUpper();
 
-            // 匹配 FROM 子句中的表名
-            var fromMatch = Regex.Match(sql, @"FROM\s+`?(\w+)`?", RegexOptions.IgnoreCase);
-            if (fromMatch.Success)
-                return fromMatch.Groups[1].Value;
+            var patterns = new[]
+            {
+                @"FROM\s+`?(\w+)`?",
+                @"INSERT\s+INTO\s+`?(\w+)`?",
+                @"UPDATE\s+`?(\w+)`?",
+                @"DELETE\s+FROM\s+`?(\w+)`?",
+                @"ALTER\s+TABLE\s+`?(\w+)`?",
+                @"CREATE\s+TABLE\s+`?(\w+)`?",
+                @"DROP\s+TABLE\s+`?(\w+)`?"
+            };
 
-            // 匹配 INSERT INTO 中的表名
-            var insertMatch = Regex.Match(sql, @"INSERT\s+INTO\s+`?(\w+)`?", RegexOptions.IgnoreCase);
-            if (insertMatch.Success)
-                return insertMatch.Groups[1].Value;
+            foreach (var pattern in patterns)
+            {
+                var match = Regex.Match(sql, pattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                    return match.Groups[1].Value;
+            }
 
-            // 匹配 UPDATE 中的表名
-            var updateMatch = Regex.Match(sql, @"UPDATE\s+`?(\w+)`?", RegexOptions.IgnoreCase);
-            if (updateMatch.Success)
-                return updateMatch.Groups[1].Value;
-
-            // 匹配 DELETE FROM 中的表名
-            var deleteMatch = Regex.Match(sql, @"DELETE\s+FROM\s+`?(\w+)`?", RegexOptions.IgnoreCase);
-            if (deleteMatch.Success)
-                return deleteMatch.Groups[1].Value;
-
-            // 匹配 ALTER TABLE 中的表名
-            var alterMatch = Regex.Match(sql, @"ALTER\s+TABLE\s+`?(\w+)`?", RegexOptions.IgnoreCase);
-            if (alterMatch.Success)
-                return alterMatch.Groups[1].Value;
-
-            // 匹配 information_schema 查询
             if (sql.Contains("INFORMATION_SCHEMA"))
                 return "INFORMATION_SCHEMA";
 
             return "未知表";
         }
+
+        /// <summary>
+        /// 判断是否为系统查询
+        /// </summary>
+        private static bool IsSystemQuery(string sql, string tableName)
+        {
+            if (string.IsNullOrEmpty(sql))
+                return false;
+
+            sql = sql.ToUpper();
+
+            // 系统表查询
+            if (tableName == "INFORMATION_SCHEMA" ||
+                sql.Contains("INFORMATION_SCHEMA") ||
+                sql.Contains("PERFORMANCE_SCHEMA") ||
+                sql.Contains("MYSQL.") ||
+                sql.Contains("SYS."))
+            {
+                return true;
+            }
+
+            // 表结构检查相关的查询
+            if (sql.Contains("SHOW TABLES") ||
+                sql.Contains("SHOW COLUMNS") ||
+                sql.Contains("DESCRIBE ") ||
+                sql.Contains("EXPLAIN "))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 判断是否为业务表
+        /// </summary>
+        private static bool IsBusinessTable(string tableName)
+        {
+            if (string.IsNullOrEmpty(tableName))
+                return false;
+
+            // 定义业务表列表
+            var businessTables = new[]
+            {
+                "APP_LOGS",
+                "MES_INTERFACE_LOGS",
+                "WEB_INTERFACE_LOGS",
+                "USERS",
+                "DEVICE",
+                "PLC_CONFIG",
+                "PLC_ADDRESS_CONFIG",
+                "PLC_RW_CONFIG",
+                "GLOBAL_SETTING",
+                "PROJECT_SETTING",
+                "WORKSPACE_PROJECT"
+            };
+
+            return businessTables.Contains(tableName.ToUpper());
+        }
+
+        /// <summary>
+        /// 获取SQL操作类型
+        /// </summary>
+        private static string GetSqlOperation(string sql)
+        {
+            if (string.IsNullOrEmpty(sql))
+                return "UNKNOWN";
+
+            sql = sql.ToUpper().Trim();
+
+            if (sql.StartsWith("SELECT"))
+                return "查询";
+            if (sql.StartsWith("INSERT"))
+                return "插入";
+            if (sql.StartsWith("UPDATE"))
+                return "更新";
+            if (sql.StartsWith("DELETE"))
+                return "删除";
+            if (sql.StartsWith("CREATE"))
+                return "创建";
+            if (sql.StartsWith("ALTER"))
+                return "修改";
+            if (sql.StartsWith("DROP"))
+                return "删除";
+
+            return "操作";
+        }
     }
 }
-

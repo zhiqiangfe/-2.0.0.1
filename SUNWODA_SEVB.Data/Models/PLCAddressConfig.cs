@@ -4,7 +4,7 @@ namespace SUNWODA_SEVB.Data.Models
 {
     //[SugarIndex("plc_address_config_parameter_name", nameof(ParameterName), OrderByType.Desc, true)]
     [SugarTable("plc_address_config", "PLC读写地址配置表")]
-    public class PLCAddressConfigModel
+    public class PLCAddressConfig
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

@@ -1,7 +1,7 @@
 ﻿
 namespace SUNWODA_SEVB.Core.Entities
 {
-    public class GlobalSetting
+    public class GlobalSettingModel
     {
         public int ID { get; set; }
 
@@ -14,9 +14,9 @@ namespace SUNWODA_SEVB.Core.Entities
         public string Unit { get; set; } = null!;
 
         public string Remark { get; set; } = null!;
-        public GlobalSetting() { }
+        public GlobalSettingModel() { }
 
-        public GlobalSetting(string name, string value, string type)
+        public GlobalSettingModel(string name, string value, string type)
         {
             Name = name;
             Value = value;

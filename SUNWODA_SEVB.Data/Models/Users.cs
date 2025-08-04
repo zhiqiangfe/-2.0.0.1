@@ -7,7 +7,7 @@ namespace SUNWODA_SEVB.Data.Models
     /// </summary>
     //[SugarIndex("users_name", nameof(UserName), OrderByType.Asc, true)]
     [SugarTable("Users", "用户表")]
-    public class UsersModel
+    public class Users
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

@@ -7,10 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Repositories\DataSeeder.cs" />
-    <Compile Remove="Repositories\IUserService.cs" />
-    <Compile Remove="Repositories\PlcRwConfigService.cs" />
-    <Compile Remove="Repositories\UserService.cs" />
+    <Compile Remove="Mappings\EntityMappingConfig.cs" />
   </ItemGroup>
 
   <ItemGroup>

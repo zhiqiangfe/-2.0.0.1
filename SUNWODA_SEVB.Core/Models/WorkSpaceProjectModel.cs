@@ -2,7 +2,7 @@
 namespace SUNWODA_SEVB.Core.Entities 
 {
 
-    public class WorkSpaceProject
+    public class WorkSpaceProjectModel
     {
         public int ID { get; set; }
 
@@ -11,8 +11,8 @@ namespace SUNWODA_SEVB.Core.Entities
         public bool IsEnabled { get; set; }
 
         public bool IsInitShow { get; set; }
-        public WorkSpaceProject() { }
-        public WorkSpaceProject(string vmClassName, bool isEnabled, bool isInitShow)
+        public WorkSpaceProjectModel() { }
+        public WorkSpaceProjectModel(string vmClassName, bool isEnabled, bool isInitShow)
         {
             VMClassName = vmClassName;
             IsEnabled = isEnabled;

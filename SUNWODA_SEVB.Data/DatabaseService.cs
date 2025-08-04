@@ -3,6 +3,7 @@ using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Data.Configurations;
 using SUNWODA_SEVB.Data.Models;
+using System.Reflection;
 
 namespace SUNWODA_SEVB.Data
 {
@@ -30,7 +31,7 @@ namespace SUNWODA_SEVB.Data
                 _logger.Info("数据库创建/检查完成");
 
                 // 创建表结构
-                CreateTables();
+                InitializeTables();
 
                 // 初始化基础数据
                 InitializeData();
@@ -45,15 +46,30 @@ namespace SUNWODA_SEVB.Data
             }
         }
 
-        private void CreateTables()
+        private void InitializeTables()
         {
-            // 创建表（如果不存在）
+            /*// 创建表（如果不存在）
             _db.CodeFirst.InitTables(
-                typeof(AppLogParameters)
+                typeof(AppLog)
                 //typeof(VariableParameters),
                 //typeof(PlcParameters)
             );
-            _logger.Info("数据表创建/检查完成");
+            _logger.Info("数据表创建/检查完成");*/
+            _logger.Info("开始创建/检查数据表...");
+
+            // 获取所有模型类型
+            var modelTypes = GetModelTypes();
+
+            if (modelTypes.Any())
+            {
+                // 批量创建表
+                _db.CodeFirst.InitTables(modelTypes.ToArray());
+                _logger.Info($"已创建/检查 {modelTypes.Count} 个数据表");
+            }
+            else
+            {
+                _logger.Warn("未找到任何数据模型类型");
+            }
         }
 
         private void InitializeData()
@@ -115,6 +131,27 @@ namespace SUNWODA_SEVB.Data
             //    _db.Insertable(defaultPlcParams).ExecuteCommand();
             //    _logger.Info("默认PLC参数初始化完成");
             //}
+        }
+
+        private List<Type> GetModelTypes()
+        {
+            try
+            {
+                // 获取当前程序集
+                var assembly = Assembly.GetExecutingAssembly();
+
+                // 获取 SUNWODA_SEVB.Data.Models 命名空间下的所有类型
+                return assembly.GetTypes()
+                    .Where(t => t.Namespace == "SUNWODA_SEVB.Data.Models" &&
+                               !t.IsAbstract &&
+                               !t.IsInterface)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"获取模型类型失败: {ex.Message}", ex);
+                return new List<Type>();
+            }
         }
 
         public void Backup(string backupPath)

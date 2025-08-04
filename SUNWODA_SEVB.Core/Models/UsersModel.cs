@@ -6,7 +6,7 @@ namespace SUNWODA_SEVB.Core.Entities
     /// 用户表
     /// </summary>
 
-    public class Users
+    public class UsersModel
     {
         public int ID { get; set; }
 
@@ -19,9 +19,9 @@ namespace SUNWODA_SEVB.Core.Entities
         public string? Remark { get; set; }
 
         public DateTime? LastLoginTime { get; set; }
-        public Users() { }
+        public UsersModel() { }
 
-        public Users(string userName, string password, int roleId)
+        public UsersModel(string userName, string password, int roleId)
         {
             UserName = userName;
             Password = password;

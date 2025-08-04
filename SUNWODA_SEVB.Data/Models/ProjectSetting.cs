@@ -5,7 +5,7 @@ namespace SUNWODA_SEVB.Data.Models
     //[SugarIndex("project_name", nameof(Name), OrderByType.Desc)]
     //[SugarIndex("belong_to_vm", nameof(BelongToVM), OrderByType.Desc)]
     [SugarTable("project_setting", "应用自定义配置表")]
-    public class ProjectSettingModel
+    public class ProjectSetting
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

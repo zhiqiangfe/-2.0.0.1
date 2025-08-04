@@ -1,9 +1,14 @@
 ﻿using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
 using System.Linq.Expressions;
+using Mapster;
 
 namespace SUNWODA_SEVB.Data.Repositories
 {
+    /// <summary>
+    /// 数据库的增删改查
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
     public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : class, new()
     {
         protected readonly ISqlSugarClient _db;

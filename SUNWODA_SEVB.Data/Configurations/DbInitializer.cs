@@ -43,19 +43,19 @@ namespace SUNWODA_SEVB.Data.Configurations
 
         private async Task SeedUsersAsync()
         {
-            var userCount = await _db.Queryable<UsersModel>().CountAsync();
+            var userCount = await _db.Queryable<Users>().CountAsync();
             if (userCount == 0)
             {
-                var defaultUsers = new List<UsersModel>
+                var defaultUsers = new List<Users>
                 {
-                    new UsersModel
+                    new Users
                     {
                         UserName = "admin",
                         Password = "admin123",//BCrypt.Net.BCrypt.HashPassword("admin123")
                         RoleId = 1,
                         Remark = "系统管理员"
                     },
-                    new UsersModel
+                    new Users
                     {
                         UserName = "operator",
                         Password = "operator123", //BCrypt.Net.BCrypt.HashPassword("operator123")
@@ -71,19 +71,19 @@ namespace SUNWODA_SEVB.Data.Configurations
 
         private async Task SeedGlobalSettingsAsync()
         {
-            var settingCount = await _db.Queryable<GlobalSettingModel>().CountAsync();
+            var settingCount = await _db.Queryable<GlobalSetting>().CountAsync();
             if (settingCount == 0)
             {
-                var defaultSettings = new List<GlobalSettingModel>
+                var defaultSettings = new List<GlobalSetting>
                 {
-                    new GlobalSettingModel
+                    new GlobalSetting
                     {
                         Name = "System.Version",
                         Value = "1.0.0",
                         Type = "String",
                         Remark = "系统版本号"
                     },
-                    new GlobalSettingModel
+                    new GlobalSetting
                     {
                         Name = "PLC.DefaultTimeout",
                         Value = "5000",
@@ -91,14 +91,14 @@ namespace SUNWODA_SEVB.Data.Configurations
                         Unit = "ms",
                         Remark = "PLC默认超时时间"
                     },
-                    new GlobalSettingModel
+                    new GlobalSetting
                     {
                         Name = "MES.ApiUrl",
                         Value = "http://localhost:8080/api",
                         Type = "String",
                         Remark = "MES接口地址"
                     },
-                    new GlobalSettingModel
+                    new GlobalSetting
                     {
                         Name = "Log.RetentionDays",
                         Value = "30",
@@ -115,10 +115,10 @@ namespace SUNWODA_SEVB.Data.Configurations
 
         private async Task SeedPLCConfigsAsync()
         {
-            var plcCount = await _db.Queryable<PLCConfigModel>().CountAsync();
+            var plcCount = await _db.Queryable<PLCConfig>().CountAsync();
             if (plcCount == 0)
             {
-                var defaultPLC = new PLCConfigModel
+                var defaultPLC = new PLCConfig
                 {
                     Name = "主PLC",
                     IP = "192.168.1.100",

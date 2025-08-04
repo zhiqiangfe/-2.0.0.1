@@ -4,7 +4,7 @@ namespace SUNWODA_SEVB.Data.Models
 {
     //[SugarIndex("workspace_project_vm_class_name", nameof(VMClassName), OrderByType.Desc, true)]
     [SugarTable("workspace_project", "应用表")]
-    public class WorkSpaceProjectModel
+    public class WorkSpaceProject
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

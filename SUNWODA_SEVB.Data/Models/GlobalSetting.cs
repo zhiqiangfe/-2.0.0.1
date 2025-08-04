@@ -9,7 +9,7 @@ namespace SUNWODA_SEVB.Data.Models
 {
     //[SugarIndex("global_setting_name", nameof(Name), OrderByType.Desc)]
     [SugarTable("global_setting", "全局配置表")]
-    public class GlobalSettingModel
+    public class GlobalSetting
     {
         [SugarColumn(ColumnName = "id", IsPrimaryKey = true, IsIdentity = true)]
         public int ID { get; set; }

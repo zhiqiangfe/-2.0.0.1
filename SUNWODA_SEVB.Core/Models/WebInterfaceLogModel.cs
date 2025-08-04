@@ -1,11 +1,12 @@
 ﻿
+
 namespace SUNWODA_SEVB.Core.Entities
 {
     /// <summary>
-    /// MES接口日志表
+    /// Web接口日志表
     /// </summary>
 
-    public class MesInterfaceLog
+    public class WebInterfaceLogModel
     {
         public int ID { get; set; }
 
@@ -24,15 +25,15 @@ namespace SUNWODA_SEVB.Core.Entities
         public long ConsumingTime { get; set; }
 
         public bool SuccessFlag { get; set; }
+        public WebInterfaceLogModel() { }
 
-        public MesInterfaceLog() { }
-        public MesInterfaceLog(string method, string inputJson = null!)
+        public WebInterfaceLogModel(string method, string inputJson = null!)
         {
             Method = method;
             InputJson = inputJson;
             StartTime = DateTime.Now;
         }
-        public void MESLog(bool success, string outputJson = null!)
+        public void WebLog(bool success, string outputJson = null!)
         {
             SuccessFlag = success;
             OutputJson = outputJson;

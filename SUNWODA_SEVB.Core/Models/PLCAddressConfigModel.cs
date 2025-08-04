@@ -2,7 +2,7 @@
 
 namespace SUNWODA_SEVB.Core.Entities
 {
-    public class PLCAddressConfig
+    public class PLCAddressConfigModel
     {
         public int ID { get; set; }
         public int PLCID { get; set; }
@@ -15,8 +15,8 @@ namespace SUNWODA_SEVB.Core.Entities
         public string Unit { get; set; } = null!;
         public string Remark { get; set; } = null!;
         public bool IsMonitor { get; set; }
-        public PLCAddressConfig() { }
-        public PLCAddressConfig(
+        public PLCAddressConfigModel() { }
+        public PLCAddressConfigModel(
             int plcID,
             int plcRWID,
             int categoryID,

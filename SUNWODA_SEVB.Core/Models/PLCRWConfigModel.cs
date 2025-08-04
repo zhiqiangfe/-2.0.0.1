@@ -3,7 +3,7 @@
 namespace SUNWODA_SEVB.Core.Entities
 {
 
-    public class PLCRWConfig
+    public class PLCRWConfigModel
     {       
         public int ID { get; set; }
 
@@ -25,9 +25,9 @@ namespace SUNWODA_SEVB.Core.Entities
 
         public bool IsEnable { get; set; }
 
-        public PLCRWConfig() { }
+        public PLCRWConfigModel() { }
 
-        public PLCRWConfig(
+        public PLCRWConfigModel(
             string name,
             int plcId,
             string areaName,
