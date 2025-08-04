@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DBUtility\DbHelperDapper.cs" />
-    <Compile Remove="DBUtility\DbHelperOleDb.cs" />
-    <Compile Remove="DBUtility\DbHelperSQLP.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.7" />
