@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SUNWODA_SEVB.Logging
+namespace SUNWODA_SEVB.Core.Services
 {
     /// <summary>
     /// 日志级别枚举
     /// </summary>
-    public enum LogLevel
+    public enum CoreLogLevel
     {
         /// <summary>
         /// 跟踪级别（最详细）
