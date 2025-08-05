@@ -1,12 +1,11 @@
-﻿
-namespace SUNWODA_SEVB.Core.Models
+﻿namespace SUNWODA_SEVB.Core.Models.Data
 {
     /// <summary>
     /// 应用程序日志表
     /// </summary>
     public class AppLogModel
     {
-      
+
         public int ID { get; set; }
 
         public DateTime LogTime { get; set; }

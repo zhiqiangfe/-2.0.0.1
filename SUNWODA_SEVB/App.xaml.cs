@@ -16,6 +16,7 @@ using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Data;
 using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Logging.Targets;
+using SUNWODA_SEVB.PLC;
 
 namespace SUNWODA_SEVB
 {
@@ -144,6 +145,8 @@ namespace SUNWODA_SEVB
 
             // 添加数据库服务
             services.AddSingleton<IDatabaseService, DatabaseService>();
+
+            services.AddSingleton<IPLCService, PLCService>();
 
             // 注册 ViewModels
             services.AddTransient<ViewModels.MainWindowViewModel>();

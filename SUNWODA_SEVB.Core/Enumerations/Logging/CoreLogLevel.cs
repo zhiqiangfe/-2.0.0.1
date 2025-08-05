@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SUNWODA_SEVB.Core.Services
+namespace SUNWODA_SEVB.Core.Enumerations.Logging
 {
     /// <summary>
     /// 日志级别枚举

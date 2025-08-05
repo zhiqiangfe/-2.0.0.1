@@ -1,10 +1,8 @@
-﻿
-
-namespace SUNWODA_SEVB.Core.Entities
+﻿namespace SUNWODA_SEVB.Core.Models.Data
 {
 
     public class PLCRWConfigModel
-    {       
+    {
         public int ID { get; set; }
 
         public string Name { get; set; } = null!;

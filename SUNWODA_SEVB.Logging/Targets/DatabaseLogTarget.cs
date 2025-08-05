@@ -1,14 +1,13 @@
 ﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
-using SUNWODA_SEVB.Core.Models;
-using SUNWODA_SEVB.Core.Entities;
 using SUNWODA_SEVB.Core.Interfaces;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using NLog.Common;
 using NLog.Targets.Wrappers;
+using SUNWODA_SEVB.Core.Models.Data;
 
 namespace SUNWODA_SEVB.Logging.Targets
 {

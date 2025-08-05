@@ -1,6 +1,6 @@
 ﻿using Mapster;
 using SUNWODA_SEVB.Core.Entities;
-using SUNWODA_SEVB.Core.Models;
+using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
 
 namespace SUNWODA_SEVB.Data.Mappings

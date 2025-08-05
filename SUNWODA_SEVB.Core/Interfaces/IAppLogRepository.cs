@@ -1,5 +1,4 @@
-﻿
-using SUNWODA_SEVB.Core.Models;
+﻿using SUNWODA_SEVB.Core.Models.Data;
 
 namespace SUNWODA_SEVB.Core.Interfaces
 {

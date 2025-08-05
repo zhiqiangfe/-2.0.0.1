@@ -2,19 +2,19 @@
 
 using Mapster;
 using SqlSugar;
-using SUNWODA_SEVB.Core.Entities;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
 
 namespace SUNWODA_SEVB.Data.Repositories
 {
-    public class MesInterfaceLogRepository : MappingRepository<Core.Entities.MesInterfaceLogModel, Models.MesInterfaceLog>, IMesInterfaceLogRepository
+    public class MesInterfaceLogRepository : MappingRepository<MesInterfaceLogModel, Models.MesInterfaceLog>, IMesInterfaceLogRepository
     {
         public MesInterfaceLogRepository(ISqlSugarClient db) : base(db)
         {
         }
 
-        public async Task<bool> BulkInsertAsync(List<Core.Entities.MesInterfaceLogModel> logs)
+        public async Task<bool> BulkInsertAsync(List<MesInterfaceLogModel> logs)
         {
             if (logs == null || logs.Count == 0) return true;
 

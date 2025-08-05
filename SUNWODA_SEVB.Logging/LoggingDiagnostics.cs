@@ -61,7 +61,7 @@ namespace SUNWODA_SEVB.Logging
                         // 尝试写入测试日志
                         try
                         {
-                            var testLog = new Core.Models.AppLogModel
+                            var testLog = new Core.Models.Data.AppLogModel
                             {
                                 LogLevel = "TEST",
                                 Logger = "DiagnosticsTest",
