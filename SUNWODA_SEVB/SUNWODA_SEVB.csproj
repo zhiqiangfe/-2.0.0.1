@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.7" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21" />
   </ItemGroup>
@@ -29,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SUNWODA_SEVB.Data\SUNWODA_SEVB.Data.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Logging\SUNWODA_SEVB.Logging.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.PLC\SUNWODA_SEVB.PLC.csproj" />
   </ItemGroup>
   
   <ItemGroup>

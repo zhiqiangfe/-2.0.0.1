@@ -5,19 +5,22 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:SUNWODA_SEVB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="clr-namespace:SUNWODA_SEVB.Component.UserControls;assembly=SUNWODA_SEVB.Component"
     Title="MainWindow"
     Width="800"
     Height="450"
     mc:Ignorable="d">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
+    <Grid>
+        <!--<Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- 标题 -->
+        -->
+        <!--  标题  -->
+        <!--
         <TextBlock Grid.Row="0"
                    Text="NLog 日志测试应用"
                    FontSize="24"
@@ -25,7 +28,9 @@
                    HorizontalAlignment="Center"
                    Margin="0,0,0,20" />
 
-        <!-- 按钮区域 -->
+        -->
+        <!--  按钮区域  -->
+        <!--
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
@@ -52,7 +57,9 @@
                     Margin="5" />
         </StackPanel>
 
-        <!-- 日志信息显示区域 -->
+        -->
+        <!--  日志信息显示区域  -->
+        <!--
         <Border Grid.Row="2"
                 BorderBrush="Gray"
                 BorderThickness="1"
@@ -66,12 +73,15 @@
             </ScrollViewer>
         </Border>
 
-        <!-- 状态栏 -->
+        -->
+        <!--  状态栏  -->
+        <!--
         <StatusBar Grid.Row="3"
                    Height="25">
             <StatusBarItem>
                 <TextBlock Text="{Binding StatusMessage}" />
             </StatusBarItem>
-        </StatusBar>
+        </StatusBar>-->
+        <uc:ModelViewerControl x:Name="modelViewer" />
     </Grid>
 </Window>

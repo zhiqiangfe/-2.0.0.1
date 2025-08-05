@@ -110,6 +110,11 @@ namespace SUNWODA_SEVB.Data
 
             // 注册特定仓储
             services.AddScoped<IAppLogRepository, AppLogRepository>();
+            services.AddScoped<IDeviceRepository, DeviceRepository>();
+            services.AddScoped<IGlobalSettingRepository, GlobalSettingRepository>();
+            services.AddScoped<IPLCAddressConfigRepository, PLCAddressConfigRepository>();
+            services.AddScoped<IPLCConfigRepository, PLCConfigRepository>();
+            services.AddScoped<IPLCRWConfigRepository, PLCRWConfigRepository>();
 
             return services;
         }

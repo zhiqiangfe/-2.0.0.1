@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SUNWODA_SEVB.Core\SUNWODA_SEVB.Core.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Logging\SUNWODA_SEVB.Logging.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.Tool\SUNWODA_SEVB.Tool.csproj" />
   </ItemGroup>
 
 </Project>

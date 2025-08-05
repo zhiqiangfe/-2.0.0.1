@@ -1,5 +1,5 @@
-﻿using SUNWODA_SEVB.Core.Interfaces;
-using SUNWODA_SEVB.Core.Services;
+﻿using SUNWODA_SEVB.Core.Enumerations.Logging;
+using SUNWODA_SEVB.Core.Interfaces;
 using System;
 using System.Runtime.CompilerServices;
 using ILogger = NLog.ILogger;

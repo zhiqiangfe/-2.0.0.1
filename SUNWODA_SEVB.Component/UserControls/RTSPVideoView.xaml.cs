@@ -1,18 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using LibVLCSharp.Shared;
 using NLog;
+using SUNWODA_SEVB.Core.Models.Component;
 
 namespace SUNWODA_SEVB.Component.UserControls
 {
@@ -81,69 +71,20 @@ namespace SUNWODA_SEVB.Component.UserControls
             );
 
         /// <summary>
-        /// 是否正在播放
+        /// 视频信息
         /// </summary>
-        public bool IsPlaying
+        public VideoInfo VideoInfo
         {
-            get { return (bool)GetValue(IsPlayingProperty); }
-            private set { SetValue(IsPlayingProperty, value); }
+            get { return (VideoInfo)GetValue(VideoInfoProperty); }
+            set { SetValue(VideoInfoProperty, value); }
         }
 
-        public static readonly DependencyProperty IsPlayingProperty = DependencyProperty.Register(
-            "IsPlaying",
-            typeof(bool),
+        public static readonly DependencyProperty VideoInfoProperty = DependencyProperty.Register(
+            "VideoInfo",
+            typeof(VideoInfo),
             typeof(RTSPVideoView),
-            new PropertyMetadata(false)
+            new PropertyMetadata(new VideoInfo())
         );
-
-        /// <summary>
-        /// 视频状态
-        /// </summary>
-        public string VideoState
-        {
-            get { return (string)GetValue(VideoStateProperty); }
-            private set { SetValue(VideoStateProperty, value); }
-        }
-
-        public static readonly DependencyProperty VideoStateProperty = DependencyProperty.Register(
-            "VideoState",
-            typeof(string),
-            typeof(RTSPVideoView),
-            new PropertyMetadata("")
-        );
-
-        /// <summary>
-        /// 视频帧率
-        /// </summary>
-        public float Fps
-        {
-            get { return (float)GetValue(FpsProperty); }
-            private set { SetValue(FpsProperty, value); }
-        }
-
-        public static readonly DependencyProperty FpsProperty = DependencyProperty.Register(
-            "Fps",
-            typeof(float),
-            typeof(RTSPVideoView),
-            new PropertyMetadata(0f)
-        );
-
-        /// <summary>
-        /// 视频最后帧的系统时间
-        /// </summary>
-        public DateTime VideoLastFrameSystemTime
-        {
-            get { return (DateTime)GetValue(VideoCurrentSystemTimeProperty); }
-            private set { SetValue(VideoCurrentSystemTimeProperty, value); }
-        }
-
-        public static readonly DependencyProperty VideoCurrentSystemTimeProperty =
-            DependencyProperty.Register(
-                "VideoCurrentSystemTime",
-                typeof(DateTime),
-                typeof(RTSPVideoView),
-                new PropertyMetadata(DateTime.Now)
-            );
 
         public RTSPVideoView()
         {
@@ -159,7 +100,7 @@ namespace SUNWODA_SEVB.Component.UserControls
         /// </summary>
         private void InitializeVLC()
         {
-            Core.Initialize();
+            LibVLCSharp.Shared.Core.Initialize();
 
             _libVLC = new LibVLC();
 
@@ -213,15 +154,25 @@ namespace SUNWODA_SEVB.Component.UserControls
                     _currentMedia = new Media(_libVLC!, RTSPUrl, FromType.FromLocation);
 
                     // 添加媒体选项
-                    //_currentMedia.AddOption(":network-caching=1000");
-                    //_currentMedia.AddOption(":live-caching=1000");
-                    //_currentMedia.AddOption(":rtsp-tcp");
-                    ////_currentMedia.AddOption(":no-audio");
+                    // 优化延迟的媒体选项
+                    //_currentMedia.AddOption(":network-caching=300");    // 减少网络缓存到300ms
+                    //_currentMedia.AddOption(":live-caching=300");       // 减少直播缓存到300ms
+                    //_currentMedia.AddOption(":file-caching=300");       // 文件缓存
+                    //_currentMedia.AddOption(":rtsp-tcp");               // 使用TCP传输（更稳定）
+                    //_currentMedia.AddOption(":rtsp-frame-buffer-size=100000"); // 减小帧缓冲区
+                    //_currentMedia.AddOption(":h264-fps=30");            // 设置帧率
+                    //_currentMedia.AddOption(":no-audio");               // 如果不需要音频，禁用它
+                    //_currentMedia.AddOption(":clock-jitter=0");         // 减少时钟抖动
+                    //_currentMedia.AddOption(":clock-synchro=0");        // 禁用时钟同步
+                    //_currentMedia.AddOption(":avcodec-threads=6");      // 解码线程数
+                    //_currentMedia.AddOption(":avcodec-skiploopfilter=4"); // 跳过循环滤波
+                    //_currentMedia.AddOption(":avcodec-skip-frame=0");   // 不跳帧
+                    //_currentMedia.AddOption(":avcodec-hurry-up");       // 加速解码
 
                     _mediaPlayer.Play(_currentMedia);
                     Dispatcher.Invoke(() =>
                     {
-                        VideoLastFrameSystemTime = DateTime.Now;
+                        VideoInfo.VideoLastFrameSystemTime = DateTime.Now;
                     });
                 }
                 else
@@ -320,16 +271,15 @@ namespace SUNWODA_SEVB.Component.UserControls
                     return;
                 Dispatcher.Invoke(() =>
                 {
-                    VideoState = _mediaPlayer.State.ToString();
-                    Fps = _mediaPlayer.Fps;
-                    IsPlaying = _mediaPlayer.IsPlaying;
+                    VideoInfo.IsPlaying = _mediaPlayer.IsPlaying;
+                    VideoInfo.VideoState = _mediaPlayer.State.ToString();
+                    VideoInfo.Fps = _mediaPlayer.Fps;
                 });
             }
             catch (Exception ex)
             {
                 Logger?.Error(ex, "更新视频信息错误");
             }
-            
         }
 
         #region 事件处理
@@ -449,7 +399,7 @@ namespace SUNWODA_SEVB.Component.UserControls
         {
             Dispatcher.Invoke(() =>
             {
-                VideoLastFrameSystemTime = DateTime.Now;
+                VideoInfo.VideoLastFrameSystemTime = DateTime.Now;
             });
         }
 

@@ -1,8 +1,8 @@
 ﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
+using SUNWODA_SEVB.Core.Enumerations.Logging;
 using SUNWODA_SEVB.Core.Interfaces;
-using SUNWODA_SEVB.Core.Services;
 
 namespace SUNWODA_SEVB.Logging
 {

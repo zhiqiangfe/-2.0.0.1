@@ -11,4 +11,9 @@
     <PackageReference Include="HslCommunication" Version="12.3.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SUNWODA_SEVB.Core\SUNWODA_SEVB.Core.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.Tool\SUNWODA_SEVB.Tool.csproj" />
+  </ItemGroup>
+
 </Project>
