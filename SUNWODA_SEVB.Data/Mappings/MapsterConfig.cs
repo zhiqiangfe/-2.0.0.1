@@ -38,92 +38,92 @@ namespace SUNWODA_SEVB.Data.Mappings
             //.Map(dest => dest.Exception, src => src.Exception);
 
             // Device映射配置
-            TypeAdapterConfig<DeviceModel, DeviceModel>
+            TypeAdapterConfig<DeviceModel, Device>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<DeviceModel, DeviceModel>
+            TypeAdapterConfig<Device, DeviceModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // GlobalSetting映射配置
-            TypeAdapterConfig<GlobalSettingModel, GlobalSettingModel>
+            TypeAdapterConfig<GlobalSettingModel, GlobalSetting>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<GlobalSettingModel, GlobalSettingModel>
+            TypeAdapterConfig<GlobalSetting, GlobalSettingModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // MesInterfaceLog映射配置
-            TypeAdapterConfig<MesInterfaceLogModel, MesInterfaceLogModel>
+            TypeAdapterConfig<MesInterfaceLogModel, MesInterfaceLog>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<MesInterfaceLogModel, MesInterfaceLogModel>
+            TypeAdapterConfig<MesInterfaceLog, MesInterfaceLogModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // PLCAddressConfig映射配置
-            TypeAdapterConfig<PLCAddressConfigModel, PLCAddressConfigModel>
+            TypeAdapterConfig<PLCAddressConfigModel, PLCAddressConfig>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<PLCAddressConfigModel, PLCAddressConfigModel>
+            TypeAdapterConfig<PLCAddressConfig, PLCAddressConfigModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // PLCConfig映射配置
-            TypeAdapterConfig<PLCConfigModel, PLCConfigModel>
+            TypeAdapterConfig<PLCConfigModel, PLCConfig>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<PLCConfigModel, PLCConfigModel>
+            TypeAdapterConfig<PLCConfig, PLCConfigModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // PLCRWConfig映射配置
-            TypeAdapterConfig<PLCRWConfigModel, PLCRWConfigModel>
+            TypeAdapterConfig<PLCRWConfigModel, PLCRWConfig>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<PLCRWConfigModel, PLCRWConfigModel>
+            TypeAdapterConfig<PLCRWConfig, PLCRWConfigModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // ProjectSetting映射配置
-            TypeAdapterConfig<ProjectSettingModel, ProjectSettingModel>
+            TypeAdapterConfig<ProjectSettingModel, ProjectSetting>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<ProjectSettingModel, ProjectSettingModel>
+            TypeAdapterConfig<ProjectSetting, ProjectSettingModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // User映射配置
-            TypeAdapterConfig<UsersModel, UsersModel>
+            TypeAdapterConfig<UsersModel, Users>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<UsersModel, UsersModel>
+            TypeAdapterConfig<Users, UsersModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // WebInterfaceLog映射配置
-            TypeAdapterConfig<WebInterfaceLogModel, WebInterfaceLogModel>
+            TypeAdapterConfig<WebInterfaceLogModel, WebInterfaceLog>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<WebInterfaceLogModel, WebInterfaceLogModel>
+            TypeAdapterConfig<WebInterfaceLog, WebInterfaceLogModel>
                 .NewConfig()
                 .PreserveReference(true);
 
             // WorkSpaceProject映射配置
-            TypeAdapterConfig<WorkSpaceProjectModel, WorkSpaceProjectModel>
+            TypeAdapterConfig<WorkSpaceProjectModel, WorkSpaceProject>
                 .NewConfig()
                 .PreserveReference(true);
 
-            TypeAdapterConfig<WorkSpaceProjectModel, WorkSpaceProjectModel>
+            TypeAdapterConfig<WorkSpaceProject, WorkSpaceProjectModel>
                 .NewConfig()
                 .PreserveReference(true);
 

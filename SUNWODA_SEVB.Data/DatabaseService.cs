@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Data.Configurations;
 using SUNWODA_SEVB.Data.Models;
-using System.Reflection;
 
 namespace SUNWODA_SEVB.Data
 {
@@ -13,7 +13,11 @@ namespace SUNWODA_SEVB.Data
         private readonly ILoggerService<DatabaseService> _logger;
         private readonly IConfiguration _configuration;
 
-        public DatabaseService(ISqlSugarClient db, ILoggerService<DatabaseService> logger, IConfiguration configuration)
+        public DatabaseService(
+            ISqlSugarClient db,
+            ILoggerService<DatabaseService> logger,
+            IConfiguration configuration
+        )
         {
             _db = db;
             _logger = logger;
@@ -68,6 +72,36 @@ namespace SUNWODA_SEVB.Data
         private void InitializeData()
         {
             // 初始化默认的变量参数
+            var globalConfigs = _db.Queryable<GlobalSetting>();
+            var b = globalConfigs.Any(it => it.Name == "IsCycleReadPLC");
+            if (!globalConfigs.Any(it => it.Name == "IsCycleReadPLC"))
+            {
+                _db.Insertable(
+                        new GlobalSetting
+                        {
+                            Name = "IsCycleReadPLC",
+                            Value = "true",
+                            Type = "bool",
+                            Remark = "是否开启循环读取PLC",
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            if (!globalConfigs.Any(it => it.Name == "IsCycleWritePLC"))
+            {
+                _db.Insertable(
+                        new GlobalSetting
+                        {
+                            Name = "IsCycleWritePLC",
+                            Value = "true",
+                            Type = "bool",
+                            Remark = "是否开启循环读取PLC",
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+
+            _logger.Info("GlobalSetting默认变量参数初始化完成");
             //if (!_db.Queryable<VariableParameters>().Any())
             //{
             //    var defaultVariables = new List<VariableParameters>
@@ -134,10 +168,11 @@ namespace SUNWODA_SEVB.Data
                 var assembly = Assembly.GetExecutingAssembly();
 
                 // 获取 SUNWODA_SEVB.Data.Models 命名空间下的所有类型
-                return assembly.GetTypes()
-                    .Where(t => t.Namespace == "SUNWODA_SEVB.Data.Models" &&
-                               !t.IsAbstract &&
-                               !t.IsInterface)
+                return assembly
+                    .GetTypes()
+                    .Where(t =>
+                        t.Namespace == "SUNWODA_SEVB.Data.Models" && !t.IsAbstract && !t.IsInterface
+                    )
                     .ToList();
             }
             catch (Exception ex)
@@ -153,7 +188,8 @@ namespace SUNWODA_SEVB.Data
             {
                 _logger.Info($"开始备份数据库到: {backupPath}");
                 // MySQL备份逻辑
-                var sql = $"mysqldump -h{_db.CurrentConnectionConfig.ConnectionString} > {backupPath}";
+                var sql =
+                    $"mysqldump -h{_db.CurrentConnectionConfig.ConnectionString} > {backupPath}";
                 // 实际实现需要调用MySQL备份命令
                 _logger.Info("数据库备份完成");
             }
