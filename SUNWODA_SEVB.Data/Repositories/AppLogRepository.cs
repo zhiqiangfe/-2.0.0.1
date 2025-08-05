@@ -9,11 +9,16 @@ namespace SUNWODA_SEVB.Data.Repositories
     public class AppLogRepository : MappingRepository<AppLogModel, AppLog>, IAppLogRepository
     {
         private readonly ILoggerService<AppLogRepository> _logger;
+        private static bool _hasLoggedInit = false;
 
         public AppLogRepository(ISqlSugarClient db, ILoggerService<AppLogRepository> logger) : base(db)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            //_logger.Info("AppLogRepository 已初始化", true);
+            if (!_hasLoggedInit)
+            {
+                _hasLoggedInit = true;
+                _logger.Info("AppLogRepository 首次初始化", true);
+            }
         }
 
         public async Task<bool> BulkInsertAsync(List<AppLogModel> logs)
