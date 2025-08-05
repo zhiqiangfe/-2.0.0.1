@@ -19,7 +19,7 @@ namespace SUNWODA_SEVB.Logging
             if (config == null) return string.Empty;
 
             var fileTarget = config.AllTargets
-                                  .OfType<NLog.Targets.FileTarget>()
+                                  .OfType<FileTarget>()
                                   .FirstOrDefault();
 
             if (fileTarget == null) return string.Empty;
@@ -29,7 +29,7 @@ namespace SUNWODA_SEVB.Logging
                 var logEventInfo = new LogEventInfo
                 {
                     TimeStamp = date,
-                    Level = NLog.LogLevel.Info,
+                    Level = LogLevel.Info,
                     LoggerName = "LogManagementService"
                 };
 
@@ -180,7 +180,7 @@ namespace SUNWODA_SEVB.Logging
                         var logEventInfo = new LogEventInfo
                         {
                             TimeStamp = DateTime.Now,
-                            Level = NLog.LogLevel.Info,
+                            Level = LogLevel.Info,
                             LoggerName = "LogManagementService"
                         };
                         string renderedFileName = fileTarget.FileName.Render(logEventInfo);
@@ -326,14 +326,10 @@ namespace SUNWODA_SEVB.Logging
             }
         }
 
-
         public void Reconfigure()
         {
             LogManager.Configuration = LogManager.Configuration;
         }
-
-        
-
 
     }
 }

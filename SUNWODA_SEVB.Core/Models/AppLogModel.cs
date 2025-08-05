@@ -19,6 +19,8 @@ namespace SUNWODA_SEVB.Core.Models
 
         public string? Exception { get; set; }
 
+        public bool IsToDatabase { get; set; } = false;
+
         public AppLogModel() { }
         public AppLogModel(string logLevel, string logger, string message)
         {
