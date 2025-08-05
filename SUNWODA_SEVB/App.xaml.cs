@@ -102,6 +102,19 @@ namespace SUNWODA_SEVB
 
                 appLogger.Info("数据库初始化成功");
 
+                // 初始化PLC
+                var plcService = _host.Services.GetRequiredService<IPLCService>();
+                var isInitPlcs = await plcService.InitPlcs();
+                if (!isInitPlcs)
+                {
+                    appLogger.Error("PLC初始化失败，应用程序将退出");
+                    MessageBox.Show("PLC初始化失败！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Shutdown();
+                    return;
+                }
+
+                appLogger.Info("PLC初始化成功");
+
                 // 记录应用启动
 
                 appLogger.Info("========== 应用程序启动 ==========",true);

@@ -16,6 +16,6 @@ namespace SUNWODA_SEVB.Core.Interfaces
         /// <summary>
         /// 初始化PLC
         /// </summary>
-        void InitPlcs();
+        Task<bool> InitPlcs();
     }
 }

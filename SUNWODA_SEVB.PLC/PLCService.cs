@@ -623,95 +623,108 @@ namespace SUNWODA_SEVB.PLC
         /// <summary>
         /// 初始化PLC
         /// </summary>
-        public async void InitPlcs()
+        public async Task<bool> InitPlcs()
         {
-            HSLAuthorization();
-            var plcInfoList = await _pLcConfigRepository.GetEnabledConfigsAsync();
-            var plcCount = 0;
-            var plcAddressCount = 0;
-            foreach (var plcInfo in plcInfoList)
+            try
             {
-                if (plcInfo.IsEnable)
+                _logger.Info("PLC开始初始化");
+                HSLAuthorization();
+                var plcInfoList = await _pLcConfigRepository.GetEnabledConfigsAsync();
+                var plcCount = 0;
+                var plcAddressCount = 0;
+                foreach (var plcInfo in plcInfoList)
                 {
-                    var plcBrandSpecificationProtocal = ToPLCBrandSpecificationProtocal(
-                        plcInfo.BrandSpecificationProtocal
-                    );
-                    var dataSortRule = ToDataSortRule(plcInfo.DataSortRule);
-                    AddPLC(
-                        new PLC(
-                            plcInfo.ID,
-                            plcInfo.Name,
-                            plcBrandSpecificationProtocal,
-                            plcInfo.IP,
-                            plcInfo.Port,
-                            dataSortRule,
-                            plcInfo.CycleReadTime,
-                            plcInfo.CycleWriteTime
-                        )
-                    );
-                    plcCount++;
-
-                    var plcRWConfigList = await _plcRWConfigRepository.GetEnabledConfigsAsync(
-                        plcInfo.ID
-                    );
-                    PLCRWConfigModels.AddRange(plcRWConfigList);
-                    var plcAddressConfigList =
-                        await _plcAddressConfigRepository.GetMonitorAddressesAsync(plcInfo.ID);
-                    foreach (var plcAddressConfig in plcAddressConfigList)
+                    if (plcInfo.IsEnable)
                     {
-                        var plcRWConfig = plcRWConfigList.FirstOrDefault(it =>
-                            it.ID == plcAddressConfig.PLCRWID
+                        var plcBrandSpecificationProtocal = ToPLCBrandSpecificationProtocal(
+                            plcInfo.BrandSpecificationProtocal
                         );
-                        if (plcAddressConfig.IsMonitor && plcRWConfig is not null)
+                        var dataSortRule = ToDataSortRule(plcInfo.DataSortRule);
+                        AddPLC(
+                            new PLC(
+                                plcInfo.ID,
+                                plcInfo.Name,
+                                plcBrandSpecificationProtocal,
+                                plcInfo.IP,
+                                plcInfo.Port,
+                                dataSortRule,
+                                plcInfo.CycleReadTime,
+                                plcInfo.CycleWriteTime
+                            )
+                        );
+                        plcCount++;
+
+                        var plcRWConfigList = await _plcRWConfigRepository.GetEnabledConfigsAsync(
+                            plcInfo.ID
+                        );
+                        PLCRWConfigModels.AddRange(plcRWConfigList);
+                        var plcAddressConfigList =
+                            await _plcAddressConfigRepository.GetMonitorAddressesAsync(plcInfo.ID);
+                        foreach (var plcAddressConfig in plcAddressConfigList)
                         {
-                            PLCRWAddressTable!.Add(
-                                new PLCRWAddress(
-                                    plcAddressConfig.ID,
-                                    plcAddressConfig.PLCID,
-                                    plcAddressConfig.PLCRWID,
-                                    plcAddressConfig.CategoryID,
-                                    plcAddressConfig.ParameterName,
-                                    plcAddressConfig.Type,
-                                    plcAddressConfig.Length,
-                                    plcAddressConfig.Address,
-                                    plcAddressConfig.Unit,
-                                    plcAddressConfig.Remark,
-                                    GetAddressNumber(plcAddressConfig.Address)
-                                        - plcRWConfig.StartAddress.ToInt()
-                                )
+                            var plcRWConfig = plcRWConfigList.FirstOrDefault(it =>
+                                it.ID == plcAddressConfig.PLCRWID
                             );
-                            plcAddressCount++;
+                            if (plcAddressConfig.IsMonitor && plcRWConfig is not null)
+                            {
+                                PLCRWAddressTable!.Add(
+                                    new PLCRWAddress(
+                                        plcAddressConfig.ID,
+                                        plcAddressConfig.PLCID,
+                                        plcAddressConfig.PLCRWID,
+                                        plcAddressConfig.CategoryID,
+                                        plcAddressConfig.ParameterName,
+                                        plcAddressConfig.Type,
+                                        plcAddressConfig.Length,
+                                        plcAddressConfig.Address,
+                                        plcAddressConfig.Unit,
+                                        plcAddressConfig.Remark,
+                                        GetAddressNumber(plcAddressConfig.Address)
+                                            - plcRWConfig.StartAddress.ToInt()
+                                    )
+                                );
+                                plcAddressCount++;
+                            }
                         }
                     }
                 }
-            }
-            _logger.Info($"加载PLC设备数量：{plcCount}");
-            _logger.Info($"加载PLC地址数量：{plcAddressCount}");
+                _logger.Info($"加载PLC设备数量：{plcCount}");
+                _logger.Info($"加载PLC地址数量：{plcAddressCount}");
 
-            PLCConnect();
+                PLCConnect();
 
-            ThreadManager
-                .AddThread(
-                    "PLC状态监控线程",
-                    new ThreadTaskCancelSignal(),
-                    (cancelSignal) =>
-                    {
-                        foreach (var plc in PLCs)
-                        {
-                            ConnectInfos!.Add(new ConnectInfo(plc.Name, plc.IsConnect));
-                        }
-                        while (!cancelSignal.CancelSignal)
+                ThreadManager
+                    .AddThread(
+                        "PLC状态监控线程",
+                        new ThreadTaskCancelSignal(),
+                        (cancelSignal) =>
                         {
                             foreach (var plc in PLCs)
                             {
-                                ConnectInfos!.FirstOrDefault(it => it.Name == plc.Name)!.Status =
-                                    plc.IsConnect;
+                                ConnectInfos!.Add(new ConnectInfo(plc.Name, plc.IsConnect));
                             }
-                            Thread.Sleep(100);
+                            while (!cancelSignal.CancelSignal)
+                            {
+                                foreach (var plc in PLCs)
+                                {
+                                    ConnectInfos!.FirstOrDefault(it => it.Name == plc.Name)!.Status =
+                                        plc.IsConnect;
+                                }
+                                Thread.Sleep(100);
+                            }
                         }
-                    }
-                )
-                .Start();
+                    )
+                    .Start();
+
+                _logger.Info("初始化PLC完成");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("初始化PLC失败", ex);
+                return false;
+            }
+            
         }
     }
 }
