@@ -53,6 +53,7 @@ namespace SUNWODA_SEVB
                     })
                     .Build();
 
+                var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
                 // 正确加载 NLog 配置
                 var env = _host.Services.GetRequiredService<IHostEnvironment>();
                 var config = _host.Services.GetRequiredService<IConfiguration>();
@@ -86,16 +87,8 @@ namespace SUNWODA_SEVB
                 // 初始化NLog的数据库目标
                 InitializeNLogDatabaseTarget();
 
-                // 记录应用启动
-                var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
-                appLogger.Info("========== 应用程序启动 ==========");
-                appLogger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
-                appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
-                appLogger.Info($"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}");
-
                 // 测试数据库日志
-                await TestDatabaseLogging();
+                //await TestDatabaseLogging();
 
                 // 初始化数据库
                 var databaseService = _host.Services.GetRequiredService<IDatabaseService>();
@@ -108,6 +101,16 @@ namespace SUNWODA_SEVB
                 }
 
                 appLogger.Info("数据库初始化成功");
+
+                // 记录应用启动
+
+                appLogger.Info("========== 应用程序启动 ==========",true);
+                appLogger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}", true);
+                appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
+                appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
+                appLogger.Info($"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}");
+
+
 
                 // 设置全局异常处理
                 SetupGlobalExceptionHandling();
@@ -123,7 +126,7 @@ namespace SUNWODA_SEVB
             {
                 // 启动失败时记录日志
                 var logger = LogManager.GetLogger("AppStartup");
-                logger.Fatal(ex, "应用程序启动失败");
+                logger.Fatal(ex, "应用程序启动失败", true);
                 MessageBox.Show($"应用程序启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown();
             }
@@ -230,6 +233,9 @@ namespace SUNWODA_SEVB
             };
         }
 
+        /// <summary>
+        /// 启动日志清理任务
+        /// </summary>
         private void StartLogCleanupTask()
         {
             _ = Task.Run(async () =>
@@ -237,6 +243,25 @@ namespace SUNWODA_SEVB
                 var logger = _host?.Services?.GetService<ILoggerService<App>>();
                 var logManagementService = _host?.Services?.GetService<ILogManagementService>();
 
+                try
+                {
+                    // 程序启动时立即执行一次清理
+                    logger?.Info("应用启动，开始执行初始日志清理任务");
+
+                    // 清理启动时的文件日志 (90天)
+                    logManagementService?.CleanupOldLogs(90);
+
+                    // 清理启动时的数据库日志
+                    await CleanupDatabaseLogs(logger);
+
+                    logger?.Info("初始日志清理任务完成");
+                }
+                catch (Exception ex)
+                {
+                    logger?.Error("初始日志清理任务执行失败", ex);
+                }
+
+                // 定时清理任务循环
                 while (_host != null)
                 {
                     try
@@ -248,34 +273,100 @@ namespace SUNWODA_SEVB
 
                         await Task.Delay(delay);
 
-                        logger?.Info("开始执行日志清理任务");
+                        logger?.Info("开始执行定时日志清理任务");
 
-                        // 清理文件日志
+                        // 清理文件日志 (90天)
                         logManagementService?.CleanupOldLogs(90);
 
                         // 清理数据库日志
-                        using (var scope = _host.Services.CreateScope())
-                        {
-                            var appLogRepo = scope.ServiceProvider.GetRequiredService<IAppLogRepository>();
-                            var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
-                            var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
+                        await CleanupDatabaseLogs(logger);
 
-                            var appLogCount = await appLogRepo.DeleteOldLogsAsync(90);
-                            var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(90);
-                            var webLogCount = await webLogRepo.DeleteOldLogsAsync(90);
-
-                            logger?.Info($"已清理日志 - 应用日志: {appLogCount} 条, MES日志: {mesLogCount} 条, Web日志: {webLogCount} 条");
-                        }
-
-                        logger?.Info("日志清理任务完成");
+                        logger?.Info("定时日志清理任务完成");
                     }
                     catch (Exception ex)
                     {
-                        logger?.Error("日志清理任务执行失败", ex);
+                        logger?.Error("定时日志清理任务执行失败", ex);
                     }
                 }
             });
         }
+
+        /// <summary>
+        /// 清理数据库日志
+        /// </summary>
+        private async Task CleanupDatabaseLogs(ILoggerService<App>? logger)
+        {
+            try
+            {
+                using (var scope = _host?.Services?.CreateScope())
+                {
+                    if (scope == null) return;
+
+                    var appLogRepo = scope.ServiceProvider.GetRequiredService<IAppLogRepository>();
+                    //后续可以根据需要添加其他日志仓储接口
+                    //var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
+                    //var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
+
+                    // 清理应用日志
+                    var appLogResult = await CleanupAppLogs(appLogRepo, logger);
+
+                    //// 清理MES接口日志 (30天)
+                    //var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(30);
+
+                    //// 清理Web接口日志 (30天)  
+                    //var webLogCount = await webLogRepo.DeleteOldLogsAsync(30);
+
+                    logger?.Info($"数据库日志清理完成 - 应用日志: 按时间删除{appLogResult.TimeBasedCount}条,按大小删除{appLogResult.SizeBasedCount}条");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger?.Error("数据库日志清理失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 清理应用日志的结果
+        /// </summary>
+        private class AppLogCleanupResult
+        {
+            public int TimeBasedCount { get; set; }
+            public int SizeBasedCount { get; set; }
+        }
+
+        /// <summary>
+        /// 清理应用日志 - 支持按时间和大小两种方式
+        /// </summary>
+        private async Task<AppLogCleanupResult> CleanupAppLogs(IAppLogRepository appLogRepo, ILoggerService<App>? logger)
+        {
+            var result = new AppLogCleanupResult();
+
+            try
+            {
+                // 1. 按时间清理：删除3天前的日志
+                result.TimeBasedCount = await appLogRepo.DeleteOldLogsAsync(3);
+
+                // 2. 按大小清理：检查数据库大小，如果超过100M则删除更多日志
+                var databaseSizeMB = await appLogRepo.GetDatabaseSizeAsync();
+
+                if (databaseSizeMB > 100)
+                {
+                    logger?.Info($"应用日志数据库大小已达到 {databaseSizeMB:F2}MB，开始按大小清理");
+
+                    // 删除直到数据库小于100MB
+                    result.SizeBasedCount = await appLogRepo.DeleteLogsBySize(100);
+
+                    logger?.Info($"按大小清理完成，删除了 {result.SizeBasedCount} 条日志");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger?.Error("应用日志清理过程中发生错误", ex);
+            }
+
+            return result;
+        }
+
 
         protected override async void OnExit(ExitEventArgs e)
         {
@@ -283,8 +374,8 @@ namespace SUNWODA_SEVB
             {
                 // 记录应用退出
                 var appLogger = _host?.Services?.GetService<ILoggerService<App>>();
-                appLogger?.Info("========== 应用程序退出 ==========");
-                appLogger?.Info($"退出时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                appLogger?.Info("========== 应用程序退出 ==========", true);
+                appLogger?.Info($"退出时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}", true);
 
                 // 清理日志资源
                 var logManagementService = _host?.Services?.GetService<ILogManagementService>();

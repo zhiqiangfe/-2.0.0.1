@@ -48,13 +48,6 @@ namespace SUNWODA_SEVB.Data
 
         private void InitializeTables()
         {
-            /*// 创建表（如果不存在）
-            _db.CodeFirst.InitTables(
-                typeof(AppLog)
-                //typeof(VariableParameters),
-                //typeof(PlcParameters)
-            );
-            _logger.Info("数据表创建/检查完成");*/
             _logger.Info("开始创建/检查数据表...");
 
             // 获取所有模型类型

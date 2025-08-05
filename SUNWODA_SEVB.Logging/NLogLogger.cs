@@ -26,124 +26,124 @@ namespace SUNWODA_SEVB.Logging
 
         #region 基础日志方法（仅消息）
 
-        public void Trace(string message,
+        public void Trace(string message,bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Trace, message, null, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Trace, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Debug(string message,
+        public void Debug(string message, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Debug, message, null, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Debug, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Info(string message,
+        public void Info(string message, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Info, message, null, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Info, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Warn(string message,
+        public void Warn(string message, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Warn, message, null, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Warn, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Error(string message,
+        public void Error(string message, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Error, message, null, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Error, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Fatal(string message,
+        public void Fatal(string message, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Fatal, message, null, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Fatal, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
         #endregion
 
         #region 带异常的日志方法
 
-        public void Trace(string message, Exception exception,
+        public void Trace(string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Trace, message, exception, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Trace, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Debug(string message, Exception exception,
+        public void Debug(string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Debug, message, exception, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Debug, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Info(string message, Exception exception,
+        public void Info(string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Info, message, exception, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Info, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Warn(string message, Exception exception,
+        public void Warn(string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Warn, message, exception, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Warn, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Error(string message, Exception exception,
+        public void Error(string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Error, message, exception, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Error, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Fatal(string message, Exception exception,
+        public void Fatal(string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(NLog.LogLevel.Fatal, message, exception, memberName, filePath, lineNumber);
+            LogWithCallSite(NLog.LogLevel.Fatal, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
         #endregion
 
         #region 通用日志方法
 
-        public void Log(CoreLogLevel level, string message,
+        public void Log(CoreLogLevel level, string message, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(ConvertToNLogLevel(level), message, null, memberName, filePath, lineNumber);
+            LogWithCallSite(ConvertToNLogLevel(level), message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Log(CoreLogLevel level, string message, Exception exception,
+        public void Log(CoreLogLevel level, string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            LogWithCallSite(ConvertToNLogLevel(level), message, exception, memberName, filePath, lineNumber);
+            LogWithCallSite(ConvertToNLogLevel(level), message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
         #endregion
@@ -152,7 +152,7 @@ namespace SUNWODA_SEVB.Logging
         /// <summary>
         /// 记录到特殊日志文件
         /// </summary>
-        public void LogToSpecialFile(string fileName, string message, CoreLogLevel level = CoreLogLevel.Info,
+        public void LogToSpecialFile(string fileName, string message, CoreLogLevel level = CoreLogLevel.Info, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -166,6 +166,9 @@ namespace SUNWODA_SEVB.Logging
             // 设置特殊文件标记
             logEvent.Properties["SpecialFileName"] = fileName;
 
+            // 设置是否记录到数据库
+            logEvent.Properties["IsToDatabase"] = isToDatabase;
+
             // 设置调用位置信息
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -176,22 +179,22 @@ namespace SUNWODA_SEVB.Logging
             specialLogger.Log(typeof(NLogLogger<T>), logEvent);
         }
 
-        public void LogSpecial(CoreLogLevel level, string message,
+        public void LogSpecial(CoreLogLevel level, string message, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var logEvent = CreateLogEventWithCallSite(ConvertToNLogLevel(level), message, null, memberName, filePath, lineNumber);
+            var logEvent = CreateLogEventWithCallSite(ConvertToNLogLevel(level), message, null, isToDatabase, memberName, filePath, lineNumber);
             logEvent.Properties["LogToSpecialFile"] = true;
             Logger.Log(typeof(NLogLogger<T>), logEvent);
         }
 
-        public void LogSpecial(CoreLogLevel level, string message, Exception exception,
+        public void LogSpecial(CoreLogLevel level, string message, Exception exception, bool isToDatabase = false,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var logEvent = CreateLogEventWithCallSite(ConvertToNLogLevel(level), message, exception, memberName, filePath, lineNumber);
+            var logEvent = CreateLogEventWithCallSite(ConvertToNLogLevel(level), message, exception, isToDatabase, memberName, filePath, lineNumber);
             logEvent.Properties["LogToSpecialFile"] = true;
             Logger.Log(typeof(NLogLogger<T>), logEvent);
         }
@@ -256,21 +259,24 @@ namespace SUNWODA_SEVB.Logging
         /// <summary>
         /// 核心日志记录方法，包含调用位置信息
         /// </summary>
-        private void LogWithCallSite(NLog.LogLevel level, string message, Exception? exception,
+        private void LogWithCallSite(NLog.LogLevel level, string message, Exception? exception, bool isToDatabase,
             string memberName, string filePath, int lineNumber)
         {
-            var logEvent = CreateLogEventWithCallSite(level, message, exception, memberName, filePath, lineNumber);
+            var logEvent = CreateLogEventWithCallSite(level, message, exception, isToDatabase, memberName, filePath, lineNumber);
             Logger.Log(typeof(NLogLogger<T>), logEvent);
         }
 
         /// <summary>
         /// 创建包含调用位置信息的 LogEventInfo
         /// </summary>
-        private NLog.LogEventInfo CreateLogEventWithCallSite(NLog.LogLevel level, string message, Exception? exception,
+        private NLog.LogEventInfo CreateLogEventWithCallSite(NLog.LogLevel level, string message, Exception? exception, bool isToDatabase,
             string memberName, string filePath, int lineNumber)
         {
             var logEvent = new NLog.LogEventInfo(level, Logger.Name, message);
             logEvent.Exception = exception;
+
+            // 设置是否记录到数据库
+            logEvent.Properties["IsToDatabase"] = isToDatabase;
 
             // 设置调用位置信息
             if (!string.IsNullOrEmpty(filePath))

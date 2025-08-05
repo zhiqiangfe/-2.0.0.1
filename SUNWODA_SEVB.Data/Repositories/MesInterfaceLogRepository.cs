@@ -1,6 +1,4 @@
-﻿
-
-using Mapster;
+﻿using Mapster;
 using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Models.Data;

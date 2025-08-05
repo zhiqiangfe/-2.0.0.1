@@ -8,8 +8,12 @@ namespace SUNWODA_SEVB.Data.Repositories
 {
     public class AppLogRepository : MappingRepository<AppLogModel, AppLog>, IAppLogRepository
     {
-        public AppLogRepository(ISqlSugarClient db) : base(db)
+        private readonly ILoggerService<AppLogRepository> _logger;
+
+        public AppLogRepository(ISqlSugarClient db, ILoggerService<AppLogRepository> logger) : base(db)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            //_logger.Info("AppLogRepository 已初始化", true);
         }
 
         public async Task<bool> BulkInsertAsync(List<AppLogModel> logs)
@@ -29,8 +33,7 @@ namespace SUNWODA_SEVB.Data.Repositories
             catch (Exception ex)
             {
                 // 记录错误但不抛出，避免影响应用运行
-                NLog.LogManager.GetCurrentClassLogger()
-                    .Error(ex, $"批量插入日志失败，日志数量：{logs.Count}");
+                    _logger.Error( $"批量插入日志失败，日志数量：{logs.Count}", ex);
                 return false;
             }
         }
@@ -46,10 +49,99 @@ namespace SUNWODA_SEVB.Data.Repositories
             }
             catch (Exception ex)
             {
-                NLog.LogManager.GetCurrentClassLogger()
-                    .Error(ex, "删除过期日志失败");
+                _logger.Error("删除过期日志失败",ex);
                 return 0;
             }
         }
+
+        /// <summary>
+        /// 获取应用日志表的大小（MB）
+        /// </summary>
+        public async Task<double> GetDatabaseSizeAsync()
+        {
+            try
+            {
+                // 查询表的大小信息
+                var sql = @"
+                SELECT 
+                    ROUND(
+                        (SUM(LENGTH(loglever) + LENGTH(logger) + LENGTH(message) + 
+                             IFNULL(LENGTH(exception), 0)) + COUNT(*) * 50) / 1024.0 / 1024.0, 2
+                    ) as SizeMB
+                FROM app_logs";
+
+                var result = await _db.Ado.SqlQuerySingleAsync<double>(sql);
+                return result;
+            }
+            catch (Exception)
+            {
+                // 如果查询失败，返回0
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 按大小删除日志
+        /// </summary>
+        public async Task<int> DeleteLogsBySize(double targetSizeMB)
+        {
+            int totalDeleted = 0;
+            const int batchSize = 1000;
+
+            try
+            {
+                while (true)
+                {
+                    var currentSize = await GetDatabaseSizeAsync();
+                    if (currentSize <= targetSizeMB)
+                    {
+                        break;
+                    }
+
+                    // 批量删除最旧的记录
+                    var idsToDelete = await _db.Queryable<AppLog>()
+                        .OrderBy(log => log.LogTime) // 按时间排序，确保删除最旧的
+                        .Take(batchSize)
+                        .Select(log => log.ID)
+                        .ToListAsync();
+
+                    if (idsToDelete == null || idsToDelete.Count == 0)
+                    {
+                        break; // 没有更多记录可删除
+                    }
+
+                    // 2. 根据ID列表精确删除
+                    var deletedCount = await _db.Deleteable<AppLog>()
+                        .Where(log => idsToDelete.Contains(log.ID))
+                        .ExecuteCommandAsync();
+
+                    if (deletedCount == 0)
+                    {
+                        // 如果idsToDelete不为空但删除数量为0，说明可能存在数据不一致，跳出循环避免死循环
+                        break;
+                    }
+
+                    totalDeleted += deletedCount;
+
+                    // 设置一个上限，防止意外的无限循环
+                    if (totalDeleted > 100000)
+                    {
+                        _logger.Warn("按大小删除日志操作已删除超过10万条记录，已自动中止。");
+                        break;
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                // 记录错误但不抛出异常
+                _logger.Warn($"按大小删除日志时发生错误: {ex.Message}");
+            }
+
+            return totalDeleted;
+        }
+
+      
+
     }
 }

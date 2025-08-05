@@ -19,21 +19,23 @@ namespace SUNWODA_SEVB.Data.Mappings
             // AppLog映射配置
             TypeAdapterConfig<AppLogModel, AppLog>
                 .NewConfig()
-                .Map(dest => dest.ID, src => src.ID)
-                .Map(dest => dest.LogTime, src => src.LogTime)
-                .Map(dest => dest.LogLevel, src => src.LogLevel)
-                .Map(dest => dest.Logger, src => src.Logger)
-                .Map(dest => dest.Message, src => src.Message)
-                .Map(dest => dest.Exception, src => src.Exception);
+                .PreserveReference(true);
+            //.Map(dest => dest.ID, src => src.ID)
+            //.Map(dest => dest.LogTime, src => src.LogTime)
+            //.Map(dest => dest.LogLevel, src => src.LogLevel)
+            //.Map(dest => dest.Logger, src => src.Logger)
+            //.Map(dest => dest.Message, src => src.Message)
+            //.Map(dest => dest.Exception, src => src.Exception);
 
             TypeAdapterConfig<AppLog, AppLogModel>
                 .NewConfig()
-                .Map(dest => dest.ID, src => src.ID)
-                .Map(dest => dest.LogTime, src => src.LogTime)
-                .Map(dest => dest.LogLevel, src => src.LogLevel)
-                .Map(dest => dest.Logger, src => src.Logger)
-                .Map(dest => dest.Message, src => src.Message)
-                .Map(dest => dest.Exception, src => src.Exception);
+                .PreserveReference(true);
+            //.Map(dest => dest.ID, src => src.ID)
+            //.Map(dest => dest.LogTime, src => src.LogTime)
+            //.Map(dest => dest.LogLevel, src => src.LogLevel)
+            //.Map(dest => dest.Logger, src => src.Logger)
+            //.Map(dest => dest.Message, src => src.Message)
+            //.Map(dest => dest.Exception, src => src.Exception);
 
             // Device映射配置
             TypeAdapterConfig<DeviceModel, DeviceModel>

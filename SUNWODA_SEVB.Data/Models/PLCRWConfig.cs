@@ -37,30 +37,5 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "is_enable", ColumnDescription = "是否启用地址段")]
         public bool IsEnable { get; set; }
 
-
-        //public PLCRWConfig() { }
-
-        //public PLCRWConfig(
-        //    string name,
-        //    int plcId,
-        //    string areaName,
-        //    string startAddress,
-        //    ushort length,
-        //    string rwMode,
-        //    int addressType,
-        //    bool isEnable
-        //)
-        //{
-        //    Name = name;
-        //    PLCID = plcId;
-        //    AreaName = areaName;
-        //    StartAddress = startAddress;
-        //    Length = length;
-        //    RWMode = rwMode;
-        //    AddressType = addressType;
-        //    IsEnable = isEnable;
-        //}
-
-
     }
 }

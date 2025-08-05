@@ -29,20 +29,5 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "exception", ColumnDescription = "异常信息", IsNullable = true, ColumnDataType = "text")]
         public string? Exception { get; set; }
 
-        ///// <summary>
-        ///// 默认构造函数 (ORM需要)
-        ///// </summary>
-        //public AppLogs() { }
-
-        ///// <summary>
-        ///// 有参构造函数 (用于创建新日志)
-        ///// </summary>
-        //public AppLogs( string logLevel, string logger, string message)
-        //{
-        //    LogTime = DateTime.Now;
-        //    LogLevel = logLevel;
-        //    Logger = logger;
-        //    Message = message;
-        //}
     }
 }

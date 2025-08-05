@@ -194,19 +194,41 @@ namespace SUNWODA_SEVB.Logging.Targets
                 {
                     InitializeInstance();
                 }
+                //// 是否写入数据库
+                bool writeToDatabase = false;
+                if (logEvent.Properties.ContainsKey("IsToDatabase"))
+                {
+                    var value = logEvent.Properties["IsToDatabase"];
+                    if (value is bool boolValue)
+                    {
+                        writeToDatabase = boolValue;
+                    }
+                    else if (value != null)
+                    {
+                        writeToDatabase = Convert.ToBoolean(value);
+                    }
+                }
+
+                // 如果不写入数据库，则直接返回
+                if (!writeToDatabase)
+                {
+                    return;
+                }
 
                 var logType = Enum.TryParse<DatabaseLogType>(LogType, out var type) ? type : DatabaseLogType.AppLog;
 
                 switch (logType)
                 {
                     case DatabaseLogType.AppLog:
+                        
                         var appLog = new AppLogModel
                         {
                             LogTime = logEvent.TimeStamp,
                             LogLevel = logEvent.Level.Name,
                             Logger = string.IsNullOrEmpty(logEvent.CallerMemberName)? (logEvent.LoggerName ?? "Unknown"): $"{logEvent.LoggerName ?? "Unknown"}.{logEvent.CallerMemberName}",
                             Message = logEvent.FormattedMessage ?? string.Empty, // 只保存纯消息内容
-                            Exception = logEvent.Exception?.ToString()
+                            Exception = logEvent.Exception?.ToString(),
+                           
                         };
                         _logQueue.Enqueue(appLog);
                         break;
