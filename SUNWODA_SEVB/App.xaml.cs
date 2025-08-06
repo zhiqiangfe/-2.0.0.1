@@ -98,6 +98,7 @@ namespace SUNWODA_SEVB
                     appLogger.Error("数据库初始化失败，应用程序将退出");
                     MessageBox.Show("数据库初始化失败！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     Shutdown();
+                    Environment.Exit(1);
                     return;
                 }
 
@@ -115,6 +116,7 @@ namespace SUNWODA_SEVB
                     appLogger.Error("PLC初始化失败，应用程序将退出");
                     MessageBox.Show("PLC初始化失败！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     Shutdown();
+                    Environment.Exit(1);
                     return;
                 }
 
@@ -147,6 +149,7 @@ namespace SUNWODA_SEVB
                 logger.Fatal(ex, "应用程序启动失败", true);
                 MessageBox.Show($"应用程序启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown();
+                Environment.Exit(1);
             }
         }
 
