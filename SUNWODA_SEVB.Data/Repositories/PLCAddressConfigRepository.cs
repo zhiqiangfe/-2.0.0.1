@@ -18,9 +18,9 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<List<PLCAddressConfigModel>> GetMonitorAddressesAsync(int plcID)
         {
-            var modelList = await _db.Queryable<PLCAddressConfig>().Where(model => model.PLCID == plcID && model.IsMonitor).ToListAsync();
-            return modelList.Adapt<List<PLCAddressConfigModel>>();
-            //return await GetListAsync(model => model.PLCID == plcID && model.IsMonitor);
+            //var modelList = await _db.Queryable<PLCAddressConfig>().Where(model => model.PLCID == plcID && model.IsMonitor).ToListAsync();
+            //return modelList.Adapt<List<PLCAddressConfigModel>>();
+            return await GetListAsync(model => model.PLCID == plcID && model.IsMonitor);
         }
     }
 }

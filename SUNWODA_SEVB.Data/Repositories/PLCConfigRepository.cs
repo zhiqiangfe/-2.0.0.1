@@ -18,9 +18,9 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<List<PLCConfigModel>> GetEnabledConfigsAsync()
         {
-            var modelList = await _db.Queryable<PLCConfig>().Where(model => model.IsEnable).ToListAsync();
-            return modelList.Adapt<List<PLCConfigModel>>();
-            //return await GetListAsync(model => model.IsEnable);
+            //var modelList = await _db.Queryable<PLCConfig>().Where(model => model.IsEnable).ToListAsync();
+            //return modelList.Adapt<List<PLCConfigModel>>();
+            return await GetListAsync(model => model.IsEnable);
         }
     }
 }

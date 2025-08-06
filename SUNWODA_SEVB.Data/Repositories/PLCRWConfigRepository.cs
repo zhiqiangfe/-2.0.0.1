@@ -12,9 +12,9 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<List<PLCRWConfigModel>> GetEnabledConfigsAsync(int plcID)
         {
-            var modelList = await _db.Queryable<PLCRWConfig>().Where(model => model.PLCID == plcID && model.IsEnable).ToListAsync();
-            return modelList.Adapt<List<PLCRWConfigModel>>();
-            //return await GetListAsync(model => model.PLCID == plcID && model.IsEnable);
+            //var modelList = await _db.Queryable<PLCRWConfig>().Where(model => model.PLCID == plcID && model.IsEnable).ToListAsync();
+            //return modelList.Adapt<List<PLCRWConfigModel>>();
+            return await GetListAsync(model => model.PLCID == plcID && model.IsEnable);
         }
     }
 }
