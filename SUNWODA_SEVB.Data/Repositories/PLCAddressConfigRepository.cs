@@ -1,6 +1,8 @@
-﻿using SqlSugar;
+﻿using Mapster;
+using SqlSugar;
 using SUNWODA_SEVB.Core.Entities;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
 using System;
 using System.Collections.Generic;
@@ -16,7 +18,9 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<List<PLCAddressConfigModel>> GetMonitorAddressesAsync(int plcID)
         {
-            return await GetListAsync(model => model.PLCID == plcID && model.IsMonitor);
+            var modelList = await _db.Queryable<PLCAddressConfig>().Where(model => model.PLCID == plcID && model.IsMonitor).ToListAsync();
+            return modelList.Adapt<List<PLCAddressConfigModel>>();
+            //return await GetListAsync(model => model.PLCID == plcID && model.IsMonitor);
         }
     }
 }

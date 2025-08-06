@@ -73,7 +73,6 @@ namespace SUNWODA_SEVB.Data
         {
             // 初始化默认的变量参数
             var globalConfigs = _db.Queryable<GlobalSetting>();
-            var b = globalConfigs.Any(it => it.Name == "IsCycleReadPLC");
             if (!globalConfigs.Any(it => it.Name == "IsCycleReadPLC"))
             {
                 _db.Insertable(
@@ -102,6 +101,131 @@ namespace SUNWODA_SEVB.Data
             }
 
             _logger.Info("GlobalSetting默认变量参数初始化完成");
+
+            var plcConfigs = _db.Queryable<PLCConfig>();
+            if (!plcConfigs.Any(it => it.Name == "欧姆龙测试PLC"))
+            {
+                _db.Insertable(
+                        new PLCConfig()
+                        {
+                            Name = "欧姆龙测试PLC",
+                            DeviceID = 1,
+                            IP = "127.0.0.1",
+                            Port = 9600,
+                            BrandSpecificationProtocal = "Omron_Fins_TCP",
+                            CycleReadTime = 500,
+                            CycleWriteTime = 500,
+                            IsEnable = true,
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            _logger.Info("PLCConfig默认变量参数初始化完成");
+
+            var devices = _db.Queryable<Device>();
+            if (!devices.Any(it => it.Name == "测试设备1"))
+            {
+                _db.Insertable(
+                        new Device()
+                        {
+                            Name = "测试设备1",
+                            Number = "test-01",
+                            BaseName = "惠州",
+                            LineName = "测试线",
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            _logger.Info("Device默认变量参数初始化完成");
+
+            var plcRWConfigs = _db.Queryable<PLCRWConfig>();
+            if (!plcRWConfigs.Any(it => it.Name == "测试地址段1"))
+            {
+                _db.Insertable(
+                        new PLCRWConfig()
+                        {
+                            Name = "测试地址段1",
+                            PLCID = 1,
+                            AreaName = "D",
+                            StartAddress = "100",
+                            Length = 6,
+                            RWMode = "R",
+                            Cycle = 100,
+                            AddressType = 1,
+                            IsEnable = true,
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+
+            //if (!plcRWConfigs.Any(it => it.Name == "测试地址段2"))
+            //{
+            //    _db.Insertable(new PLCRWConfig()
+            //    {
+            //        Name = "测试地址段2",
+            //        PLCID = 1,
+            //        AreaName = "D",
+            //        StartAddress = "110",
+            //        Length = 26,
+            //        RWMode = "W",
+            //        AddressType = 1,
+            //        IsEnable = true
+            //    });
+            //}
+            _logger.Info("PLCRWConfig默认变量参数初始化完成");
+
+            var plcAddressConfigs = _db.Queryable<PLCAddressConfig>();
+            if (!plcAddressConfigs.Any(it => it.ParameterName == "测试地址1"))
+            {
+                _db.Insertable(
+                        new PLCAddressConfig()
+                        {
+                            PLCID = 1,
+                            PLCRWID = 1,
+                            CategoryID = 1,
+                            ParameterName = "测试地址1",
+                            Type = "float",
+                            Length = 1,
+                            Address = "D100",
+                            IsMonitor = true,
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            if (!plcAddressConfigs.Any(it => it.ParameterName == "测试地址2"))
+            {
+                _db.Insertable(
+                        new PLCAddressConfig()
+                        {
+                            PLCID = 1,
+                            PLCRWID = 1,
+                            CategoryID = 1,
+                            ParameterName = "测试地址2",
+                            Type = "int",
+                            Length = 1,
+                            Address = "D102",
+                            IsMonitor = true,
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            if (!plcAddressConfigs.Any(it => it.ParameterName == "测试地址3"))
+            {
+                _db.Insertable(
+                        new PLCAddressConfig()
+                        {
+                            PLCID = 1,
+                            PLCRWID = 1,
+                            CategoryID = 1,
+                            ParameterName = "测试地址3",
+                            Type = "float",
+                            Length = 1,
+                            Address = "D104",
+                            IsMonitor = true,
+                        }
+                    )
+                    .ExecuteCommand();
+            }
             //if (!_db.Queryable<VariableParameters>().Any())
             //{
             //    var defaultVariables = new List<VariableParameters>

@@ -1,8 +1,10 @@
-﻿using SqlSugar;
+﻿using Mapster;
+using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
 using SUNWODA_SEVB.Tool.Extension;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace SUNWODA_SEVB.Data.Repositories
 {
@@ -17,7 +19,9 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<GlobalSettingModel?> GetByNameAsync(string name)
         {
-            return await GetAsync(model => model.Name == name);
+            var model = await _db.Queryable<GlobalSetting>().FirstAsync(model => model.Name == name);
+            return model?.Adapt<GlobalSettingModel>();
+            //return await GetAsync(model => model.Name == name);
         }
 
         public async Task<dynamic?> GetSettingValueAsync(string name)

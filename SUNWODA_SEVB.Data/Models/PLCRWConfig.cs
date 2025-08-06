@@ -28,7 +28,7 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "rw_mode", ColumnDescription = "读写类型")]
         public string RWMode { get; set; } = null!;
 
-        [SugarColumn(ColumnName = "cycle", ColumnDescription = "读写周期")]
+        [SugarColumn(ColumnName = "cycle", ColumnDescription = "读写周期(ms)")]
         public int Cycle { get; set; }
 
         [SugarColumn(ColumnName = "address_type", ColumnDescription = "区分标签还是地址块", DefaultValue = "1")]

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace SUNWODA_SEVB.Data.Repositories
 {
@@ -17,7 +18,9 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<List<DeviceModel>> GetByBaseNameAsync(string baseName)
         {
-            return await GetListAsync(model => model.BaseName == baseName);
+            var modelList = await _db.Queryable<Device>().Where(model => model.BaseName == baseName).ToListAsync();
+            return modelList.Adapt<List<DeviceModel>>();
+            //return await GetListAsync(model => model.BaseName == baseName);
         }
 
         public async Task<DeviceModel?> GetByIDAsync(int id)
@@ -27,17 +30,23 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<List<DeviceModel>> GetByLineNameAsync(string lineName)
         {
-            return await GetListAsync(model => model.LineName == lineName);
+            var modelList = await _db.Queryable<Device>().Where(model => model.LineName == lineName).ToListAsync();
+            return modelList.Adapt<List<DeviceModel>>();
+            //return await GetListAsync(model => model.LineName == lineName);
         }
 
         public async Task<List<DeviceModel>> GetByNameAsync(string name)
         {
-            return await GetListAsync(model => model.Name == name);
+            var modelList = await _db.Queryable<Device>().Where(model => model.Name == name).ToListAsync();
+            return modelList.Adapt<List<DeviceModel>>();
+            //return await GetListAsync(model => model.Name == name);
         }
 
         public async Task<List<DeviceModel>> GetByNumberAsync(string number)
         {
-            return await GetListAsync(model => model.Number == number);
+            var modelList = await _db.Queryable<Device>().Where(model => model.Number == number).ToListAsync();
+            return modelList.Adapt<List<DeviceModel>>();
+            //return await GetListAsync(model => model.Number == number);
         }
     }
 }

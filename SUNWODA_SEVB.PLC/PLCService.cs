@@ -437,84 +437,204 @@ namespace SUNWODA_SEVB.PLC
             switch (dataType?.ToUpper())
             {
                 case "STRING":
-                    resultValue = byteTransform?.TransString(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength,
-                        Encoding.ASCII
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransString(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength,
+                            Encoding.ASCII
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransString(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength,
+                            Encoding.ASCII
+                        );
+                    }
                     break;
                 case "FLOAT":
-                    resultValue = byteTransform?.TransSingle(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransSingle(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransSingle(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "DOUBLE":
-
-                    resultValue = byteTransform?.TransDouble(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransDouble(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransDouble(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "BYTE":
-
-                    resultValue = byteTransform?.TransByte(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransByte(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransByte(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "SHORT":
-                    resultValue = byteTransform?.TransInt16(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransInt16(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransInt16(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "USHORT":
-                    resultValue = byteTransform?.TransUInt16(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransUInt16(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransUInt16(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "INT":
-                    resultValue = byteTransform?.TransInt32(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransInt32(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransInt32(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "UINT":
-                    resultValue = byteTransform?.TransUInt32(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransUInt32(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransUInt32(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "LONG":
-                    resultValue = byteTransform?.TransInt64(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransInt64(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransInt64(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "ULONG":
-                    resultValue = byteTransform?.TransUInt64(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransUInt64(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransUInt64(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 case "BOOL":
-                    resultValue = byteTransform?.TransBool(
-                        bytes,
-                        index * addressWordLength,
-                        variableLength
-                    );
+                    if (variableLength == 1)
+                    {
+                        resultValue = byteTransform?.TransBool(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        )[0];
+                    }
+                    else
+                    {
+                        resultValue = byteTransform?.TransBool(
+                            bytes,
+                            index * addressWordLength,
+                            variableLength
+                        );
+                    }
                     break;
                 default:
                     break;
@@ -707,8 +827,9 @@ namespace SUNWODA_SEVB.PLC
                             {
                                 foreach (var plc in PLCs)
                                 {
-                                    ConnectInfos!.FirstOrDefault(it => it.Name == plc.Name)!.Status =
-                                        plc.IsConnect;
+                                    ConnectInfos!
+                                        .FirstOrDefault(it => it.Name == plc.Name)!
+                                        .Status = plc.IsConnect;
                                 }
                                 Thread.Sleep(100);
                             }
@@ -724,7 +845,6 @@ namespace SUNWODA_SEVB.PLC
                 _logger.Error("初始化PLC失败", ex);
                 return false;
             }
-            
         }
     }
 }
