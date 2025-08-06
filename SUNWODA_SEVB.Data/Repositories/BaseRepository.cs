@@ -7,8 +7,8 @@ namespace SUNWODA_SEVB.Data.Repositories
     /// <summary>
     /// 数据库的增删改查（基础版无映射）
     /// </summary>
-    /// <typeparam name="TModel"></typeparam>
-    public class BaseRepository<TModel> : IRepository<TModel> where TModel : class, new()
+    /// <typeparam name="TEntity"></typeparam>
+    public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : class, new()
     {
         protected readonly ISqlSugarClient _db;
 
@@ -17,35 +17,35 @@ namespace SUNWODA_SEVB.Data.Repositories
             _db = db;
         }
 
-        public async Task<TModel?> GetByIdAsync(object id)
+        public async Task<TEntity?> GetByIdAsync(object id)
         {
-            return await _db.Queryable<TModel>().InSingleAsync(id);
+            return await _db.Queryable<TEntity>().InSingleAsync(id);
         }
 
-        public async Task<TModel?> GetAsync(Expression<Func<TModel, bool>> predicate)
+        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return await _db.Queryable<TModel>().FirstAsync(predicate);
+            return await _db.Queryable<TEntity>().FirstAsync(predicate);
         }
 
-        public async Task<List<TModel>> GetAllAsync()
+        public async Task<List<TEntity>> GetAllAsync()
         {
-            return await _db.Queryable<TModel>().ToListAsync();
+            return await _db.Queryable<TEntity>().ToListAsync();
         }
 
-        public async Task<List<TModel>> GetListAsync(Expression<Func<TModel, bool>> predicate)
+        public async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return await _db.Queryable<TModel>().Where(predicate).ToListAsync();
+            return await _db.Queryable<TEntity>().Where(predicate).ToListAsync();
         }
 
-        public async Task<(List<TModel> Items, int Total)> GetPagedAsync(
-            Expression<Func<TModel, bool>>? predicate = null,
+        public async Task<(List<TEntity> Items, int Total)> GetPagedAsync(
+            Expression<Func<TEntity, bool>>? predicate = null,
             int pageIndex = 1,
             int pageSize = 20,
-            Expression<Func<TModel, object>>? orderBy = null,
+            Expression<Func<TEntity, object>>? orderBy = null,
             bool isDesc = true)
         {
             RefAsync<int> total = 0;
-            var query = _db.Queryable<TModel>();
+            var query = _db.Queryable<TEntity>();
 
             if (predicate != null)
                 query = query.Where(predicate);
@@ -59,51 +59,51 @@ namespace SUNWODA_SEVB.Data.Repositories
             return (items, total.Value);
         }
 
-        public async Task<bool> AddAsync(TModel entity)
+        public async Task<bool> AddAsync(TEntity entity)
         {
             return await _db.Insertable(entity).ExecuteCommandAsync() > 0;
         }
 
-        public async Task<bool> AddRangeAsync(IEnumerable<TModel> entities)
+        public async Task<bool> AddRangeAsync(IEnumerable<TEntity> entities)
         {
             return await _db.Insertable(entities.ToList()).ExecuteCommandAsync() > 0;
         }
 
-        public async Task<bool> UpdateAsync(TModel entity)
+        public async Task<bool> UpdateAsync(TEntity entity)
         {
             return await _db.Updateable(entity).ExecuteCommandAsync() > 0;
         }
 
-        public async Task<bool> UpdateRangeAsync(IEnumerable<TModel> entities)
+        public async Task<bool> UpdateRangeAsync(IEnumerable<TEntity> entities)
         {
             return await _db.Updateable(entities.ToList()).ExecuteCommandAsync() > 0;
         }
 
-        public async Task<bool> DeleteAsync(TModel entity)
+        public async Task<bool> DeleteAsync(TEntity entity)
         {
             return await _db.Deleteable(entity).ExecuteCommandAsync() > 0;
         }
 
-        public async Task<bool> DeleteAsync(Expression<Func<TModel, bool>> predicate)
+        public async Task<bool> DeleteAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return await _db.Deleteable<TModel>().Where(predicate).ExecuteCommandAsync() > 0;
+            return await _db.Deleteable<TEntity>().Where(predicate).ExecuteCommandAsync() > 0;
         }
 
         public async Task<bool> DeleteByIdAsync(object id)
         {
-            return await _db.Deleteable<TModel>().In(id).ExecuteCommandAsync() > 0;
+            return await _db.Deleteable<TEntity>().In(id).ExecuteCommandAsync() > 0;
         }
 
-        public async Task<bool> ExistsAsync(Expression<Func<TModel, bool>> predicate)
+        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return await _db.Queryable<TModel>().AnyAsync(predicate);
+            return await _db.Queryable<TEntity>().AnyAsync(predicate);
         }
 
-        public async Task<int> CountAsync(Expression<Func<TModel, bool>>? predicate = null)
+        public async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
         {
             return predicate == null
-                ? await _db.Queryable<TModel>().CountAsync()
-                : await _db.Queryable<TModel>().CountAsync(predicate);
+                ? await _db.Queryable<TEntity>().CountAsync()
+                : await _db.Queryable<TEntity>().CountAsync(predicate);
         }
     }
 }

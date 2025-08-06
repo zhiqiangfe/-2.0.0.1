@@ -25,6 +25,7 @@ namespace SUNWODA_SEVB.PLC
         private readonly IPLCConfigRepository _pLcConfigRepository;
         private readonly IPLCRWConfigRepository _plcRWConfigRepository;
         private readonly IPLCAddressConfigRepository _plcAddressConfigRepository;
+        private readonly IGlobalSettingRepository _globalSettingRepository;
         public readonly object RWAddressTableLock = new object();
 
         public bool IsCycleReadPLC { get; set; }
@@ -60,13 +61,14 @@ namespace SUNWODA_SEVB.PLC
         )
         {
             _logger = loggerService;
+            _globalSettingRepository = globalSettingRepository;
             _pLcConfigRepository = pLcConfigRepository;
             _plcRWConfigRepository = pLcRWConfigRepository;
             _plcAddressConfigRepository = pLcAddressConfigRepository;
-            IsCycleReadPLC = globalSettingRepository.GetSettingValueAsync("IsCycleReadPLC").Result;
-            IsCycleWritePLC = globalSettingRepository
-                .GetSettingValueAsync("IsCycleWritePLC")
-                .Result;
+            //IsCycleReadPLC = globalSettingRepository.GetSettingValueAsync("IsCycleReadPLC").Result;
+            //IsCycleWritePLC = globalSettingRepository
+            //    .GetSettingValueAsync("IsCycleWritePLC")
+            //    .Result;
         }
 
         /// <summary>
@@ -748,6 +750,10 @@ namespace SUNWODA_SEVB.PLC
             try
             {
                 _logger.Info("PLC开始初始化");
+                // 在这里初始化配置
+                IsCycleReadPLC = await _globalSettingRepository.GetSettingValueAsync("IsCycleReadPLC");
+                IsCycleWritePLC = await _globalSettingRepository.GetSettingValueAsync("IsCycleWritePLC");
+
                 HSLAuthorization();
                 var plcInfoList = await _pLcConfigRepository.GetEnabledConfigsAsync();
                 var plcCount = 0;

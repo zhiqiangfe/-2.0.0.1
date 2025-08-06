@@ -18,8 +18,6 @@ namespace SUNWODA_SEVB.Data.Repositories
 
         public async Task<GlobalSettingModel?> GetByNameAsync(string name)
         {
-            //var model = await _db.Queryable<GlobalSetting>().FirstAsync(model => model.Name == name);
-            //return model?.Adapt<GlobalSettingModel>();
             return await GetAsync(model => model.Name == name);
         }
 
