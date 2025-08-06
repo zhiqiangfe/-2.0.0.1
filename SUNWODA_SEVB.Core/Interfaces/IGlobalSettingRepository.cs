@@ -44,6 +44,6 @@ namespace SUNWODA_SEVB.Core.Interfaces
         /// <param name="type"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        dynamic StringToAny(string type, string value);
+        //dynamic StringToAny(string type, string value);
     }
 }
