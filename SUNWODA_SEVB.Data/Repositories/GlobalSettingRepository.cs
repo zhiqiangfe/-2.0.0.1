@@ -3,6 +3,7 @@ using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
+using SUNWODA_SEVB.Data.Helpers;
 using SUNWODA_SEVB.Tool.Extension;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
@@ -27,19 +28,15 @@ namespace SUNWODA_SEVB.Data.Repositories
         public async Task<dynamic?> GetSettingValueAsync(string name)
         {
             var model = await GetByNameAsync(name);
-            
-            if (model is not null)
-                return StringToAny(model.Type, model.Value);
-            else
-                return null;
+            return model != null ? DataTypeConverter.StringToValue(model.Type, model.Value) : null;
         }
 
         public async Task<bool> UpdateSettingValueAsync(string name, dynamic value)
         {
             var model = await GetByNameAsync(name);
-            if (model is not null)
+            if (model != null)
             {
-                model.Value = value.ToSqlValue();
+                model.Value = DataTypeConverter.ValueToString(value);
                 return await UpdateAsync(model);
             }
             else
