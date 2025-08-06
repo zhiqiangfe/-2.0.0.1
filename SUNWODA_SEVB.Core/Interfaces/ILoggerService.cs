@@ -14,32 +14,32 @@ namespace SUNWODA_SEVB.Core.Interfaces
     {
         #region 基础日志方法
 
-        void Trace(string message, bool isToDatabase = false,
+        void Trace(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Debug(string message, bool isToDatabase = false,
+        void Debug(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Info(string message, bool isToDatabase = false,
+        void Info(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Warn(string message, bool isToDatabase = false,
+        void Warn(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Error(string message, bool isToDatabase = false,
+        void Error(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Fatal(string message, bool isToDatabase = false,
+        void Fatal(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
@@ -48,32 +48,32 @@ namespace SUNWODA_SEVB.Core.Interfaces
 
         #region 带异常的日志方法
 
-        void Trace(string message, Exception exception, bool isToDatabase = false,
+        void Trace(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Debug(string message, Exception exception, bool isToDatabase = false,
+        void Debug(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Info(string message, Exception exception, bool isToDatabase = false,
+        void Info(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Warn(string message, Exception exception, bool isToDatabase = false,
+        void Warn(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Error(string message, Exception exception, bool isToDatabase = false,
+        void Error(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Fatal(string message, Exception exception, bool isToDatabase = false,
+        void Fatal(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
@@ -82,12 +82,12 @@ namespace SUNWODA_SEVB.Core.Interfaces
 
         #region 通用日志方法
 
-        void Log(CoreLogLevel level, string message, bool isToDatabase = false,
+        void Log(CoreLogLevel level, string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        void Log(CoreLogLevel level, string message, Exception exception, bool isToDatabase = false,
+        void Log(CoreLogLevel level, string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
@@ -99,7 +99,7 @@ namespace SUNWODA_SEVB.Core.Interfaces
         /// <summary>
         /// 记录到特殊日志文件
         /// </summary>
-        void LogToSpecialFile(string fileName, string message, CoreLogLevel level = CoreLogLevel.Info, bool isToDatabase = false,
+        void LogToSpecialFile(string fileName, string message, CoreLogLevel level = CoreLogLevel.Info, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);

@@ -26,7 +26,7 @@ namespace SUNWODA_SEVB.Logging
 
         #region 基础日志方法（仅消息）
 
-        public void Trace(string message,bool isToDatabase = false,
+        public void Trace(string message,bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -34,7 +34,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Trace, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Debug(string message, bool isToDatabase = false,
+        public void Debug(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -42,7 +42,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Debug, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Info(string message, bool isToDatabase = false,
+        public void Info(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -50,7 +50,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Info, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Warn(string message, bool isToDatabase = false,
+        public void Warn(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -58,7 +58,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Warn, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Error(string message, bool isToDatabase = false,
+        public void Error(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -66,7 +66,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Error, message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Fatal(string message, bool isToDatabase = false,
+        public void Fatal(string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -78,7 +78,7 @@ namespace SUNWODA_SEVB.Logging
 
         #region 带异常的日志方法
 
-        public void Trace(string message, Exception exception, bool isToDatabase = false,
+        public void Trace(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -86,7 +86,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Trace, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Debug(string message, Exception exception, bool isToDatabase = false,
+        public void Debug(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -94,7 +94,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Debug, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Info(string message, Exception exception, bool isToDatabase = false,
+        public void Info(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -102,7 +102,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Info, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Warn(string message, Exception exception, bool isToDatabase = false,
+        public void Warn(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -110,7 +110,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Warn, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Error(string message, Exception exception, bool isToDatabase = false,
+        public void Error(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -118,7 +118,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(NLog.LogLevel.Error, message, exception, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Fatal(string message, Exception exception, bool isToDatabase = false,
+        public void Fatal(string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -130,7 +130,7 @@ namespace SUNWODA_SEVB.Logging
 
         #region 通用日志方法
 
-        public void Log(CoreLogLevel level, string message, bool isToDatabase = false,
+        public void Log(CoreLogLevel level, string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -138,7 +138,7 @@ namespace SUNWODA_SEVB.Logging
             LogWithCallSite(ConvertToNLogLevel(level), message, null, isToDatabase, memberName, filePath, lineNumber);
         }
 
-        public void Log(CoreLogLevel level, string message, Exception exception, bool isToDatabase = false,
+        public void Log(CoreLogLevel level, string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -152,7 +152,7 @@ namespace SUNWODA_SEVB.Logging
         /// <summary>
         /// 记录到特殊日志文件
         /// </summary>
-        public void LogToSpecialFile(string fileName, string message, CoreLogLevel level = CoreLogLevel.Info, bool isToDatabase = false,
+        public void LogToSpecialFile(string fileName, string message, CoreLogLevel level = CoreLogLevel.Info, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -179,7 +179,7 @@ namespace SUNWODA_SEVB.Logging
             specialLogger.Log(typeof(NLogLogger<T>), logEvent);
         }
 
-        public void LogSpecial(CoreLogLevel level, string message, bool isToDatabase = false,
+        public void LogSpecial(CoreLogLevel level, string message, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)
@@ -189,7 +189,7 @@ namespace SUNWODA_SEVB.Logging
             Logger.Log(typeof(NLogLogger<T>), logEvent);
         }
 
-        public void LogSpecial(CoreLogLevel level, string message, Exception exception, bool isToDatabase = false,
+        public void LogSpecial(CoreLogLevel level, string message, Exception exception, bool isToDatabase = true,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0)

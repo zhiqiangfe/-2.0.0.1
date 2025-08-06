@@ -1,8 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Data;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -101,7 +97,7 @@ namespace SUNWODA_SEVB
                 }
 
                 appLogger.Info("数据库初始化成功");
-
+               
                 // 初始化PLC
                 var plcService = _host.Services.GetRequiredService<IPLCService>();
                 var isInitPlcs = await plcService.InitPlcs();
@@ -110,6 +106,7 @@ namespace SUNWODA_SEVB
                     appLogger.Error("PLC初始化失败，应用程序将退出");
                     MessageBox.Show("PLC初始化失败！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     Shutdown();
+                    Environment.Exit(1);
                     return;
                 }
 
@@ -185,22 +182,6 @@ namespace SUNWODA_SEVB
             if (_host != null)
             {
                 DatabaseLogTarget.Initialize(_host.Services);
-            }
-        }
-        private async Task TestDatabaseLogging()
-        {
-            var logger = _host?.Services?.GetService<ILoggerService<App>>();
-            if (logger != null)
-            {
-                logger.Info("测试数据库日志功能 - Info级别");
-                logger.Warn("测试数据库日志功能 - Warn级别");
-                logger.Error("测试数据库日志功能 - Error级别");
-
-                // 强制刷新
-                LogManager.Flush();
-
-                // 等待一下让日志写入
-                await Task.Delay(1000);
             }
         }
 
@@ -408,5 +389,38 @@ namespace SUNWODA_SEVB
                 base.OnExit(e);
             }
         }
+
+
+        /// <summary>
+        /// 运行数据层测试
+        /// </summary>
+        private async Task RunDataLayerTests()
+        {
+            var logger = _host?.Services.GetRequiredService<ILoggerService<App>>();
+
+            try
+            {
+                logger?.Info("========== 开始数据层测试 ==========");
+
+                var test = new DataLayerTest(_host!.Services);
+
+                Console.WriteLine("===== 设备表CRUD测试 =====");
+                await test.TestDeviceCRUD();
+
+                Console.WriteLine("\n\n===== 全局设置CRUD测试 =====");
+                await test.TestGlobalSettingCRUD();
+
+                Console.WriteLine("\n\n===== 事务测试 =====");
+                await test.TestTransaction();
+
+                logger?.Info("========== 数据层测试完成 ==========");
+            }
+            catch (Exception ex)
+            {
+                logger?.Error("数据层测试失败", ex);
+                throw;
+            }
+        }
+
     }
 }

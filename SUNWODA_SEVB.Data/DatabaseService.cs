@@ -102,62 +102,7 @@ namespace SUNWODA_SEVB.Data
             }
 
             _logger.Info("GlobalSetting默认变量参数初始化完成");
-            //if (!_db.Queryable<VariableParameters>().Any())
-            //{
-            //    var defaultVariables = new List<VariableParameters>
-            //    {
-            //        new VariableParameters
-            //        {
-            //            VariableName = "系统运行状态",
-            //            VariableCode = "SYS_STATUS",
-            //            DataType = "Boolean",
-            //            DefaultValue = "false",
-            //            CurrentValue = "false",
-            //            Description = "系统运行状态标志"
-            //        },
-            //        new VariableParameters
-            //        {
-            //            VariableName = "采样间隔",
-            //            VariableCode = "SAMPLE_INTERVAL",
-            //            DataType = "Integer",
-            //            DefaultValue = "1000",
-            //            CurrentValue = "1000",
-            //            Description = "数据采样间隔(毫秒)"
-            //        }
-            //    };
-            //    _db.Insertable(defaultVariables).ExecuteCommand();
-            //    _logger.Info("默认变量参数初始化完成");
-            //}
-
-            // 初始化默认的PLC参数
-            //if (!_db.Queryable<PlcParameters>().Any())
-            //{
-            //    var defaultPlcParams = new List<PlcParameters>
-            //    {
-            //        new PlcParameters
-            //        {
-            //            ParameterName = "设备启动",
-            //            PlcAddress = "M0.0",
-            //            DataType = "Bool",
-            //            DataLength = 1,
-            //            DefaultValue = "false",
-            //            AccessType = "ReadWrite",
-            //            Description = "设备启动控制位"
-            //        },
-            //        new PlcParameters
-            //        {
-            //            ParameterName = "当前温度",
-            //            PlcAddress = "DB1.DBD0",
-            //            DataType = "Real",
-            //            DataLength = 4,
-            //            DefaultValue = "0.0",
-            //            AccessType = "Read",
-            //            Description = "设备当前温度值"
-            //        }
-            //    };
-            //    _db.Insertable(defaultPlcParams).ExecuteCommand();
-            //    _logger.Info("默认PLC参数初始化完成");
-            //}
+            
         }
 
         private List<Type> GetModelTypes()
