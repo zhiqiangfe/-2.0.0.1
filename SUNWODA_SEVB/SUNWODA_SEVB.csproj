@@ -32,6 +32,7 @@
     <ProjectReference Include="..\SUNWODA_SEVB.Data\SUNWODA_SEVB.Data.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Logging\SUNWODA_SEVB.Logging.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.PLC\SUNWODA_SEVB.PLC.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.Services\SUNWODA_SEVB.Services.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Tool\SUNWODA_SEVB.Tool.csproj" />
   </ItemGroup>
 
