@@ -37,13 +37,5 @@ namespace SUNWODA_SEVB.Core.Interfaces
         /// <param name="value"></param>
         /// <returns></returns>
         Task<bool> UpdateSettingValueAsync(string name, dynamic value);
-
-        /// <summary>
-        /// 字符串值转指定类型值
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        //dynamic StringToAny(string type, string value);
     }
 }

@@ -13,6 +13,7 @@ using SUNWODA_SEVB.Data;
 using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Logging.Targets;
 using SUNWODA_SEVB.PLC;
+using SUNWODA_SEVB.Tool.Helper;
 
 namespace SUNWODA_SEVB
 {
@@ -97,7 +98,11 @@ namespace SUNWODA_SEVB
                 }
 
                 appLogger.Info("数据库初始化成功");
-               
+
+                appLogger.Info("线程管理初始化开始");
+                ThreadManager.Init();
+                appLogger.Info("线程管理初始化成功");
+
                 // 初始化PLC
                 var plcService = _host.Services.GetRequiredService<IPLCService>();
                 var isInitPlcs = await plcService.InitPlcs();

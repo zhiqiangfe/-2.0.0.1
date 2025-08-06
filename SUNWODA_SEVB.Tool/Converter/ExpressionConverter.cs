@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace SUNWODA_SEVB.Data.Helpers
+namespace SUNWODA_SEVB.Tool.Converter
 {
     /// <summary>
     /// 表达式转换器，将源类型的表达式转换为目标类型的表达式
