@@ -84,8 +84,8 @@ namespace SUNWODA_SEVB
                 // 初始化NLog的数据库目标
                 InitializeNLogDatabaseTarget();
 
-                // 测试数据库日志
-                //await TestDatabaseLogging();
+                // 测试
+                //await RunDataLayerTests();
 
                 // 初始化数据库
                 var databaseService = _host.Services.GetRequiredService<IDatabaseService>();
