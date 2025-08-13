@@ -28,7 +28,6 @@
     <ProjectReference Include="..\SUNWODA_SEVB.Data\SUNWODA_SEVB.Data.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Logging\SUNWODA_SEVB.Logging.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.PLC\SUNWODA_SEVB.PLC.csproj" />
-    <ProjectReference Include="..\SUNWODA_SEVB.Services\SUNWODA_SEVB.Services.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Tool\SUNWODA_SEVB.Tool.csproj" />
   </ItemGroup>
 
@@ -36,9 +35,19 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\model\C06CT\C06CT.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\model\C06CT\C06CT.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\" />
   </ItemGroup>
 
 </Project>

@@ -61,7 +61,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
                     ModelViewerControl.ErrorOccurred += (s, e) =>
                         _logger.Error(e.Message, e.Exception, true);
                 var filePath =
-                    "E:\\Workspace\\Project\\鹰眼系统\\model\\C06_CT工序_上料位_20250811\\C06_CT工序_上料位_0811.obj";
+                    "Assets\\model\\C06CT\\C06CT.obj";
                 await RunOnUIThreadAsync(() =>
                 {
                     ModelViewerControl?.LoadModel(filePath, rotation: new Vector3D(90, 0, 0));

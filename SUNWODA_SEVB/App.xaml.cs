@@ -195,20 +195,6 @@ namespace SUNWODA_SEVB
                 viewModel.InitNavigation();
                 return window;
             });
-
-            //// 注册 ViewModels
-            //services.AddTransient<VM_MainWindow>();
-
-            //// 注册 Views
-            //services.AddTransient<MainWindow>(serviceProvider =>
-            //{
-            //    var viewModel = serviceProvider.GetRequiredService<VM_MainWindow>();
-            //    var window = new MainWindow
-            //    {
-            //        DataContext = viewModel
-            //    };
-            //    return window;
-            //});
         }
 
         private void InitializeNLogDatabaseTarget()
@@ -434,7 +420,6 @@ namespace SUNWODA_SEVB
             }
         }
 
-
         /// <summary>
         /// 运行数据层测试
         /// </summary>
@@ -465,6 +450,5 @@ namespace SUNWODA_SEVB
                 throw;
             }
         }
-
     }
 }
