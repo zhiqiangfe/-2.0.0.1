@@ -1,13 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
+using System.Windows.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using SUNWODA_SEVB.Core.Attributes;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Enumerations;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Models;
-using System.Collections.Concurrent;
-using System.Reflection;
-using System.Windows.Controls;
 
 namespace SUNWODA_SEVB.Services
 {
@@ -19,15 +18,22 @@ namespace SUNWODA_SEVB.Services
         private readonly List<ModuleInfo> _modules = new List<ModuleInfo>();
 
         // 使用线程安全的字典缓存
-        private readonly ConcurrentDictionary<string, object> _viewModelCache = new ConcurrentDictionary<string, object>();
-        private readonly ConcurrentDictionary<string, Type> _viewTypeCache = new ConcurrentDictionary<string, Type>();
-        private readonly ConcurrentDictionary<string, WeakReference> _weakViewCache = new ConcurrentDictionary<string, WeakReference>();
+        private readonly ConcurrentDictionary<string, object> _viewModelCache =
+            new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, Type> _viewTypeCache =
+            new ConcurrentDictionary<string, Type>();
+        private readonly ConcurrentDictionary<string, WeakReference> _weakViewCache =
+            new ConcurrentDictionary<string, WeakReference>();
 
         public event EventHandler<ModuleRegisteredEventArgs>? ModuleRegistered;
 
         public IReadOnlyList<ModuleInfo> Modules => _modules.AsReadOnly();
 
-        public ModuleManager(IServiceProvider serviceProvider, ILoggerService<ModuleManager> logger, IWorkSpaceProjectRepository workSpaceProjectRepository)
+        public ModuleManager(
+            IServiceProvider serviceProvider,
+            ILoggerService<ModuleManager> logger,
+            IWorkSpaceProjectRepository workSpaceProjectRepository
+        )
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -38,15 +44,19 @@ namespace SUNWODA_SEVB.Services
         {
             _logger?.Info("开始自动注册业务模块");
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+            var assemblies = AppDomain
+                .CurrentDomain.GetAssemblies()
                 .Where(a => a.FullName?.StartsWith("SUNWODA_SEVB") ?? false)
                 .ToList();
 
             // 并行处理程序集以提高性能
-            Parallel.ForEach(assemblies, assembly =>
-            {
-                RegisterModulesFromAssembly(assembly);
-            });
+            Parallel.ForEach(
+                assemblies,
+                assembly =>
+                {
+                    RegisterModulesFromAssembly(assembly);
+                }
+            );
 
             // 按Order排序
             lock (_modules)
@@ -65,10 +75,14 @@ namespace SUNWODA_SEVB.Services
             {
                 _logger?.Debug($"扫描程序集: {assembly.FullName}");
 
-                var viewModelTypes = assembly.GetTypes()
-                    .Where(t => t.IsClass && !t.IsAbstract &&
-                           t.IsSubclassOf(typeof(ViewModelBase)) &&
-                           t.GetCustomAttribute<ModuleAttribute>() != null)
+                var viewModelTypes = assembly
+                    .GetTypes()
+                    .Where(t =>
+                        t.IsClass
+                        && !t.IsAbstract
+                        && t.IsSubclassOf(typeof(ViewModelBase))
+                        && t.GetCustomAttribute<ModuleAttribute>() != null
+                    )
                     .ToList();
 
                 foreach (var vmType in viewModelTypes)
@@ -91,7 +105,7 @@ namespace SUNWODA_SEVB.Services
                                 Type = moduleAttr.Type,
                                 RequiredPermissions = moduleAttr.RequiredPermissions,
                                 ViewType = viewType,
-                                ViewModelType = vmType
+                                ViewModelType = vmType,
                             };
 
                             lock (_modules)
@@ -99,7 +113,9 @@ namespace SUNWODA_SEVB.Services
                                 RegisterModule(moduleInfo);
                             }
 
-                            _logger?.Info($"注册业务模块: {moduleInfo.Name} ({moduleInfo.DisplayName})");
+                            _logger?.Info(
+                                $"注册业务模块: {moduleInfo.Name} ({moduleInfo.DisplayName})"
+                            );
                         }
                         else
                         {
@@ -127,7 +143,8 @@ namespace SUNWODA_SEVB.Services
             var viewNamespace = viewModelType.Namespace!.Replace(".ViewModels", ".Views");
             var fullViewName = $"{viewNamespace}.{viewName}";
 
-            viewType = assembly.GetType(fullViewName)
+            viewType =
+                assembly.GetType(fullViewName)
                 ?? assembly.GetTypes().FirstOrDefault(t => t.Name == viewName);
 
             if (viewType != null)
@@ -141,7 +158,9 @@ namespace SUNWODA_SEVB.Services
         private void OrganizeModuleHierarchy()
         {
             // 组织多级导航结构
-            var categorizedModules = _modules.Where(m => !string.IsNullOrEmpty(m.Category)).ToList();
+            var categorizedModules = _modules
+                .Where(m => !string.IsNullOrEmpty(m.Category))
+                .ToList();
 
             foreach (var module in categorizedModules)
             {
@@ -187,31 +206,39 @@ namespace SUNWODA_SEVB.Services
 
         public object? GetViewModel(ModuleInfo? module)
         {
-            if (module == null || module?.Name == null || module?.ViewModelType == null) return null;
+            if (module == null || module?.Name == null || module?.ViewModelType == null)
+                return null;
 
-            return _viewModelCache.GetOrAdd(module.Name, key =>
-            {
-                try
+            return _viewModelCache.GetOrAdd(
+                module.Name,
+                key =>
                 {
-                    // 优先使用依赖注入创建ViewModel
-                    var viewModel = _serviceProvider.GetService(module.ViewModelType)
-                                  ?? ActivatorUtilities.CreateInstance(_serviceProvider, module.ViewModelType);
-
-                    // 异步初始化
-                    if (viewModel is ViewModelBase vmBase)
+                    try
                     {
-                        vmBase?.OnInitialize();
-                    }
+                        // 优先使用依赖注入创建ViewModel
+                        var viewModel =
+                            _serviceProvider.GetService(module.ViewModelType)
+                            ?? ActivatorUtilities.CreateInstance(
+                                _serviceProvider,
+                                module.ViewModelType
+                            );
 
-                    _logger?.Debug($"创建业务模块的ViewModel实例: {module.Name}");
-                    return viewModel;
+                        // 异步初始化
+                        if (viewModel is ViewModelBase vmBase)
+                        {
+                            vmBase?.OnInitialize();
+                        }
+
+                        _logger?.Debug($"创建业务模块的ViewModel实例: {module.Name}");
+                        return viewModel;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.Error($"不能创建业务模块的ViewModel: {module.Name}", ex, true);
+                        throw;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger?.Error($"不能创建业务模块的ViewModel: {module.Name}", ex, true);
-                    throw;
-                }
-            });
+            );
         }
 
         public object? GetViewModel(string moduleName)
@@ -222,7 +249,8 @@ namespace SUNWODA_SEVB.Services
 
         public Page? GetView(ModuleInfo? module)
         {
-            if (module == null || module.ViewType == null) return null;
+            if (module == null || module.ViewType == null)
+                return null;
 
             try
             {
@@ -242,13 +270,18 @@ namespace SUNWODA_SEVB.Services
                 }
 
                 // 创建新的View实例
-                var view = (_serviceProvider.GetService(module.ViewType)
-                          ?? ActivatorUtilities.CreateInstance(_serviceProvider, module.ViewType)) as Page;
+                var view =
+                    (
+                        _serviceProvider.GetService(module.ViewType)
+                        ?? ActivatorUtilities.CreateInstance(_serviceProvider, module.ViewType)
+                    ) as Page;
 
                 if (view == null)
                 {
                     _logger?.Error($"View类型 {module.ViewType.Name} 不是 Page", true);
-                    throw new InvalidOperationException($"View 必须继承 Page: {module.ViewType.Name}");
+                    throw new InvalidOperationException(
+                        $"View 必须继承 Page: {module.ViewType.Name}"
+                    );
                 }
 
                 // 设置DataContext
@@ -282,10 +315,10 @@ namespace SUNWODA_SEVB.Services
         private bool ShouldCacheView(ModuleInfo module)
         {
             // 只缓存重要的模块
-            return module.Type == ModuleType.Dashboard ||
-                   module.Type == ModuleType.Settings ||
-                   module.Type == ModuleType.UserCenter ||
-                   module.Order < 2;
+            return module.Type == ModuleType.Dashboard
+                || module.Type == ModuleType.Settings
+                || module.Type == ModuleType.UserCenter
+                || module.Order < 2;
         }
 
         public Page? GetView(string moduleName)
@@ -297,7 +330,8 @@ namespace SUNWODA_SEVB.Services
         public Page? GetViewFromService(string moduleName)
         {
             var module = GetModule(moduleName);
-            if (module == null || module.ViewType == null) return null;
+            if (module == null || module.ViewType == null)
+                return null;
             // 获取服务中View实例
             var view = (_serviceProvider.GetService(module.ViewType)) as Page;
             return view;
@@ -306,17 +340,20 @@ namespace SUNWODA_SEVB.Services
         public void ClearViewModelCache()
         {
             // 清理前调用清理方法
-            Parallel.ForEach(_viewModelCache.Values.OfType<ViewModelBase>(), vm =>
-            {
-                try
+            Parallel.ForEach(
+                _viewModelCache.Values.OfType<ViewModelBase>(),
+                vm =>
                 {
-                    vm.OnCleanup();
+                    try
+                    {
+                        vm.OnCleanup();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.Warn($"清理ViewModel时出错: {vm.GetType().Name}", ex);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger?.Warn($"清理ViewModel时出错: {vm.GetType().Name}", ex);
-                }
-            });
+            );
 
             _viewModelCache.Clear();
             _weakViewCache.Clear();

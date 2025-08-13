@@ -12,7 +12,10 @@ namespace SUNWODA_SEVB.Tool.Converter
         private readonly ParameterExpression _parameter;
         private readonly Dictionary<string, string> _propertyMapping;
 
-        public ExpressionConverter(ParameterExpression parameter, Dictionary<string, string>? propertyMapping = null)
+        public ExpressionConverter(
+            ParameterExpression parameter,
+            Dictionary<string, string>? propertyMapping = null
+        )
         {
             _parameter = parameter;
             _propertyMapping = propertyMapping ?? new Dictionary<string, string>();

@@ -10,12 +10,10 @@ using NLog.Extensions.Logging;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Data;
-using SUNWODA_SEVB.Data.Repositories;
 using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Logging.Targets;
 using SUNWODA_SEVB.PLC;
 using SUNWODA_SEVB.Services;
-using SUNWODA_SEVB.Tool.Helper;
 using SUNWODA_SEVB.ViewModels.Windows.Common;
 using SUNWODA_SEVB.Views.Windows.Common;
 

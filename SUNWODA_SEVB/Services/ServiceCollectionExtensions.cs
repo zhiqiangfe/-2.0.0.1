@@ -2,11 +2,6 @@
 using SUNWODA_SEVB.Core.Attributes;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SUNWODA_SEVB.Services
 {
@@ -27,7 +22,8 @@ namespace SUNWODA_SEVB.Services
 
         public static IServiceCollection AddModuleViewModels(this IServiceCollection services)
         {
-            var viewModelTypes = AppDomain.CurrentDomain.GetAssemblies()
+            var viewModelTypes = AppDomain
+                .CurrentDomain.GetAssemblies()
                 .SelectMany(a =>
                 {
                     try
@@ -39,9 +35,12 @@ namespace SUNWODA_SEVB.Services
                         return Type.EmptyTypes;
                     }
                 })
-                .Where(t => t.IsClass && !t.IsAbstract &&
-                       t.IsSubclassOf(typeof(ViewModelBase)) &&
-                       t.GetCustomAttributes(typeof(ModuleAttribute), false).Any());
+                .Where(t =>
+                    t.IsClass
+                    && !t.IsAbstract
+                    && t.IsSubclassOf(typeof(ViewModelBase))
+                    && t.GetCustomAttributes(typeof(ModuleAttribute), false).Any()
+                );
 
             foreach (var vmType in viewModelTypes)
             {
@@ -57,7 +56,8 @@ namespace SUNWODA_SEVB.Services
 
         public static IServiceCollection AddModuleViews(this IServiceCollection services)
         {
-            var viewModelTypes = AppDomain.CurrentDomain.GetAssemblies()
+            var viewModelTypes = AppDomain
+                .CurrentDomain.GetAssemblies()
                 .SelectMany(a =>
                 {
                     try
@@ -69,9 +69,12 @@ namespace SUNWODA_SEVB.Services
                         return Type.EmptyTypes;
                     }
                 })
-                .Where(t => t.IsClass && !t.IsAbstract &&
-                       t.IsSubclassOf(typeof(ViewModelBase)) &&
-                       t.GetCustomAttributes(typeof(ModuleAttribute), false).Any());
+                .Where(t =>
+                    t.IsClass
+                    && !t.IsAbstract
+                    && t.IsSubclassOf(typeof(ViewModelBase))
+                    && t.GetCustomAttributes(typeof(ModuleAttribute), false).Any()
+                );
 
             foreach (var vmType in viewModelTypes)
             {
@@ -80,7 +83,8 @@ namespace SUNWODA_SEVB.Services
                 var viewNamespace = vmType.Namespace!.Replace(".ViewModels", ".Views");
                 var fullViewName = $"{viewNamespace}.{viewName}";
 
-                var viewType = vmType.Assembly.GetType(fullViewName)
+                var viewType =
+                    vmType.Assembly.GetType(fullViewName)
                     ?? vmType.Assembly.GetTypes().FirstOrDefault(t => t.Name == viewName);
 
                 if (viewType is not null)

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using System.Windows.Media.Media3D;
 using SUNWODA_SEVB.Component.UserControls;
 using SUNWODA_SEVB.Core.Attributes;
@@ -60,8 +55,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
                 if (ModelViewerControl is not null)
                     ModelViewerControl.ErrorOccurred += (s, e) =>
                         _logger.Error(e.Message, e.Exception, true);
-                var filePath =
-                    "Assets\\model\\C06CT\\C06CT.obj";
+                var filePath = "Assets\\model\\C06CT\\C06CT.obj";
                 await RunOnUIThreadAsync(() =>
                 {
                     ModelViewerControl?.LoadModel(filePath, rotation: new Vector3D(90, 0, 0));

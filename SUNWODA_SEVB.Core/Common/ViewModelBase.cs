@@ -12,7 +12,7 @@ namespace SUNWODA_SEVB.Core.Common
 
         public ViewModelBase()
         {
-            // 保存创建时的Dispatcher，用于后续的UI更新
+            // 保存UI的Dispatcher，用于后续的UI更新
             _dispatcher = Application.Current.Dispatcher;
         }
 
@@ -30,13 +30,6 @@ namespace SUNWODA_SEVB.Core.Common
         }
 
         // 生命周期方法
-        //public virtual void OnNavigatedTo(object? parameter) { }
-        //public virtual void OnNavigatedFrom() { }
-        //public virtual bool CanNavigateFrom() => true;
-        //public virtual void OnInitialize() { }
-        //public virtual void OnCleanup() { }
-
-        // 生命周期方法 - 同步版本（保持兼容性）
         public virtual void OnNavigatedTo(object? parameter)
         {
             // 默认调用异步版本
@@ -120,7 +113,7 @@ namespace SUNWODA_SEVB.Core.Common
             await Task.Run(func);
         }
 
-        // 延迟执行辅助方法
+        // 延迟执行UI线程辅助方法
         protected async Task DelayedExecuteAsync(Action action, int delayMilliseconds)
         {
             await Task.Delay(delayMilliseconds);

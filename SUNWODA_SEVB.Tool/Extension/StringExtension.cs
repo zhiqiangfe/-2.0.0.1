@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using System.Windows;
 
 namespace SUNWODA_SEVB.Tool.Extension
@@ -138,7 +133,15 @@ namespace SUNWODA_SEVB.Tool.Extension
         /// <returns>时间</returns>
         public static DateTime ToDateTime(this string s, string format)
         {
-            return DateTime.TryParseExact(s, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime result) ? result : DateTime.Now;
+            return DateTime.TryParseExact(
+                s,
+                format,
+                CultureInfo.CurrentCulture,
+                DateTimeStyles.None,
+                out DateTime result
+            )
+                ? result
+                : DateTime.Now;
         }
 
         /// <summary>

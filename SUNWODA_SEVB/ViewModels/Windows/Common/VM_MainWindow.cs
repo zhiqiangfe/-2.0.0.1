@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,7 +7,6 @@ using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Enumerations;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Models;
-using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Services;
 
 namespace SUNWODA_SEVB.ViewModels.Windows.Common
@@ -129,7 +124,6 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
 
             if (defaultModule != null)
             {
-                // 简化：直接在UI线程执行，避免多余的异步调度
                 await Application.Current.Dispatcher.InvokeAsync(
                     () =>
                     {

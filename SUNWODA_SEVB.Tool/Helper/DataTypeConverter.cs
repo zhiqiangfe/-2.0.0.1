@@ -1,9 +1,4 @@
 ﻿using SUNWODA_SEVB.Tool.Extension;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SUNWODA_SEVB.Tool.Helper
 {
@@ -35,7 +30,7 @@ namespace SUNWODA_SEVB.Tool.Helper
                 "BOOL" or "BOOLEAN" => value.ToBool(),
                 "DATETIME" => value.ToDateTime("yyyy-MM-dd HH:mm:ss"),
                 "WINDOWSTATE" => value.ToWindowSate(),
-                _ => throw new FormatException($"不支持的数据类型: {type}")
+                _ => throw new FormatException($"不支持的数据类型: {type}"),
             };
         }
 
