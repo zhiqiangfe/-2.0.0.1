@@ -27,6 +27,8 @@ namespace SUNWODA_SEVB.PLC
         private readonly IPLCRWConfigRepository _plcRWConfigRepository;
         private readonly IPLCAddressConfigRepository _plcAddressConfigRepository;
         private readonly IGlobalSettingRepository _globalSettingRepository;
+        public readonly object RWAddressTableLock = new object();
+        private readonly IGlobalSettingRepository _globalSettingRepository;
 
         private readonly ConcurrentDictionary<int, PLC> _plcs = new();
         private readonly ConcurrentDictionary<int, PLCRWConfigModel> _rwConfigs = new();

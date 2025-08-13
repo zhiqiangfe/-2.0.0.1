@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SUNWODA_SEVB.Core\SUNWODA_SEVB.Core.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.Data\SUNWODA_SEVB.Data.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.Logging\SUNWODA_SEVB.Logging.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.PLC\SUNWODA_SEVB.PLC.csproj" />
+  </ItemGroup>
+
+</Project>

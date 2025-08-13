@@ -1,8 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Data;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -104,8 +100,8 @@ namespace SUNWODA_SEVB
                 // 初始化NLog的数据库目标
                 InitializeNLogDatabaseTarget();
 
-                // 测试数据库日志
-                //await TestDatabaseLogging();
+                // 测试
+                //await RunDataLayerTests();
 
                 // 初始化数据库
                 var databaseService = _host.Services.GetRequiredService<IDatabaseService>();
@@ -221,23 +217,6 @@ namespace SUNWODA_SEVB
             if (_host != null)
             {
                 DatabaseLogTarget.Initialize(_host.Services);
-            }
-        }
-
-        private async Task TestDatabaseLogging()
-        {
-            var logger = _host?.Services?.GetService<ILoggerService<App>>();
-            if (logger != null)
-            {
-                logger.Info("测试数据库日志功能 - Info级别");
-                logger.Warn("测试数据库日志功能 - Warn级别");
-                logger.Error("测试数据库日志功能 - Error级别");
-
-                // 强制刷新
-                LogManager.Flush();
-
-                // 等待一下让日志写入
-                await Task.Delay(1000);
             }
         }
 
@@ -454,5 +433,38 @@ namespace SUNWODA_SEVB
                 base.OnExit(e);
             }
         }
+
+
+        /// <summary>
+        /// 运行数据层测试
+        /// </summary>
+        private async Task RunDataLayerTests()
+        {
+            var logger = _host?.Services.GetRequiredService<ILoggerService<App>>();
+
+            try
+            {
+                logger?.Info("========== 开始数据层测试 ==========");
+
+                var test = new DataLayerTest(_host!.Services);
+
+                Console.WriteLine("===== 设备表CRUD测试 =====");
+                await test.TestDeviceCRUD();
+
+                Console.WriteLine("\n\n===== 全局设置CRUD测试 =====");
+                await test.TestGlobalSettingCRUD();
+
+                Console.WriteLine("\n\n===== 事务测试 =====");
+                await test.TestTransaction();
+
+                logger?.Info("========== 数据层测试完成 ==========");
+            }
+            catch (Exception ex)
+            {
+                logger?.Error("数据层测试失败", ex);
+                throw;
+            }
+        }
+
     }
 }
