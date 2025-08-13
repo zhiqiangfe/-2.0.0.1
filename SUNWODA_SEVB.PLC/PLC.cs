@@ -8,7 +8,6 @@ namespace SUNWODA_SEVB.PLC
     public class PLC
     {
         private DataSortRule byteDataSortRule;
-        public object CommunicationObjLock = new object();
 
         /// <summary>
         /// 编号
@@ -154,7 +153,15 @@ namespace SUNWODA_SEVB.PLC
             int cycleReadTime = 500,
             int cycleWriteTime = 500
         )
-            : this(id, name, brandSpecificationProtocal, ip, byteDataSortRule, cycleReadTime, cycleWriteTime)
+            : this(
+                id,
+                name,
+                brandSpecificationProtocal,
+                ip,
+                byteDataSortRule,
+                cycleReadTime,
+                cycleWriteTime
+            )
         {
             Port = port;
         }
@@ -172,55 +179,68 @@ namespace SUNWODA_SEVB.PLC
             Device.Dispose();
         }
 
-        /// <summary>
-        /// 尝试重连
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public bool TryConnect(out string? message)
+        public async Task<OperateResult<byte[]>?> ReadAsync(string areaStartAddress, ushort length)
         {
-            message = "";
-            if (!IsConnect)
+            if (Device is not null)
             {
-                var result = Device?.ConnectServer();
-                message = result?.ToMessageShowString();
-                IsConnect = result?.IsSuccess ?? false;
-            }
-            return IsConnect;
-        }
-
-        public OperateResult<byte[]>? Read(string areaStartAddress, ushort length)
-        {
-            lock (CommunicationObjLock)
-            {
-                OperateResult<byte[]>? result = Device?.Read(areaStartAddress, length);
+                OperateResult<byte[]>? result = await Device.ReadAsync(areaStartAddress, length);
                 IsConnect = result?.IsSuccess ?? false;
                 if (!IsConnect)
                     throw new Exception($"读取PLC字节数组失败，原因：{result?.Message}");
-                //LogHelper.Error($"读取PLC字节数组失败，原因：{result?.Message}");
                 return IsConnect ? result : null;
+            }
+            else
+            {
+                IsConnect = false;
+                return null;
             }
         }
 
-        public OperateResult? Write(string address, string valueType, dynamic value)
+        public async Task<OperateResult> WriteAsync(string address, string valueType, dynamic value)
         {
-            OperateResult? result = new OperateResult();
-            if (value != null)
+            if (Device == null || value == null)
+                return new OperateResult { IsSuccess = false, Message = "设备未初始化或值为空" };
+
+            var expectedType = ConvertTypeKeyword(valueType);
+            var actualType = value!.GetType().Name.ToUpperInvariant();
+
+            if (expectedType != actualType && valueType.ToUpperInvariant() != actualType)
             {
-                lock (CommunicationObjLock)
+                return new OperateResult
                 {
-                    if (
-                        TypeKeywordNameToStructName(valueType) == value.GetType().Name.ToUpper()
-                        || valueType.ToUpper() == value.GetType().Name.ToUpper()
-                    )
-                    {
-                        result = Device?.Write(address, value);
-                        IsConnect = result?.IsSuccess ?? false;
-                    }
-                }
+                    IsSuccess = false,
+                    Message = $"类型不匹配: 期望 {expectedType}, 实际 {actualType}",
+                };
             }
-            return result;
+
+            try
+            {
+                //var result = Device?.Write(address, value);
+                var result = await Device?.WriteAsync(address, value);
+                IsConnect = result?.IsSuccess ?? false;
+                return result ?? new OperateResult { IsSuccess = false };
+            }
+            catch (Exception ex)
+            {
+                return new OperateResult { IsSuccess = false, Message = ex.Message };
+            }
         }
+
+        private static string ConvertTypeKeyword(string keyword) =>
+            keyword.ToUpperInvariant() switch
+            {
+                "FLOAT" => "SINGLE",
+                "DOUBLE" => "DOUBLE",
+                "BYTE" => "BYTE",
+                "SHORT" => "INT16",
+                "USHORT" => "UINT16",
+                "INT" => "INT32",
+                "UINT" => "UINT32",
+                "LONG" => "INT64",
+                "ULONG" => "UINT64",
+                "BOOL" => "BOOLEAN",
+                _ => "STRING",
+            };
 
         private string TypeKeywordNameToStructName(string s)
         {

@@ -1,7 +1,10 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using SqlSugar;
+using SUNWODA_SEVB.Core.Attributes;
+using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Models;
 using SUNWODA_SEVB.Data.Configurations;
 using SUNWODA_SEVB.Data.Models;
 
@@ -95,6 +98,20 @@ namespace SUNWODA_SEVB.Data
                             Value = "true",
                             Type = "bool",
                             Remark = "是否开启循环读取PLC",
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+
+            if (!globalConfigs.Any(it => it.Name == "DefaultProject"))
+            {
+                _db.Insertable(
+                        new GlobalSetting
+                        {
+                            Name = "DefaultProject",
+                            Value = "",
+                            Type = "string",
+                            Remark = "默认显示项目",
                         }
                     )
                     .ExecuteCommand();
@@ -226,62 +243,50 @@ namespace SUNWODA_SEVB.Data
                     )
                     .ExecuteCommand();
             }
-            //if (!_db.Queryable<VariableParameters>().Any())
-            //{
-            //    var defaultVariables = new List<VariableParameters>
-            //    {
-            //        new VariableParameters
-            //        {
-            //            VariableName = "系统运行状态",
-            //            VariableCode = "SYS_STATUS",
-            //            DataType = "Boolean",
-            //            DefaultValue = "false",
-            //            CurrentValue = "false",
-            //            Description = "系统运行状态标志"
-            //        },
-            //        new VariableParameters
-            //        {
-            //            VariableName = "采样间隔",
-            //            VariableCode = "SAMPLE_INTERVAL",
-            //            DataType = "Integer",
-            //            DefaultValue = "1000",
-            //            CurrentValue = "1000",
-            //            Description = "数据采样间隔(毫秒)"
-            //        }
-            //    };
-            //    _db.Insertable(defaultVariables).ExecuteCommand();
-            //    _logger.Info("默认变量参数初始化完成");
-            //}
 
-            // 初始化默认的PLC参数
-            //if (!_db.Queryable<PlcParameters>().Any())
-            //{
-            //    var defaultPlcParams = new List<PlcParameters>
-            //    {
-            //        new PlcParameters
-            //        {
-            //            ParameterName = "设备启动",
-            //            PlcAddress = "M0.0",
-            //            DataType = "Bool",
-            //            DataLength = 1,
-            //            DefaultValue = "false",
-            //            AccessType = "ReadWrite",
-            //            Description = "设备启动控制位"
-            //        },
-            //        new PlcParameters
-            //        {
-            //            ParameterName = "当前温度",
-            //            PlcAddress = "DB1.DBD0",
-            //            DataType = "Real",
-            //            DataLength = 4,
-            //            DefaultValue = "0.0",
-            //            AccessType = "Read",
-            //            Description = "设备当前温度值"
-            //        }
-            //    };
-            //    _db.Insertable(defaultPlcParams).ExecuteCommand();
-            //    _logger.Info("默认PLC参数初始化完成");
-            //}
+            _logger.Info("PLCAddressConfig默认变量参数初始化完成");
+
+            var workSpaceProjects = _db.Queryable<WorkSpaceProject>();
+            var assemblies = AppDomain
+                .CurrentDomain.GetAssemblies()
+                .Where(a => a.FullName?.StartsWith("SUNWODA_SEVB") ?? false);
+            foreach (var assembly in assemblies)
+            {
+                var viewModelTypes = assembly
+                    .GetTypes()
+                    .Where(t =>
+                        t.IsClass
+                        && !t.IsAbstract
+                        && t.IsSubclassOf(typeof(ViewModelBase))
+                        && t.GetCustomAttribute<ModuleAttribute>() != null
+                    );
+
+                foreach (var vmType in viewModelTypes)
+                {
+                    var moduleAttr = vmType.GetCustomAttribute<ModuleAttribute>();
+
+                    if (moduleAttr != null)
+                    {
+                        if (!workSpaceProjects.Any(it => it.VMClassName == vmType.Name))
+                        {
+                            _db.Insertable(
+                                    new WorkSpaceProject()
+                                    {
+                                        VMClassName = vmType.Name,
+                                        IsEnabled = true,
+                                    }
+                                )
+                                .ExecuteCommand();
+                        }
+                    }
+                    else
+                    {
+                        _logger?.Warn($"没有找到 ViewModel 的模块特性: {vmType.Name}", true);
+                    }
+                }
+            }
+
+            _logger?.Info("WorkSpaceProject默认变量参数初始化完成");
         }
 
         private List<Type> GetModelTypes()

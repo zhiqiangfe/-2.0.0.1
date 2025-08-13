@@ -3,8 +3,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using System.Windows.Threading;
 using HelixToolkit.Wpf;
 using Microsoft.Win32;
+using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Models.Component;
 
 namespace SUNWODA_SEVB.Component.UserControls
@@ -14,26 +16,444 @@ namespace SUNWODA_SEVB.Component.UserControls
     /// </summary>
     public partial class ModelViewerControl : UserControl
     {
+        // 模型信息映射表
         private readonly Dictionary<Model3D, ModelInfo> _modelInfoMap =
             new Dictionary<Model3D, ModelInfo>();
+
+        // 模型视图映射表
         private readonly Dictionary<string, ModelVisual3D> _modelVisualMap =
             new Dictionary<string, ModelVisual3D>();
+
+        // 模型中心点映射表：存储模型中心点
         private readonly Dictionary<string, Point3D> _modelCenterMap =
-            new Dictionary<string, Point3D>(); // 存储模型中心点
+            new Dictionary<string, Point3D>();
         private readonly ModelImporter _modelImporter = new ModelImporter();
 
+        // 选择框
         private BoundingBoxVisual3D? _selectionBoundingBox;
+
+        // 高亮模型
         private Model3D? _highlightedModel;
+
+        // 原始材质
         private Material? _originalMaterial;
+
+        // 左键点击模型
         private Model3D? _leftClickedModel;
 
+        // 定时器管理
+        private DispatcherTimer? _highlightTimer;
+
+        // 用于存储模型数据的缓存（保持数据）
+        private readonly List<ModelCacheData> _modelCache = new List<ModelCacheData>();
+
+        // 标记是否已初始化事件
+        private bool _eventsInitialized = false;
+
+        #region 依赖属性定义
+        /// <summary>
+        /// 是否显示测试工具栏
+        /// </summary>
+        public bool IsShowTestToolBar
+        {
+            get { return (bool)GetValue(IsShowTestToolBarProperty); }
+            set { SetValue(IsShowTestToolBarProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsShowTestToolBarProperty =
+            DependencyProperty.Register(
+                "IsShowTestToolBar",
+                typeof(bool),
+                typeof(ModelViewerControl),
+                new PropertyMetadata(false, new PropertyChangedCallback(OnIsShowTestToolBarChanged))
+            );
+
+        /// <summary>
+        /// 是否显示相机信息
+        /// </summary>
+        public bool IsShowCameraInfo
+        {
+            get { return (bool)GetValue(IsShowCameraInfoProperty); }
+            set { SetValue(IsShowCameraInfoProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsShowCameraInfoProperty =
+            DependencyProperty.Register(
+                "IsShowCameraInfo",
+                typeof(bool),
+                typeof(ModelViewerControl),
+                new PropertyMetadata(false, new PropertyChangedCallback(OnIsShowCameraInfoChanged))
+            );
+
+        /// <summary>
+        /// 是否显示坐标系
+        /// </summary>
+        public bool IsShowCoordinateSystem
+        {
+            get { return (bool)GetValue(IsShowCoordinateSystemProperty); }
+            set { SetValue(IsShowCoordinateSystemProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsShowCoordinateSystemProperty =
+            DependencyProperty.Register(
+                "IsShowCoordinateSystem",
+                typeof(bool),
+                typeof(ModelViewerControl),
+                new PropertyMetadata(
+                    false,
+                    new PropertyChangedCallback(OnIsShowCoordinateSystemChanged)
+                )
+            );
+
+        /// <summary>
+        /// 是否显示帧率
+        /// </summary>
+        public bool IsShowFrameRate
+        {
+            get { return (bool)GetValue(IsShowFrameRateProperty); }
+            set { SetValue(IsShowFrameRateProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsShowFrameRateProperty =
+            DependencyProperty.Register(
+                "IsShowFrameRate",
+                typeof(bool),
+                typeof(ModelViewerControl),
+                new PropertyMetadata(false, new PropertyChangedCallback(OnIsShowFrameRateChanged))
+            );
+
+        /// <summary>
+        /// 是否显示视图选择块
+        /// </summary>
+        public bool IsShowViewCube
+        {
+            get { return (bool)GetValue(IsShowViewCubeProperty); }
+            set { SetValue(IsShowViewCubeProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsShowViewCubeProperty =
+            DependencyProperty.Register(
+                "IsShowViewCube",
+                typeof(bool),
+                typeof(ModelViewerControl),
+                new PropertyMetadata(false, new PropertyChangedCallback(OnIsShowViewCubeChanged))
+            );
+
+        /// <summary>
+        /// 是否显示网格线
+        /// </summary>
+        public bool IsShowGridLines
+        {
+            get { return (bool)GetValue(IsShowGridLinesProperty); }
+            set { SetValue(IsShowGridLinesProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsShowGridLinesProperty =
+            DependencyProperty.Register(
+                "IsShowGridLines",
+                typeof(bool),
+                typeof(ModelViewerControl),
+                new PropertyMetadata(false, new PropertyChangedCallback(OnIsShowGridLinesChanged))
+            );
+        #endregion
+
         public event EventHandler<ModelDoubleClickEventArgs>? ModelDoubleClicked;
+
+        public event EventHandler<ErrorEventArgs>? ErrorOccurred;
 
         public ModelViewerControl()
         {
             InitializeComponent();
+            // 注册Loaded和Unloaded事件
+            Loaded += OnControlLoaded;
+            Unloaded += OnControlUnloaded;
         }
 
+        private void OnControlLoaded(object sender, RoutedEventArgs e)
+        {
+            // 初始化事件（只初始化一次）
+            if (!_eventsInitialized)
+            {
+                InitializeEvents();
+                _eventsInitialized = true;
+            }
+
+            // 恢复缓存的模型
+            RestoreModelsFromCache();
+        }
+
+        private void OnControlUnloaded(object sender, RoutedEventArgs e)
+        {
+            // 保存当前模型到缓存
+            SaveModelsToCache();
+
+            // 清理视觉资源但保留数据
+            CleanupVisualResources();
+        }
+
+        private void InitializeEvents()
+        {
+            // 视口事件
+            if (viewport != null)
+            {
+                viewport.MouseDoubleClick += Viewport_MouseDoubleClick;
+                viewport.PreviewMouseLeftButtonDown += Viewport_PreviewMouseLeftButtonDown;
+            }
+
+            // 按钮事件
+            if (BtnLoadModel != null) BtnLoadModel.Click += BtnLoadModel_Click;
+            if (BtnClearAll != null) BtnClearAll.Click += BtnClearAll_Click;
+            if (BtnResetView != null) BtnResetView.Click += BtnResetView_Click;
+            if (BtnRemoveModel != null) BtnRemoveModel.Click += BtnRemoveModel_Click;
+            if (BtnCenterModel != null) BtnCenterModel.Click += BtnCenterModel_Click;
+        }
+
+        private void SaveModelsToCache()
+        {
+            _modelCache.Clear();
+
+            foreach (var kvp in _modelInfoMap)
+            {
+                var modelInfo = kvp.Value;
+                var modelVisual = _modelVisualMap[modelInfo.Id!];
+                var center = _modelCenterMap[modelInfo.Id!];
+
+                // 保存模型数据到缓存
+                _modelCache.Add(new ModelCacheData
+                {
+                    ModelInfo = modelInfo,
+                    Transform = modelVisual.Content?.Transform?.Clone(),
+                    Center = center
+                });
+            }
+        }
+
+        private void RestoreModelsFromCache()
+        {
+            if (_modelCache.Count == 0) return;
+
+            foreach (var cacheData in _modelCache)
+            {
+                try
+                {
+                    // 重新加载模型
+                    if (!string.IsNullOrEmpty(cacheData.ModelInfo.FilePath))
+                    {
+                        //var model3DGroup = _modelImporter.Load(cacheData.ModelInfo.FilePath);
+                        var model3DGroup = cacheData.ModelInfo.Model;
+
+                        if (model3DGroup != null)
+                        {
+                            // 恢复变换
+                            if (cacheData.Transform != null)
+                            {
+                                model3DGroup.Transform = cacheData.Transform;
+                            }
+
+                            // 创建ModelVisual3D并添加到视口
+                            var modelVisual = new ModelVisual3D { Content = model3DGroup };
+
+                            // 恢复映射关系
+                            _modelInfoMap[model3DGroup] = cacheData.ModelInfo;
+                            _modelVisualMap[cacheData.ModelInfo.Id!] = modelVisual;
+                            _modelCenterMap[cacheData.ModelInfo.Id!] = cacheData.Center;
+
+                            // 添加到视口
+                            viewport?.Children.Add(modelVisual);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"恢复模型时出错: {ex.Message}");
+                }
+            }
+
+            // 恢复相机视角
+            if (viewport != null && _modelCache.Count > 0)
+            {
+                viewport.ZoomExtents(100);
+            }
+        }
+
+        private void CleanupVisualResources()
+        {
+            try
+            {
+                // 停止高亮定时器
+                if (_highlightTimer != null)
+                {
+                    _highlightTimer.Stop();
+                    _highlightTimer.Tick -= OnHighlightTimerTick;
+                    _highlightTimer = null;
+                }
+
+                // 清理选择框
+                if (_selectionBoundingBox != null && viewport != null)
+                {
+                    if (viewport.Children.Contains(_selectionBoundingBox))
+                    {
+                        viewport.Children.Remove(_selectionBoundingBox);
+                    }
+                    _selectionBoundingBox = null;
+                }
+
+                // 从视口移除所有模型（但不清理数据）
+                if (viewport != null)
+                {
+                    var modelsToRemove = viewport.Children
+                        .OfType<ModelVisual3D>()
+                        .Where(m => m.Content != null && _modelInfoMap.ContainsKey(m.Content))
+                        .ToList();
+
+                    foreach (var model in modelsToRemove)
+                    {
+                        viewport.Children.Remove(model);
+
+                        if (model.Content != null)
+                        {
+                            DisposeModel3D(model.Content);
+                            model.Content = null;
+                        }
+                    }
+                }
+
+                // 清理映射表（数据已保存到缓存）
+                _modelInfoMap.Clear();
+                _modelVisualMap.Clear();
+                _modelCenterMap.Clear();
+
+                // 清理引用
+                _highlightedModel = null;
+                _originalMaterial = null;
+                _leftClickedModel = null;
+
+                GC.Collect(2, GCCollectionMode.Forced);
+                GC.WaitForPendingFinalizers();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"清理视觉资源时出错: {ex.Message}");
+            }
+        }
+
+        private void DisposeModel3D(Model3D model)
+        {
+            if (model == null) return;
+
+            if (model is Model3DGroup group)
+            {
+                foreach (var child in group.Children)
+                {
+                    DisposeModel3D(child);
+                }
+                group.Children.Clear();
+            }
+            else if (model is GeometryModel3D geometryModel)
+            {
+                // Clear geometry references
+                if (geometryModel.Geometry is MeshGeometry3D mesh)
+                {
+                    mesh.Positions?.Clear();
+                    mesh.Normals?.Clear();
+                    mesh.TextureCoordinates?.Clear();
+                    mesh.TriangleIndices?.Clear();
+                }
+                geometryModel.Geometry = null;
+                geometryModel.Material = null;
+                geometryModel.BackMaterial = null;
+            }
+        }
+
+
+
+        #region 依赖属性改变回调
+
+        private static void OnIsShowTestToolBarChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
+        {
+            var modelViewer = d as ModelViewerControl;
+            if (modelViewer is not null)
+            {
+                if ((bool)e.NewValue == true)
+                {
+                    modelViewer.TestToolBar.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    modelViewer.TestToolBar.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private static void OnIsShowCameraInfoChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
+        {
+            var modelViewer = d as ModelViewerControl;
+            if (modelViewer is not null)
+            {
+                modelViewer.viewport.ShowCameraInfo = (bool)e.NewValue;
+            }
+        }
+
+        private static void OnIsShowCoordinateSystemChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
+        {
+            var modelViewer = d as ModelViewerControl;
+            if (modelViewer is not null)
+            {
+                modelViewer.viewport.ShowCoordinateSystem = (bool)e.NewValue;
+            }
+        }
+
+        private static void OnIsShowFrameRateChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
+        {
+            var modelViewer = d as ModelViewerControl;
+            if (modelViewer is not null)
+            {
+                modelViewer.viewport.ShowFrameRate = (bool)e.NewValue;
+            }
+        }
+
+        private static void OnIsShowViewCubeChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
+        {
+            var modelViewer = d as ModelViewerControl;
+            if (modelViewer is not null)
+            {
+                modelViewer.viewport.ShowViewCube = (bool)e.NewValue;
+            }
+        }
+
+        private static void OnIsShowGridLinesChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
+        {
+            var modelViewer = d as ModelViewerControl;
+            if (modelViewer is not null)
+            {
+                modelViewer.GridLine.Visible = (bool)e.NewValue;
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// 测试工具栏加载模型按钮点击事件回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnLoadModel_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
@@ -62,6 +482,10 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 测试工具栏位置信息获取
+        /// </summary>
+        /// <returns></returns>
         private Vector3D GetPositionFromUI()
         {
             double x = 0,
@@ -73,6 +497,10 @@ namespace SUNWODA_SEVB.Component.UserControls
             return new Vector3D(x, y, z);
         }
 
+        /// <summary>
+        /// 测试工具栏旋转信息获取
+        /// </summary>
+        /// <returns></returns>
         private Vector3D GetRotationFromUI()
         {
             double x = 0,
@@ -84,6 +512,10 @@ namespace SUNWODA_SEVB.Component.UserControls
             return new Vector3D(x, y, z);
         }
 
+        /// <summary>
+        /// 测试工具栏缩放信息获取
+        /// </summary>
+        /// <returns></returns>
         private Vector3D GetScaleFromUI()
         {
             double scale = 1;
@@ -91,7 +523,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             return new Vector3D(scale, scale, scale);
         }
 
-        // 计算模型的边界框和中心点
+        /// <summary>
+        /// 计算模型的边界框和中心点
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private (Rect3D bounds, Point3D center) CalculateModelBounds(Model3D model)
         {
             var bounds = new Rect3D();
@@ -130,7 +566,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             return (bounds, center);
         }
 
-        // 递归收集所有网格
+        /// <summary>
+        /// 递归收集所有网格
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="meshes"></param>
         private void CollectMeshes(Model3D model, List<MeshGeometry3D> meshes)
         {
             if (model is Model3DGroup group)
@@ -149,7 +589,14 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
-        // 创建围绕模型中心的变换
+        /// <summary>
+        /// 创建围绕模型中心的变换
+        /// </summary>
+        /// <param name="modelCenter"></param>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        /// <param name="scale"></param>
+        /// <returns></returns>
         private Transform3DGroup CreateModelTransform(
             Point3D modelCenter,
             Vector3D? position,
@@ -216,12 +663,22 @@ namespace SUNWODA_SEVB.Component.UserControls
             return transformGroup;
         }
 
+        /// <summary>
+        /// 加载模型
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="modelName"></param>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        /// <param name="scale"></param>
+        /// <param name="preserveOriginalMaterial"></param>
         public void LoadModel(
             string filePath,
             string? modelName = null,
             Vector3D? position = null,
             Vector3D? rotation = null,
-            Vector3D? scale = null
+            Vector3D? scale = null,
+            bool preserveOriginalMaterial = true
         )
         {
             try
@@ -244,19 +701,22 @@ namespace SUNWODA_SEVB.Component.UserControls
                     var (bounds, center) = CalculateModelBounds(model3DGroup);
                     _modelCenterMap[modelInfo.Id!] = center;
 
-                    // 为模型创建一个随机颜色
-                    var random = new Random();
-                    var color = Color.FromRgb(
-                        (byte)random.Next(100, 255),
-                        (byte)random.Next(100, 255),
-                        (byte)random.Next(100, 255)
-                    );
-
-                    // 创建材质
-                    var material = new DiffuseMaterial(new SolidColorBrush(color));
-
-                    // 应用材质到所有几何体
-                    ApplyMaterialToModel(model3DGroup, material);
+                    // 如果preserveOriginalMaterial为true，材质已经由ModelImporter加载
+                    // 只有在不保留原始材质时才应用随机颜色
+                    if (!preserveOriginalMaterial)
+                    {
+                        // 为模型创建一个随机颜色
+                        var random = new Random();
+                        var color = Color.FromRgb(
+                            (byte)random.Next(100, 255),
+                            (byte)random.Next(100, 255),
+                            (byte)random.Next(100, 255)
+                        );
+                        // 创建材质
+                        var material = new DiffuseMaterial(new SolidColorBrush(color));
+                        // 应用材质到所有几何体
+                        ApplyMaterialToModel(model3DGroup, material);
+                    }
 
                     // 创建围绕模型中心的变换
                     model3DGroup.Transform = CreateModelTransform(
@@ -282,16 +742,17 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"加载模型失败: {ex.Message}",
-                    "错误",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                ErrorOccurred?.Invoke(this, new ErrorEventArgs("加载模型失败", ex));
             }
         }
 
-        // 添加更新模型位置的方法
+        /// <summary>
+        /// 更新模型位置的方法
+        /// </summary>
+        /// <param name="modelId"></param>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        /// <param name="scale"></param>
         public void UpdateModelTransform(
             string modelId,
             Vector3D? position = null,
@@ -313,6 +774,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 应用材质到所有几何体
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="material"></param>
         private void ApplyMaterialToModel(Model3D model, Material material)
         {
             if (model is Model3DGroup group)
@@ -329,6 +795,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 视图3D双击事件回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Viewport_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var point = e.GetPosition(viewport);
@@ -348,7 +819,7 @@ namespace SUNWODA_SEVB.Component.UserControls
                     ModelDoubleClicked?.Invoke(this, new ModelDoubleClickEventArgs(modelInfo));
 
                     // 高亮模型
-                    HighlightModel(modelInfo.Id!);
+                    //HighlightModel(modelInfo.Id!);
 
                     // 显示模型信息
                     ShowModelInfo(modelInfo);
@@ -356,6 +827,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 获取点击测试结果
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
         private RayMeshGeometry3DHitTestResult? GetHitTestResult(Point point)
         {
             var hitParams = new PointHitTestParameters(point);
@@ -378,6 +854,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             return resultList.OrderBy(r => r.DistanceToRayOrigin).FirstOrDefault();
         }
 
+        /// <summary>
+        /// 从点击结果中寻找匹配模型
+        /// </summary>
+        /// <param name="hitResult"></param>
+        /// <returns></returns>
         private Model3D? FindModelFromHitResult(RayMeshGeometry3DHitTestResult hitResult)
         {
             var visual = hitResult.VisualHit;
@@ -399,6 +880,12 @@ namespace SUNWODA_SEVB.Component.UserControls
             return null;
         }
 
+        /// <summary>
+        /// 目标是否包含在模型中
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         private bool IsModelContainsGeometry(Model3D model, Model3D target)
         {
             if (model == target)
@@ -416,6 +903,10 @@ namespace SUNWODA_SEVB.Component.UserControls
             return false;
         }
 
+        /// <summary>
+        /// 测试使用：显示模型信息
+        /// </summary>
+        /// <param name="modelInfo"></param>
         private void ShowModelInfo(ModelInfo modelInfo)
         {
             // 获取模型中心点信息
@@ -450,6 +941,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             MessageBox.Show(message, "模型信息", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        /// <summary>
+        /// 获取模型材质
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         private Material GetModelMaterial(Model3D model)
         {
             if (model is Model3DGroup group)
@@ -475,8 +971,20 @@ namespace SUNWODA_SEVB.Component.UserControls
             return new DiffuseMaterial(new SolidColorBrush(color));
         }
 
+        /// <summary>
+        /// 高亮模型
+        /// </summary>
+        /// <param name="modelId"></param>
         private void HighlightModel(string modelId)
         {
+            // 停止之前的定时器
+            if (_highlightTimer != null)
+            {
+                _highlightTimer.Stop();
+                _highlightTimer.Tick -= OnHighlightTimerTick;
+                _highlightTimer = null;
+            }
+
             // 恢复之前高亮的模型
             if (_highlightedModel != null && _originalMaterial != null)
             {
@@ -499,23 +1007,56 @@ namespace SUNWODA_SEVB.Component.UserControls
                 ApplyMaterialToModel(modelVisual.Content, highlightMaterial);
 
                 // 3秒后自动恢复
-                var timer = new System.Windows.Threading.DispatcherTimer
+                // 创建新定时器
+                _highlightTimer = new DispatcherTimer
                 {
-                    Interval = TimeSpan.FromSeconds(3),
+                    Interval = TimeSpan.FromSeconds(3)
                 };
-                timer.Tick += (s, e) =>
-                {
-                    timer.Stop();
-                    ApplyMaterialToModel(_highlightedModel, _originalMaterial);
-                    _highlightedModel = null;
-                    _originalMaterial = null;
-                };
-                timer.Start();
+                _highlightTimer.Tick += OnHighlightTimerTick;
+                _highlightTimer.Start();
             }
         }
 
+        private void OnHighlightTimerTick(object? sender, EventArgs e)
+        {
+            if (_highlightTimer != null)
+            {
+                _highlightTimer.Stop();
+                _highlightTimer.Tick -= OnHighlightTimerTick;
+                _highlightTimer = null;
+            }
+
+            if (_highlightedModel != null && _originalMaterial != null)
+            {
+                ApplyMaterialToModel(_highlightedModel, _originalMaterial);
+                _highlightedModel = null;
+                _originalMaterial = null;
+            }
+        }
+
+        /// <summary>
+        /// 测试工具栏清除所有模型按钮点击回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnClearAll_Click(object sender, RoutedEventArgs e)
         {
+            ClearAllModel();
+        }
+
+        public void ClearAllModel()
+        {
+            // 清空缓存
+            _modelCache.Clear();
+
+            // 停止定时器
+            if (_highlightTimer != null)
+            {
+                _highlightTimer.Stop();
+                _highlightTimer.Tick -= OnHighlightTimerTick;
+                _highlightTimer = null;
+            }
+
             // 移除边界框
             if (_selectionBoundingBox != null)
             {
@@ -538,21 +1079,47 @@ namespace SUNWODA_SEVB.Component.UserControls
             _modelVisualMap.Clear();
             _modelCenterMap.Clear();
             _leftClickedModel = null;
+            _highlightedModel = null;
+            _originalMaterial = null;
         }
 
+        /// <summary>
+        /// 测试工具栏重置相机位置按钮点击回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnResetView_Click(object sender, RoutedEventArgs e)
+        {
+            ResetCameraView();
+        }
+
+        /// <summary>
+        /// 重置相机位置
+        /// </summary>
+        public void ResetCameraView()
         {
             viewport.ResetCamera();
             viewport.ZoomExtents(500);
         }
 
+        /// <summary>
+        /// 获取所有加载的模型信息
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<ModelInfo> GetLoadedModels()
         {
             return _modelInfoMap.Values;
         }
 
+        /// <summary>
+        /// 移除某个模型
+        /// </summary>
+        /// <param name="modelId"></param>
         public void RemoveModel(string modelId)
         {
+            // 从缓存中移除
+            _modelCache.RemoveAll(c => c.ModelInfo.Id == modelId);
+
             var modelToRemove = _modelInfoMap.FirstOrDefault(kvp => kvp.Value.Id == modelId);
             if (modelToRemove.Key != null)
             {
@@ -587,6 +1154,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 视图3D左键按下事件回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Viewport_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var point = e.GetPosition(viewport);
@@ -620,6 +1192,10 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 为模型添加选择框
+        /// </summary>
+        /// <param name="modelId"></param>
         private void AddSelectionBoundingBox(string modelId)
         {
             if (_modelVisualMap.TryGetValue(modelId, out var modelVisual))
@@ -672,7 +1248,7 @@ namespace SUNWODA_SEVB.Component.UserControls
                 {
                     BoundingBox = bounds,
                     //Diameter = 0.1,
-                    Diameter = 0.01* maxEdge,
+                    Diameter = 0.01 * maxEdge,
                     Fill = Brushes.Yellow,
                 };
 
@@ -681,6 +1257,11 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 测试工具栏移除模型按钮点击事件回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnRemoveModel_Click(object sender, RoutedEventArgs e)
         {
             if (
@@ -703,12 +1284,28 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
 
+        /// <summary>
+        /// 测试工具栏模型居中按钮点击事件回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnCenterModel_Click(object sender, RoutedEventArgs e)
         {
             if (
                 _leftClickedModel != null
                 && _modelInfoMap.TryGetValue(_leftClickedModel, out var modelInfo)
             )
+            {
+                CenterModel(modelInfo);
+            }
+        }
+
+        /// <summary>
+        /// 模型居中
+        /// </summary>
+        public void CenterModel(ModelInfo? modelInfo)
+        {
+            if (modelInfo is not null)
             {
                 _modelCenterMap.TryGetValue(modelInfo.Id!, out var originalCenter);
                 // 获取变换后的中心点
@@ -729,7 +1326,19 @@ namespace SUNWODA_SEVB.Component.UserControls
         }
     }
 
-    // 双击事件参数
+    /// <summary>
+    /// 模型缓存数据
+    /// </summary>
+    internal class ModelCacheData
+    {
+        public ModelInfo ModelInfo { get; set; } = null!;
+        public Transform3D? Transform { get; set; }
+        public Point3D Center { get; set; }
+    }
+
+    /// <summary>
+    /// 双击事件参数
+    /// </summary>
     public class ModelDoubleClickEventArgs : EventArgs
     {
         public ModelInfo ModelInfo { get; }
@@ -737,6 +1346,21 @@ namespace SUNWODA_SEVB.Component.UserControls
         public ModelDoubleClickEventArgs(ModelInfo modelInfo)
         {
             ModelInfo = modelInfo;
+        }
+    }
+
+    /// <summary>
+    /// 错误发送事件参数
+    /// </summary>
+    public class ErrorEventArgs : EventArgs
+    {
+        public string Message { get; }
+        public Exception Exception { get; }
+
+        public ErrorEventArgs(string message, Exception exception)
+        {
+            Message = message;
+            Exception = exception;
         }
     }
 }

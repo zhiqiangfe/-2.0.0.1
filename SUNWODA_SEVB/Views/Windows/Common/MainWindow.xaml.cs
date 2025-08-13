@@ -11,7 +11,7 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using SUNWODA_SEVB.Component.UserControls;
 
-namespace SUNWODA_SEVB
+namespace SUNWODA_SEVB.Views.Windows.Common
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -22,7 +22,7 @@ namespace SUNWODA_SEVB
         {
             InitializeComponent();
             // 订阅双击事件
-            modelViewer.ModelDoubleClicked += OnModelDoubleClicked;
+            //modelViewer.ModelDoubleClicked += OnModelDoubleClicked;
 
             // 可以程序化加载模型
             // modelViewer.LoadModel(@"C:\Models\example.obj", "示例模型");
@@ -59,12 +59,12 @@ namespace SUNWODA_SEVB
         //    Application.Current.Shutdown();
         //}
 
-        private void OnModelDoubleClicked(object? sender, ModelDoubleClickEventArgs e)
-        {
-            // 处理模型双击事件
-            Console.WriteLine($"双击了模型: {e.ModelInfo.Name}");
+        //private void OnModelDoubleClicked(object? sender, ModelDoubleClickEventArgs e)
+        //{
+        //    // 处理模型双击事件
+        //    Console.WriteLine($"双击了模型: {e.ModelInfo.Name}");
 
-            // 可以显示自定义对话框或执行其他操作
-        }
+        //    // 可以显示自定义对话框或执行其他操作
+        //}
     }
 }

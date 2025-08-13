@@ -15,8 +15,5 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "is_enabled", ColumnDescription = "是否启用")]
         public bool IsEnabled { get; set; }
 
-        [SugarColumn(ColumnName = "is_init_show", ColumnDescription = "是否初始化显示")]
-        public bool IsInitShow { get; set; }
-
     }
 }

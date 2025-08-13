@@ -11,7 +11,7 @@ namespace SUNWODA_SEVB.Data
     /// <summary>
     /// 数据层服务注册扩展
     /// </summary>
-    public static class ServiceCollectionExtensions
+    public static class DataServiceExtensions
     {
         public static IServiceCollection AddDataServices(this IServiceCollection services)
         {
@@ -115,6 +115,7 @@ namespace SUNWODA_SEVB.Data
             services.AddScoped<IPLCAddressConfigRepository, PLCAddressConfigRepository>();
             services.AddScoped<IPLCConfigRepository, PLCConfigRepository>();
             services.AddScoped<IPLCRWConfigRepository, PLCRWConfigRepository>();
+            services.AddScoped<IWorkSpaceProjectRepository, WorkSpaceProjectRepository>();
 
             return services;
         }

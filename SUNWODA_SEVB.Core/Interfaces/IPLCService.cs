@@ -10,12 +10,9 @@ namespace SUNWODA_SEVB.Core.Interfaces
 {
     public interface IPLCService
     {
-        static ObservableCollection<ConnectInfo>? ConnectInfos { get; set; }
-
-        static ObservableCollection<PLCRWAddress>? PLCRWAddressTable { get; set; }
         /// <summary>
         /// 初始化PLC
         /// </summary>
-        Task<bool> InitPlcs();
+        Task<bool> InitializeAsync(CancellationToken cancellationToken);
     }
 }
