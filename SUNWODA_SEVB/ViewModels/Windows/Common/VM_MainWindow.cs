@@ -20,6 +20,8 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
         private ModuleInfo? _selectedModule;
         private bool _isNavigating;
         private string _loadingMessage = "";
+        private bool _isNavigationExpanded = true;
+        private GridLength _navigationColumnDefinitionWidth;
 
         // 添加导航防抖
         private CancellationTokenSource? _navigationCts;
@@ -38,8 +40,6 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
                 SetProperty(ref _selectedModule, value);
                 if (value != null && !IsNavigating)
                 {
-                    //// 异步导航，避免UI阻塞
-                    //NavigateToModuleAsync(value);
                     // 使用防抖机制避免频繁导航
                     NavigateToModuleDebounced(value);
                 }
@@ -58,9 +58,16 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
             set => SetProperty(ref _loadingMessage, value);
         }
 
+        public bool IsNavigationExpanded
+        {
+            get => _isNavigationExpanded;
+            set => SetProperty(ref _isNavigationExpanded, value);
+        }
+
         public ICommand? NavigateCommand { get; set; }
         public ICommand? SettingsCommand { get; set; }
         public ICommand? UserCommand { get; set; }
+        public ICommand? ToggleNavigationStateCommand { get; set; }
 
         public VM_MainWindow(
             ILoggerService<VM_MainWindow> logger,
@@ -81,8 +88,10 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
             IsNavigating = true;
             LoadingMessage = "正在初始化导航系统...";
 
-            // 在后台线程加载模块
+            // 加载模块
             _moduleManager.AutoRegisterModules();
+
+            //PreLoadModule();
 
             // 构建菜单 - 只显示普通模块
             MenuItems = new ObservableCollection<ModuleInfo>(
@@ -96,6 +105,7 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
             UserCommand = new RelayCommand(
                 () => NavigateToSpecialModuleAsync(ModuleType.UserCenter)
             );
+            ToggleNavigationStateCommand = new RelayCommand(ToggleNavigationState);
 
             // 订阅导航事件
             _navigationService.Navigated += OnNavigated;
@@ -110,6 +120,23 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
             );
 
             NavigateToDefaultAsync();
+        }
+
+        private void PreLoadModule()
+        {
+            foreach (var module in _moduleManager.Modules)
+            {
+                if (
+                    module.Type == ModuleType.Dashboard
+                    || module.Type == ModuleType.Settings
+                    || module.Type == ModuleType.UserCenter
+                    || module.Order < 2
+                )
+                {
+                    _moduleManager.GetView(module);
+                }
+            }
+            _logger.Info("预加载业务模块完成");
         }
 
         private async void NavigateToDefaultAsync()
@@ -256,6 +283,31 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
                         })
                     );
                 });
+            }
+        }
+
+        private void ToggleNavigationState(object? sender)
+        {
+            var navigationColumnDefinition = sender as ColumnDefinition;
+            if (navigationColumnDefinition != null)
+            {
+                IsNavigationExpanded = IsNavigationExpanded ? false : true;
+
+                if (!IsNavigationExpanded)
+                {
+                    double targetValue = -navigationColumnDefinition.MaxWidth;
+                    _navigationColumnDefinitionWidth = navigationColumnDefinition.Width;
+
+                    navigationColumnDefinition.MinWidth = 0;
+                    navigationColumnDefinition.Width = new GridLength();
+                }
+                else
+                {
+                    double targetValue = navigationColumnDefinition.Width.Value;
+
+                    navigationColumnDefinition.MinWidth = 200;
+                    navigationColumnDefinition.Width = _navigationColumnDefinitionWidth;
+                }
             }
         }
 

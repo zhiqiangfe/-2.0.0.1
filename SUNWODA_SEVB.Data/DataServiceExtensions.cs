@@ -131,6 +131,8 @@ namespace SUNWODA_SEVB.Data
             services.AddScoped<IPLCConfigRepository, PLCConfigRepository>();
             services.AddScoped<IPLCRWConfigRepository, PLCRWConfigRepository>();
             services.AddScoped<IWorkSpaceProjectRepository, WorkSpaceProjectRepository>();
+            services.AddScoped<IProjectSettingRepository, ProjectSettingRepository>();
+            services.AddScoped<IUsersRepository, UsersRepository>();
 
             return services;
         }

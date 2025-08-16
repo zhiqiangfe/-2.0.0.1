@@ -145,29 +145,6 @@ namespace SUNWODA_SEVB.Tool.Extension
         }
 
         /// <summary>
-        /// 字符串转窗口状态
-        /// </summary>
-        /// <param name="s">字符串</param>
-        /// <returns>窗口状态</returns>
-        public static WindowState ToWindowSate(this string s)
-        {
-            WindowState mainWindowState = WindowState.Normal;
-            switch (s.ToUpper())
-            {
-                case "MINIMUM":
-                    mainWindowState = WindowState.Minimized;
-                    break;
-                case "MAXIMUM":
-                    mainWindowState = WindowState.Maximized;
-                    break;
-                case "NORMAL":
-                default:
-                    break;
-            }
-            return mainWindowState;
-        }
-
-        /// <summary>
         /// 尾部追加
         /// </summary>
         /// <param name="s">字符串</param>
@@ -187,6 +164,36 @@ namespace SUNWODA_SEVB.Tool.Extension
         public static string AppendStart(this string s, string appendStr)
         {
             return appendStr + s;
+        }
+
+        public static Type ToType(this string typeStr)
+        {
+            return typeStr?.ToUpper() switch
+            {
+                "STRING" => typeof(string),
+                "FLOAT" => typeof(float),
+                "DOUBLE" => typeof(double),
+                "DECIMAL" => typeof(decimal),
+                "SBYTE" => typeof(sbyte),
+                "BYTE" => typeof(byte),
+                "SHORT" => typeof(short),
+                "USHORT" => typeof(ushort),
+                "INT" or "INTEGER" => typeof(int),
+                "UINT" => typeof(uint),
+                "LONG" => typeof(long),
+                "ULONG" => typeof(ulong),
+                "BOOL" or "BOOLEAN" => typeof(bool),
+                "DATETIME" => typeof(DateTime),
+                "WINDOWSTATE" => typeof(WindowState),
+                "HORIZONTALALIGNMENT" => typeof(HorizontalAlignment),
+                "VERTICALALIGNMENT" => typeof(VerticalAlignment),
+                _ => throw new FormatException($"不支持的数据类型: {typeStr}")
+            };
+        }
+
+        public static TEnum ToEnum<TEnum>(this string enumStr) where TEnum : struct
+        {
+            return Enum.TryParse(enumStr, out TEnum result) ? result : default;
         }
     }
 }

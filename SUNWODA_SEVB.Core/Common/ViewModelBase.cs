@@ -30,26 +30,43 @@ namespace SUNWODA_SEVB.Core.Common
         }
 
         // 生命周期方法
+        /// <summary>
+        /// 导航完成后
+        /// </summary>
+        /// <param name="parameter"></param>
         public virtual void OnNavigatedTo(object? parameter)
         {
             // 默认调用异步版本
             Task.Run(async () => await OnNavigatedToAsync(parameter));
         }
 
+        /// <summary>
+        /// 导航完成前
+        /// </summary>
         public virtual void OnNavigatedFrom()
         {
             // 默认调用异步版本
             Task.Run(async () => await OnNavigatedFromAsync());
         }
 
+        /// <summary>
+        /// 是否可以导航
+        /// </summary>
+        /// <returns></returns>
         public virtual bool CanNavigateFrom() => true;
 
+        /// <summary>
+        /// ViewModel初始化完成
+        /// </summary>
         public virtual void OnInitialize()
         {
             // 默认调用异步版本
             Task.Run(async () => await OnInitializeAsync());
         }
 
+        /// <summary>
+        /// 清理资源
+        /// </summary>
         public virtual void OnCleanup()
         {
             // 默认调用异步版本
@@ -57,27 +74,50 @@ namespace SUNWODA_SEVB.Core.Common
         }
 
         // 新增异步生命周期方法
+        /// <summary>
+        /// 导航完成后
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
         protected virtual async Task OnNavigatedToAsync(object? parameter)
         {
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 导航完成前
+        /// </summary>
+        /// <returns></returns>
         protected virtual async Task OnNavigatedFromAsync()
         {
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// ViewModel初始化完成
+        /// </summary>
+        /// <returns></returns>
         protected virtual async Task OnInitializeAsync()
         {
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        /// <returns></returns>
         protected virtual async Task OnCleanupAsync()
         {
             await Task.CompletedTask;
         }
 
-        // UI线程辅助方法
+        // 线程辅助方法
+
+        /// <summary>
+        /// UI线程辅助方法
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
         protected async Task RunOnUIThreadAsync(Action action)
         {
             if (_dispatcher.CheckAccess())
@@ -90,6 +130,10 @@ namespace SUNWODA_SEVB.Core.Common
             }
         }
 
+        /// <summary>
+        /// UI线程辅助方法
+        /// </summary>
+        /// <param name="action"></param>
         protected void RunOnUIThread(Action action)
         {
             if (_dispatcher.CheckAccess())
@@ -103,17 +147,34 @@ namespace SUNWODA_SEVB.Core.Common
         }
 
         // 后台任务辅助方法
+
+        /// <summary>
+        /// 后台任务辅助方法
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func"></param>
+        /// <returns></returns>
         protected async Task<T> RunInBackgroundAsync<T>(Func<Task<T>> func)
         {
             return await Task.Run(func);
         }
 
+        /// <summary>
+        /// 后台任务辅助方法
+        /// </summary>
+        /// <param name="func"></param>
+        /// <returns></returns>
         protected async Task RunInBackgroundAsync(Func<Task> func)
         {
             await Task.Run(func);
         }
 
-        // 延迟执行UI线程辅助方法
+        /// <summary>
+        /// 延迟执行UI线程辅助方法
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="delayMilliseconds"></param>
+        /// <returns></returns>
         protected async Task DelayedExecuteAsync(Action action, int delayMilliseconds)
         {
             await Task.Delay(delayMilliseconds);

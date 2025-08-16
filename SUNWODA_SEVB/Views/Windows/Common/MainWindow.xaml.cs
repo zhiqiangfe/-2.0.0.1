@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using HandyControl.Controls;
+using SUNWODA_SEVB.ViewModels.Windows.Common;
+//using System.Windows;
+using System.Windows.Controls.Primitives;
 
 namespace SUNWODA_SEVB.Views.Windows.Common
 {

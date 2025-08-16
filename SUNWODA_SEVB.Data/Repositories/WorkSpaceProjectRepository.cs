@@ -1,14 +1,7 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using SqlSugar;
+﻿using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
-using SUNWODA_SEVB.Tool.Helper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SUNWODA_SEVB.Data.Repositories
 {

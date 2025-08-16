@@ -44,12 +44,6 @@ namespace SUNWODA_SEVB.Component.UserControls
         // 定时器管理
         private DispatcherTimer? _highlightTimer;
 
-        // 用于存储模型数据的缓存（保持数据）
-        private readonly List<ModelCacheData> _modelCache = new List<ModelCacheData>();
-
-        // 标记是否已初始化事件
-        private bool _eventsInitialized = false;
-
         #region 依赖属性定义
         /// <summary>
         /// 是否显示测试工具栏
@@ -164,31 +158,14 @@ namespace SUNWODA_SEVB.Component.UserControls
         public ModelViewerControl()
         {
             InitializeComponent();
-            // 注册Loaded和Unloaded事件
-            Loaded += OnControlLoaded;
-            Unloaded += OnControlUnloaded;
+            InitializeEvents();
         }
 
-        private void OnControlLoaded(object sender, RoutedEventArgs e)
+        ~ModelViewerControl()
         {
-            // 初始化事件（只初始化一次）
-            if (!_eventsInitialized)
-            {
-                InitializeEvents();
-                _eventsInitialized = true;
-            }
-
-            // 恢复缓存的模型
-            RestoreModelsFromCache();
-        }
-
-        private void OnControlUnloaded(object sender, RoutedEventArgs e)
-        {
-            // 保存当前模型到缓存
-            SaveModelsToCache();
-
-            // 清理视觉资源但保留数据
-            CleanupVisualResources();
+            ClearAllModel();
+            GC.Collect(2, GCCollectionMode.Forced);
+            GC.WaitForPendingFinalizers();
         }
 
         private void InitializeEvents()
@@ -207,165 +184,6 @@ namespace SUNWODA_SEVB.Component.UserControls
             if (BtnRemoveModel != null) BtnRemoveModel.Click += BtnRemoveModel_Click;
             if (BtnCenterModel != null) BtnCenterModel.Click += BtnCenterModel_Click;
         }
-
-        private void SaveModelsToCache()
-        {
-            _modelCache.Clear();
-
-            foreach (var kvp in _modelInfoMap)
-            {
-                var modelInfo = kvp.Value;
-                var modelVisual = _modelVisualMap[modelInfo.Id!];
-                var center = _modelCenterMap[modelInfo.Id!];
-
-                // 保存模型数据到缓存
-                _modelCache.Add(new ModelCacheData
-                {
-                    ModelInfo = modelInfo,
-                    Transform = modelVisual.Content?.Transform?.Clone(),
-                    Center = center
-                });
-            }
-        }
-
-        private void RestoreModelsFromCache()
-        {
-            if (_modelCache.Count == 0) return;
-
-            foreach (var cacheData in _modelCache)
-            {
-                try
-                {
-                    // 重新加载模型
-                    if (!string.IsNullOrEmpty(cacheData.ModelInfo.FilePath))
-                    {
-                        //var model3DGroup = _modelImporter.Load(cacheData.ModelInfo.FilePath);
-                        var model3DGroup = cacheData.ModelInfo.Model;
-
-                        if (model3DGroup != null)
-                        {
-                            // 恢复变换
-                            if (cacheData.Transform != null)
-                            {
-                                model3DGroup.Transform = cacheData.Transform;
-                            }
-
-                            // 创建ModelVisual3D并添加到视口
-                            var modelVisual = new ModelVisual3D { Content = model3DGroup };
-
-                            // 恢复映射关系
-                            _modelInfoMap[model3DGroup] = cacheData.ModelInfo;
-                            _modelVisualMap[cacheData.ModelInfo.Id!] = modelVisual;
-                            _modelCenterMap[cacheData.ModelInfo.Id!] = cacheData.Center;
-
-                            // 添加到视口
-                            viewport?.Children.Add(modelVisual);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"恢复模型时出错: {ex.Message}");
-                }
-            }
-
-            // 恢复相机视角
-            if (viewport != null && _modelCache.Count > 0)
-            {
-                viewport.ZoomExtents(100);
-            }
-        }
-
-        private void CleanupVisualResources()
-        {
-            try
-            {
-                // 停止高亮定时器
-                if (_highlightTimer != null)
-                {
-                    _highlightTimer.Stop();
-                    _highlightTimer.Tick -= OnHighlightTimerTick;
-                    _highlightTimer = null;
-                }
-
-                // 清理选择框
-                if (_selectionBoundingBox != null && viewport != null)
-                {
-                    if (viewport.Children.Contains(_selectionBoundingBox))
-                    {
-                        viewport.Children.Remove(_selectionBoundingBox);
-                    }
-                    _selectionBoundingBox = null;
-                }
-
-                // 从视口移除所有模型（但不清理数据）
-                if (viewport != null)
-                {
-                    var modelsToRemove = viewport.Children
-                        .OfType<ModelVisual3D>()
-                        .Where(m => m.Content != null && _modelInfoMap.ContainsKey(m.Content))
-                        .ToList();
-
-                    foreach (var model in modelsToRemove)
-                    {
-                        viewport.Children.Remove(model);
-
-                        if (model.Content != null)
-                        {
-                            DisposeModel3D(model.Content);
-                            model.Content = null;
-                        }
-                    }
-                }
-
-                // 清理映射表（数据已保存到缓存）
-                _modelInfoMap.Clear();
-                _modelVisualMap.Clear();
-                _modelCenterMap.Clear();
-
-                // 清理引用
-                _highlightedModel = null;
-                _originalMaterial = null;
-                _leftClickedModel = null;
-
-                GC.Collect(2, GCCollectionMode.Forced);
-                GC.WaitForPendingFinalizers();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"清理视觉资源时出错: {ex.Message}");
-            }
-        }
-
-        private void DisposeModel3D(Model3D model)
-        {
-            if (model == null) return;
-
-            if (model is Model3DGroup group)
-            {
-                foreach (var child in group.Children)
-                {
-                    DisposeModel3D(child);
-                }
-                group.Children.Clear();
-            }
-            else if (model is GeometryModel3D geometryModel)
-            {
-                // Clear geometry references
-                if (geometryModel.Geometry is MeshGeometry3D mesh)
-                {
-                    mesh.Positions?.Clear();
-                    mesh.Normals?.Clear();
-                    mesh.TextureCoordinates?.Clear();
-                    mesh.TriangleIndices?.Clear();
-                }
-                geometryModel.Geometry = null;
-                geometryModel.Material = null;
-                geometryModel.BackMaterial = null;
-            }
-        }
-
-
 
         #region 依赖属性改变回调
 
@@ -1046,9 +864,6 @@ namespace SUNWODA_SEVB.Component.UserControls
 
         public void ClearAllModel()
         {
-            // 清空缓存
-            _modelCache.Clear();
-
             // 停止定时器
             if (_highlightTimer != null)
             {
@@ -1117,9 +932,6 @@ namespace SUNWODA_SEVB.Component.UserControls
         /// <param name="modelId"></param>
         public void RemoveModel(string modelId)
         {
-            // 从缓存中移除
-            _modelCache.RemoveAll(c => c.ModelInfo.Id == modelId);
-
             var modelToRemove = _modelInfoMap.FirstOrDefault(kvp => kvp.Value.Id == modelId);
             if (modelToRemove.Key != null)
             {

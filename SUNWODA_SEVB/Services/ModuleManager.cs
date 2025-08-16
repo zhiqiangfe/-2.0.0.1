@@ -46,7 +46,7 @@ namespace SUNWODA_SEVB.Services
 
             var assemblies = AppDomain
                 .CurrentDomain.GetAssemblies()
-                .Where(a => a.FullName?.StartsWith("SUNWODA_SEVB") ?? false)
+                .Where(a => a.FullName?.StartsWith(this.GetType().Namespace?.Split('.')[0] ?? "SUNWODA_SEVB") ?? false)
                 .ToList();
 
             // 并行处理程序集以提高性能

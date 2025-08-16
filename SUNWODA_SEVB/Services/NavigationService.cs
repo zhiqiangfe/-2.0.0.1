@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using SUNWODA_SEVB.Core.Common;
@@ -136,7 +135,6 @@ namespace SUNWODA_SEVB.Services
                 }
 
                 var viewModel = page.DataContext as ViewModelBase;
-                viewModel?.OnNavigatedTo(parameter);
 
                 // 在UI线程执行导航 - 使用同步方式避免持续渲染
                 await Application.Current.Dispatcher.InvokeAsync(
@@ -151,6 +149,8 @@ namespace SUNWODA_SEVB.Services
                 );
 
                 _currentModule = module;
+
+                viewModel?.OnNavigatedTo(parameter);
 
                 // 触发导航完成事件
                 Navigated?.Invoke(

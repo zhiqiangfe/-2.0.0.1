@@ -4,8 +4,6 @@ using SqlSugar;
 using SUNWODA_SEVB.Core.Attributes;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
-using SUNWODA_SEVB.Core.Models;
-using SUNWODA_SEVB.Data.Configurations;
 using SUNWODA_SEVB.Data.Models;
 
 namespace SUNWODA_SEVB.Data
@@ -111,7 +109,7 @@ namespace SUNWODA_SEVB.Data
                             Name = "DefaultProject",
                             Value = "",
                             Type = "string",
-                            Remark = "默认显示项目",
+                            Remark = "启动默认显示项目(VM)",
                         }
                     )
                     .ExecuteCommand();
