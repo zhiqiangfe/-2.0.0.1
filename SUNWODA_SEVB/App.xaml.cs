@@ -10,6 +10,7 @@ using NLog.Extensions.Logging;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Data;
+using SUNWODA_SEVB.Data.Repositories;
 using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Logging.Targets;
 using SUNWODA_SEVB.PLC;
@@ -167,6 +168,11 @@ namespace SUNWODA_SEVB
             services.AddSingleton<IDatabaseService, DatabaseService>();
 
             services.AddSingleton<IPLCService, PLCService>();
+
+            // 注册MES日志仓储
+            services.AddSingleton<IMesInterfaceLogRepository, MesInterfaceLogRepository>();
+
+
 
             // 注册 ViewModels
             services.AddTransient<ViewModels.MainWindowViewModel>();

@@ -1,5 +1,7 @@
-﻿using SUNWODA_SEVB.Core.Enumerations.Logging;
+﻿using SUNWODA_SEVB.Core.Common;
+using SUNWODA_SEVB.Core.Enumerations.Logging;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Models.Data;
 using System;
 using System.Runtime.CompilerServices;
 using ILogger = NLog.ILogger;
@@ -21,6 +23,12 @@ namespace SUNWODA_SEVB.Logging
         /// 获取日志上下文类型
         /// </summary>
         public Type ContextType => typeof(T);
+
+        // 通过构造函数注入仓储（可选）
+        public NLogLogger(IMesInterfaceLogRepository? mesLogRepository = null)
+        {
+            _mesLogRepository = mesLogRepository;
+        }
 
         #endregion
 
@@ -202,30 +210,69 @@ namespace SUNWODA_SEVB.Logging
         #endregion
 
         #region 接口日志方法
+        private readonly IMesInterfaceLogRepository? _mesLogRepository;
         /// <summary>
         /// 记录MES接口日志
         /// </summary>
         public void LogMesInterface(string interfaceName, string requestData, string responseData,
-            bool isSuccess, int executionTime = 0, string errorMessage = null!)
+            bool isSuccess, int executionTime = 0, string? errorMessage = null)
         {
-            var logger = NLog.LogManager.GetLogger("MesInterface." + interfaceName);
-            var logEvent = NLog.LogEventInfo.Create(
-                isSuccess ? NLog.LogLevel.Info : NLog.LogLevel.Error,
-                logger.Name,
-                $"MES接口调用: {interfaceName}");
-
-            logEvent.Properties["InterfaceName"] = interfaceName;
-            logEvent.Properties["RequestData"] = requestData;
-            logEvent.Properties["ResponseData"] = responseData;
-            logEvent.Properties["IsSuccess"] = isSuccess;
-            logEvent.Properties["ExecutionTime"] = executionTime;
-
-            if (!string.IsNullOrEmpty(errorMessage))
+            try
             {
-                logEvent.Exception = new Exception(errorMessage);
-            }
+                var logger = NLog.LogManager.GetLogger($"MesInterface.{interfaceName}");
+                var logLevel = isSuccess ? NLog.LogLevel.Info : NLog.LogLevel.Error;
 
-            logger.Log(logEvent);
+                var logEvent = NLog.LogEventInfo.Create(
+                    logLevel,
+                    logger.Name,
+                    $"MES接口调用: {interfaceName} | 成功: {isSuccess} | 耗时: {executionTime}ms");
+
+                // 设置所有属性
+                logEvent.Properties["InterfaceName"] = interfaceName;
+                logEvent.Properties["RequestData"] = requestData;
+                logEvent.Properties["ResponseData"] = responseData;
+                logEvent.Properties["IsSuccess"] = isSuccess;
+                logEvent.Properties["ExecutionTime"] = executionTime;
+
+                // 计算开始和结束时间
+                var endTime = DateTime.Now;
+                var startTime = endTime.AddMilliseconds(-executionTime);
+                logEvent.Properties["StartTime"] = startTime;
+                logEvent.Properties["EndTime"] = endTime;
+
+                // 设置扩展属性
+                logEvent.Properties["ApiType"] = GetApiTypeFromInterface(interfaceName);
+                logEvent.Properties["DeviceNumber"] = GetCurrentDeviceNumber();
+                logEvent.Properties["OperatorId"] = GetCurrentOperatorId();
+                logEvent.Properties["Endpoint"] = GetEndpointFromInterface(interfaceName);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    logEvent.Exception = new Exception(errorMessage);
+                    logEvent.Properties["ErrorMessage"] = errorMessage;
+                    logEvent.Properties["ErrorCode"] = ExtractErrorCode(errorMessage);
+                }
+
+                // 记录日志
+                logger.Log(logEvent);
+
+                // 同时记录到特殊文件（可选）
+                if (!isSuccess || executionTime > 1000) // 失败或慢响应记录到特殊文件
+                {
+                    var message = $"[{interfaceName}] Success:{isSuccess} Time:{executionTime}ms";
+                    if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        message += $" Error:{errorMessage}";
+                    }
+                    LogToSpecialFile("MES_SlowOrError.log", message,
+                        isSuccess ? CoreLogLevel.Warn : CoreLogLevel.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 日志记录失败不应影响主流程
+                Error($"记录MES接口日志失败: {ex.Message}", ex, false);
+            }
         }
 
         /// <summary>
@@ -307,6 +354,115 @@ namespace SUNWODA_SEVB.Logging
                 _ => NLog.LogLevel.Debug, // 默认级别
             };
         }
+
+        #region MES日志辅助方法
+
+        /// <summary>
+        /// 根据接口名称获取API类型
+        /// </summary>
+        private string GetApiTypeFromInterface(string interfaceName)
+        {
+            if (interfaceName.Contains("Client", StringComparison.OrdinalIgnoreCase))
+                return "Client";
+            if (interfaceName.Contains("EVCEVB", StringComparison.OrdinalIgnoreCase))
+                return "EVCEVB";
+            if (interfaceName.Contains("IME", StringComparison.OrdinalIgnoreCase))
+                return "IME";
+            if (interfaceName.Contains("Web", StringComparison.OrdinalIgnoreCase))
+                return "Web";
+            if (interfaceName.Contains("DIPS", StringComparison.OrdinalIgnoreCase))
+                return "DIPS";
+
+            return "Unknown";
+        }
+
+        /// <summary>
+        /// 获取当前设备编号
+        /// </summary>
+        private string? GetCurrentDeviceNumber()
+        {
+            try
+            {
+                // 从配置获取设备编号
+                //return ConfigurationHelper.GetValue("Device:Number", "Unknown");
+                return ConfigurationHelper.GetValue("Device");
+            }
+            catch
+            {
+                return "Unknown";
+            }
+        }
+
+        /// <summary>
+        /// 获取当前操作员ID
+        /// </summary>
+        private string? GetCurrentOperatorId()
+        {
+            try
+            {
+                // TODO: 从用户上下文服务获取
+                // 这里需要根据您的实际用户管理系统来实现,后续通过数据库查询获取操作员ID
+                // return UserContext.Current?.OperatorId ?? "System";
+                return "System";
+            }
+            catch
+            {
+                return "System";
+            }
+        }
+
+        /// <summary>
+        /// 根据接口名称获取端点
+        /// </summary>
+        private string? GetEndpointFromInterface(string interfaceName)
+        {
+            try
+            {
+                var endpoints = ConfigurationHelper.GetSection<Dictionary<string, string>>("MesApi:Endpoints");
+                if (endpoints != null && endpoints.TryGetValue(interfaceName, out var endpoint))
+                {
+                    return endpoint;
+                }
+
+                // 根据接口名称推断端点
+                return interfaceName.Replace(".", "/").ToLower();
+            }
+            catch
+            {
+                return interfaceName;
+            }
+        }
+
+        /// <summary>
+        /// 从错误消息中提取错误代码
+        /// </summary>
+        private string? ExtractErrorCode(string? errorMessage)
+        {
+            if (string.IsNullOrEmpty(errorMessage))
+                return null;
+
+            // 尝试从错误消息中提取错误代码
+            // 假设格式为 "[ERROR_CODE] message" 或 "Error Code: ERROR_CODE"
+            var patterns = new[]
+            {
+                @"\[([A-Z0-9_]+)\]",
+                @"Error Code:\s*([A-Z0-9_]+)",
+                @"错误代码:\s*([A-Z0-9_]+)"
+            };
+
+            foreach (var pattern in patterns)
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(errorMessage, pattern);
+                if (match.Success)
+                {
+                    return match.Groups[1].Value;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
 
         #endregion
     }

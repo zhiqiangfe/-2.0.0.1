@@ -397,12 +397,12 @@ namespace SUNWODA_SEVB.Data
         }
 
         private async Task TestFailedTransaction(
-     IUnitOfWork unitOfWork,
-     IPLCConfigRepository plcConfigRepo,
-     IPLCRWConfigRepository plcRWConfigRepo)
+            IUnitOfWork unitOfWork,
+            IPLCConfigRepository plcConfigRepo,
+            IPLCRWConfigRepository plcRWConfigRepo)
         {
             // 将变量声明移到try-catch外面
-            PLCConfigModel plcConfig = null;
+            PLCConfigModel? plcConfig = null;
             string testPlcName = "测试PLC_失败_" + DateTime.Now.Ticks;
             string testRwName = "测试读写区_失败_" + DateTime.Now.Ticks;
 
