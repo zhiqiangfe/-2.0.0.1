@@ -14,6 +14,8 @@ using HslCommunication.Profinet.Panasonic;
 using HslCommunication.Profinet.Siemens;
 using SUNWODA_SEVB.Core.Enumerations.PLC;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
+using SUNWODA_SEVB.Core.Interfaces.PLC;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Core.Models.PLC;
 using SUNWODA_SEVB.Tool.Extension;

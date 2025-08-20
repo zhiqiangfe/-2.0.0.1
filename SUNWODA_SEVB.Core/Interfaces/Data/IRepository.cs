@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace SUNWODA_SEVB.Core.Interfaces
+namespace SUNWODA_SEVB.Core.Interfaces.Data
 {
     /// <summary>
     /// 仓储基础接口

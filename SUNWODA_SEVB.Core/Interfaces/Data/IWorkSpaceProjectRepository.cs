@@ -1,6 +1,6 @@
 ﻿using SUNWODA_SEVB.Core.Models.Data;
 
-namespace SUNWODA_SEVB.Core.Interfaces
+namespace SUNWODA_SEVB.Core.Interfaces.Data
 {
     public interface IWorkSpaceProjectRepository : IRepository<WorkSpaceProjectModel>
     {

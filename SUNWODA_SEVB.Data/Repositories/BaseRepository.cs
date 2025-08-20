@@ -1,5 +1,5 @@
 ﻿using SqlSugar;
-using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using System.Linq.Expressions;
 
 namespace SUNWODA_SEVB.Data.Repositories
