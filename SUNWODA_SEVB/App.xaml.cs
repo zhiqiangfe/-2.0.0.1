@@ -18,6 +18,9 @@ using SUNWODA_SEVB.MES;
 using SUNWODA_SEVB.MES.Extensions;
 using SUNWODA_SEVB.MES.Services;
 using SUNWODA_SEVB.PLC;
+using SUNWODA_SEVB.Services;
+using SUNWODA_SEVB.ViewModels.Windows.Common;
+using SUNWODA_SEVB.Views.Windows.Common;
 
 namespace SUNWODA_SEVB
 {
@@ -34,19 +37,31 @@ namespace SUNWODA_SEVB
                 // 创建 Host，使用标准的配置加载方式
                 _host = Host.CreateDefaultBuilder()
                     .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
-                    .ConfigureAppConfiguration((context, config) =>
-                    {
-                        config.Sources.Clear();
-                        config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
-                        config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                        config.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                        config.AddEnvironmentVariables();
-                    })
-                    .ConfigureServices((context, services) =>
-                    {
-                        ConfigurationHelper.SetConfiguration(context.Configuration);
-                        ConfigureServices(services, context.Configuration);
-                    })
+                    .ConfigureAppConfiguration(
+                        (context, config) =>
+                        {
+                            config.Sources.Clear();
+                            config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
+                            config.AddJsonFile(
+                                "appsettings.json",
+                                optional: false,
+                                reloadOnChange: true
+                            );
+                            config.AddJsonFile(
+                                $"appsettings.{context.HostingEnvironment.EnvironmentName}.json",
+                                optional: true,
+                                reloadOnChange: true
+                            );
+                            config.AddEnvironmentVariables();
+                        }
+                    )
+                    .ConfigureServices(
+                        (context, services) =>
+                        {
+                            ConfigurationHelper.SetConfiguration(context.Configuration);
+                            ConfigureServices(services, context.Configuration);
+                        }
+                    )
                     .ConfigureLogging(logging =>
                     {
                         logging.ClearProviders();
@@ -96,7 +111,12 @@ namespace SUNWODA_SEVB
                 if (!databaseService.Initialize())
                 {
                     appLogger.Error("数据库初始化失败，应用程序将退出");
-                    MessageBox.Show("数据库初始化失败！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(
+                        "数据库初始化失败！",
+                        "错误",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                     Shutdown();
                     Environment.Exit(1);
                     return;
@@ -149,7 +169,7 @@ namespace SUNWODA_SEVB
 
                 // 记录应用启动
 
-                appLogger.Info("========== 应用程序启动 ==========",true);
+                appLogger.Info("========== 应用程序启动 ==========", true);
                 appLogger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}", true);
                 appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
                 appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
@@ -164,6 +184,7 @@ namespace SUNWODA_SEVB
 
                 // 创建并显示主窗口
                 var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+
                 mainWindow.Show();
             }
             catch (Exception ex)
@@ -171,7 +192,12 @@ namespace SUNWODA_SEVB
                 // 启动失败时记录日志
                 var logger = LogManager.GetLogger("AppStartup");
                 logger.Fatal(ex, "应用程序启动失败", true);
-                MessageBox.Show($"应用程序启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    $"应用程序启动失败: {ex.Message}",
+                    "错误",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 Shutdown();
                 Environment.Exit(1);
             }
@@ -194,23 +220,25 @@ namespace SUNWODA_SEVB
             // 添加数据库服务
             services.AddSingleton<IDatabaseService, DatabaseService>();
 
-            // 注册PLC服务
-            services.AddSingleton<IPLCService, PLCService>();
+            // 添加PLC服务
+            services.AddPLCService();
 
             // 注册MES服务
             services.AddMesServices();
 
             // 注册 ViewModels
             services.AddTransient<ViewModels.MainWindowViewModel>();
+            // 添加MVVM框架服务
+            services.AddMvvmFramework();
 
-            // 注册 Views
-            services.AddTransient<MainWindow>(serviceProvider =>
+            // 注册主窗口的ViewModel和View
+            services.AddSingleton<VM_MainWindow>();
+            services.AddSingleton<MainWindow>(serviceProvider =>
             {
-                var viewModel = serviceProvider.GetRequiredService<ViewModels.MainWindowViewModel>();
-                var window = new MainWindow
-                {
-                    DataContext = viewModel
-                };
+                var viewModel = serviceProvider.GetRequiredService<VM_MainWindow>();
+                var window = new MainWindow { DataContext = viewModel };
+                viewModel.NavigationFrame = window.NavigationFrame;
+                viewModel.InitNavigation();
                 return window;
             });
         }
@@ -236,7 +264,10 @@ namespace SUNWODA_SEVB
                 }
                 else
                 {
-                    logger.Fatal("发生未处理的域异常: {0}", args.ExceptionObject?.ToString() ?? "null");
+                    logger.Fatal(
+                        "发生未处理的域异常: {0}",
+                        args.ExceptionObject?.ToString() ?? "null"
+                    );
                 }
             };
 
@@ -254,7 +285,8 @@ namespace SUNWODA_SEVB
                     $"发生未处理的错误: {args.Exception.Message}",
                     "错误",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    MessageBoxImage.Error
+                );
             };
 
             // Task未处理异常
@@ -333,7 +365,8 @@ namespace SUNWODA_SEVB
             {
                 using (var scope = _host?.Services?.CreateScope())
                 {
-                    if (scope == null) return;
+                    if (scope == null)
+                        return;
 
                     var appLogRepo = scope.ServiceProvider.GetRequiredService<IAppLogRepository>();
                     //后续可以根据需要添加其他日志仓储接口
@@ -346,10 +379,12 @@ namespace SUNWODA_SEVB
                     // 清理MES接口日志 (30天)
                     var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(30);
 
-                    //// 清理Web接口日志 (30天)  
+                    //// 清理Web接口日志 (30天)
                     //var webLogCount = await webLogRepo.DeleteOldLogsAsync(30);
 
-                    logger?.Info($"数据库日志清理完成 - 应用日志: 按时间删除{appLogResult.TimeBasedCount}条,按大小删除{appLogResult.SizeBasedCount}条");
+                    logger?.Info(
+                        $"数据库日志清理完成 - 应用日志: 按时间删除{appLogResult.TimeBasedCount}条,按大小删除{appLogResult.SizeBasedCount}条"
+                    );
                 }
             }
             catch (Exception ex)
@@ -370,7 +405,10 @@ namespace SUNWODA_SEVB
         /// <summary>
         /// 清理应用日志 - 支持按时间和大小两种方式
         /// </summary>
-        private async Task<AppLogCleanupResult> CleanupAppLogs(IAppLogRepository appLogRepo, ILoggerService<App>? logger)
+        private async Task<AppLogCleanupResult> CleanupAppLogs(
+            IAppLogRepository appLogRepo,
+            ILoggerService<App>? logger
+        )
         {
             var result = new AppLogCleanupResult();
 
@@ -400,7 +438,6 @@ namespace SUNWODA_SEVB
             return result;
         }
 
-
         protected override async void OnExit(ExitEventArgs e)
         {
             try
@@ -428,8 +465,6 @@ namespace SUNWODA_SEVB
                 base.OnExit(e);
             }
         }
-
-
 
         /// <summary>
         /// 运行数据层测试
@@ -461,6 +496,5 @@ namespace SUNWODA_SEVB
                 throw;
             }
         }
-
     }
 }

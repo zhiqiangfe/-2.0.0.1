@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using System.Windows;
 
 namespace SUNWODA_SEVB.Tool.Extension
@@ -138,30 +133,15 @@ namespace SUNWODA_SEVB.Tool.Extension
         /// <returns>时间</returns>
         public static DateTime ToDateTime(this string s, string format)
         {
-            return DateTime.TryParseExact(s, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime result) ? result : DateTime.Now;
-        }
-
-        /// <summary>
-        /// 字符串转窗口状态
-        /// </summary>
-        /// <param name="s">字符串</param>
-        /// <returns>窗口状态</returns>
-        public static WindowState ToWindowSate(this string s)
-        {
-            WindowState mainWindowState = WindowState.Normal;
-            switch (s.ToUpper())
-            {
-                case "MINIMUM":
-                    mainWindowState = WindowState.Minimized;
-                    break;
-                case "MAXIMUM":
-                    mainWindowState = WindowState.Maximized;
-                    break;
-                case "NORMAL":
-                default:
-                    break;
-            }
-            return mainWindowState;
+            return DateTime.TryParseExact(
+                s,
+                format,
+                CultureInfo.CurrentCulture,
+                DateTimeStyles.None,
+                out DateTime result
+            )
+                ? result
+                : DateTime.Now;
         }
 
         /// <summary>
@@ -184,6 +164,36 @@ namespace SUNWODA_SEVB.Tool.Extension
         public static string AppendStart(this string s, string appendStr)
         {
             return appendStr + s;
+        }
+
+        public static Type ToType(this string typeStr)
+        {
+            return typeStr?.ToUpper() switch
+            {
+                "STRING" => typeof(string),
+                "FLOAT" => typeof(float),
+                "DOUBLE" => typeof(double),
+                "DECIMAL" => typeof(decimal),
+                "SBYTE" => typeof(sbyte),
+                "BYTE" => typeof(byte),
+                "SHORT" => typeof(short),
+                "USHORT" => typeof(ushort),
+                "INT" or "INTEGER" => typeof(int),
+                "UINT" => typeof(uint),
+                "LONG" => typeof(long),
+                "ULONG" => typeof(ulong),
+                "BOOL" or "BOOLEAN" => typeof(bool),
+                "DATETIME" => typeof(DateTime),
+                "WINDOWSTATE" => typeof(WindowState),
+                "HORIZONTALALIGNMENT" => typeof(HorizontalAlignment),
+                "VERTICALALIGNMENT" => typeof(VerticalAlignment),
+                _ => throw new FormatException($"不支持的数据类型: {typeStr}")
+            };
+        }
+
+        public static TEnum ToEnum<TEnum>(this string enumStr) where TEnum : struct
+        {
+            return Enum.TryParse(enumStr, out TEnum result) ? result : default;
         }
     }
 }

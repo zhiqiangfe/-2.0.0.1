@@ -1,9 +1,5 @@
 ﻿using SUNWODA_SEVB.Tool.Extension;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows;
 
 namespace SUNWODA_SEVB.Tool.Helper
 {
@@ -21,9 +17,9 @@ namespace SUNWODA_SEVB.Tool.Helper
             return type switch
             {
                 "STRING" => value,
-                "FLOAT" => value.ToFloat(),
+                "FLOAT" => value.ToFloat(), // 推荐使用double处理小数（计算机处理float的精度问题）
                 "DOUBLE" => value.ToDouble(),
-                "DECIMAL" => value.ToDecimal(),
+                "DECIMAL" => value.ToDecimal(), // 指针只读
                 "SBYTE" => value.ToSByte(),
                 "BYTE" => value.ToByte(),
                 "SHORT" => value.ToShort(),
@@ -34,8 +30,10 @@ namespace SUNWODA_SEVB.Tool.Helper
                 "ULONG" => value.ToULong(),
                 "BOOL" or "BOOLEAN" => value.ToBool(),
                 "DATETIME" => value.ToDateTime("yyyy-MM-dd HH:mm:ss"),
-                "WINDOWSTATE" => value.ToWindowSate(),
-                _ => throw new FormatException($"不支持的数据类型: {type}")
+                "WINDOWSTATE" => value.ToEnum<WindowState>(),
+                "HORIZONTALALIGNMENT" => value.ToEnum<HorizontalAlignment>(),
+                "VERTICALALIGNMENT" => value.ToEnum<VerticalAlignment>(),
+                _ => throw new FormatException($"不支持的数据类型: {type}"),
             };
         }
 

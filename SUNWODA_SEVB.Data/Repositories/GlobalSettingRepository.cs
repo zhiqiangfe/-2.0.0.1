@@ -16,14 +16,30 @@ namespace SUNWODA_SEVB.Data.Repositories
             return await GetByIdAsync(id);
         }
 
+        public GlobalSettingModel? GetByID(int id)
+        {
+            return GetById(id);
+        }
+
         public async Task<GlobalSettingModel?> GetByNameAsync(string name)
         {
             return await GetAsync(model => model.Name == name);
         }
 
+        public GlobalSettingModel? GetByName(string name)
+        {
+            return Get(model => model.Name == name);
+        }
+
         public async Task<dynamic?> GetSettingValueAsync(string name)
         {
             var model = await GetByNameAsync(name);
+            return model != null ? DataTypeConverter.StringToValue(model.Type, model.Value) : null;
+        }
+
+        public dynamic? GetSettingValue(string name)
+        {
+            var model = GetByName(name);
             return model != null ? DataTypeConverter.StringToValue(model.Type, model.Value) : null;
         }
 
@@ -34,6 +50,20 @@ namespace SUNWODA_SEVB.Data.Repositories
             {
                 model.Value = DataTypeConverter.ValueToString(value);
                 return await UpdateAsync(model);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateSettingValue(string name, dynamic value)
+        {
+            var model = GetByName(name);
+            if (model != null)
+            {
+                model.Value = DataTypeConverter.ValueToString(value);
+                return Update(model);
             }
             else
             {

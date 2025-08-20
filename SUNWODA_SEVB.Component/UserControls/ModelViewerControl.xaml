@@ -16,40 +16,30 @@
         </Grid.RowDefinitions>
 
         <!--  工具栏  -->
-        <ToolBar Grid.Row="0">
-            <Button
-                Name="BtnLoadModel"
-                Padding="5"
-                Click="BtnLoadModel_Click">
+        <ToolBar
+            x:Name="TestToolBar"
+            Grid.Row="0"
+            Visibility="Collapsed">
+            <Button Name="BtnLoadModel" Padding="5">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Text="加载模型" />
                 </StackPanel>
             </Button>
-            <Button
-                Name="BtnClearAll"
-                Padding="5"
-                Click="BtnClearAll_Click">
+            <Button Name="BtnClearAll" Padding="5">
                 <TextBlock VerticalAlignment="Center" Text="清空所有" />
             </Button>
             <Separator />
-            <Button
-                Name="BtnResetView"
-                Padding="5"
-                Click="BtnResetView_Click">
+            <Button Name="BtnResetView" Padding="5">
                 <TextBlock VerticalAlignment="Center" Text="重置视图" />
             </Button>
             <Separator />
             <Button
                 Name="BtnRemoveModel"
                 Margin="5,0,2,0"
-                Padding="5"
-                Click="BtnRemoveModel_Click">
+                Padding="5">
                 <TextBlock VerticalAlignment="Center" Text="删除模型" />
             </Button>
-            <Button
-                Name="BtnCenterModel"
-                Padding="5"
-                Click="BtnCenterModel_Click">
+            <Button Name="BtnCenterModel" Padding="5">
                 <TextBlock VerticalAlignment="Center" Text="模型居中" />
             </Button>
             <Separator />
@@ -132,16 +122,18 @@
         <helix:HelixViewport3D
             x:Name="viewport"
             Grid.Row="1"
-            MouseDoubleClick="Viewport_MouseDoubleClick"
-            PreviewMouseLeftButtonDown="Viewport_PreviewMouseLeftButtonDown"
-            ShowCoordinateSystem="True"
-            ShowFrameRate="True">
+            Background="#ececec"
+            InfoBackground="Transparent"
+            ShowCameraInfo="False"
+            ShowCoordinateSystem="False"
+            ShowFrameRate="False"
+            ShowViewCube="False">
             <!--  相机  -->
             <helix:HelixViewport3D.Camera>
                 <PerspectiveCamera
                     FieldOfView="45"
-                    LookDirection="-20,-20,-20"
-                    Position="20,20,20"
+                    LookDirection="-7,-3,-4"
+                    Position="5,5,5"
                     UpDirection="0,0,1" />
             </helix:HelixViewport3D.Camera>
 
@@ -150,10 +142,12 @@
 
             <!--  网格  -->
             <helix:GridLinesVisual3D
+                x:Name="GridLine"
                 Width="100"
                 Length="100"
                 MajorDistance="10"
-                MinorDistance="1" />
+                MinorDistance="1"
+                Visible="False" />
         </helix:HelixViewport3D>
     </Grid>
 </UserControl>
