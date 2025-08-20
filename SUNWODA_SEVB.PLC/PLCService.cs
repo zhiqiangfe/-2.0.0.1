@@ -12,6 +12,7 @@ using HslCommunication.Profinet.Panasonic;
 using HslCommunication.Profinet.Siemens;
 using SUNWODA_SEVB.Core.Enumerations.PLC;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Core.Models.PLC;
 using SUNWODA_SEVB.Tool.Extension;
@@ -65,10 +66,6 @@ namespace SUNWODA_SEVB.PLC
             _pLcConfigRepository = pLcConfigRepository;
             _plcRWConfigRepository = pLcRWConfigRepository;
             _plcAddressConfigRepository = pLcAddressConfigRepository;
-            //IsCycleReadPLC = globalSettingRepository.GetSettingValueAsync("IsCycleReadPLC").Result;
-            //IsCycleWritePLC = globalSettingRepository
-            //    .GetSettingValueAsync("IsCycleWritePLC")
-            //    .Result;
         }
 
         /// <summary>

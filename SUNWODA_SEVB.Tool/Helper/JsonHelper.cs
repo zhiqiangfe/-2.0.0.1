@@ -1,5 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace SUNWODA_SEVB.Tool.Helper
 {
@@ -10,7 +12,10 @@ namespace SUNWODA_SEVB.Tool.Helper
     {
         private static readonly JsonSerializerOptions DefaultOptions = new()
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            // 关键配置：允许所有 Unicode 字符，不进行转义
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+            //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = null,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = true,
             Converters = { new JsonStringEnumConverter() }

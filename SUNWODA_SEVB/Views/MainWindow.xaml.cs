@@ -22,7 +22,7 @@ namespace SUNWODA_SEVB
         {
             InitializeComponent();
             // 订阅双击事件
-            modelViewer.ModelDoubleClicked += OnModelDoubleClicked;
+            //modelViewer.ModelDoubleClicked += OnModelDoubleClicked;
 
             // 可以程序化加载模型
             // modelViewer.LoadModel(@"C:\Models\example.obj", "示例模型");

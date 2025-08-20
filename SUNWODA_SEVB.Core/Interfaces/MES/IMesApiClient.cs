@@ -14,7 +14,7 @@ namespace SUNWODA_SEVB.Core.Interfaces.MES
             TRequest request,
             CancellationToken cancellationToken = default)
             where TRequest : IMesRequest
-            where TResponse : IMesResponse;
+            where TResponse : IMesResponse, new();
 
         /// <summary>
         /// 发送GET请求
@@ -23,7 +23,7 @@ namespace SUNWODA_SEVB.Core.Interfaces.MES
             string endpoint,
             object? parameters = null,
             CancellationToken cancellationToken = default)
-            where TResponse : IMesResponse;
+            where TResponse : IMesResponse, new();
 
         /// <summary>
         /// 设置超时时间

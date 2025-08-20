@@ -6,15 +6,15 @@ namespace SUNWODA_SEVB.Core.Interfaces.MES
     /// </summary>
     public interface IMesRequest
     {
-        /// <summary>
-        /// 获取请求ID
-        /// </summary>
-        string GetRequestId();
+        ///// <summary>
+        ///// 获取请求ID
+        ///// </summary>
+        //string GetRequestId();
 
-        /// <summary>
-        /// 获取时间戳
-        /// </summary>
-        DateTime GetTimestamp();
+        ///// <summary>
+        ///// 获取时间戳
+        ///// </summary>
+        //DateTime GetTimestamp();
 
         /// <summary>
         /// 验证请求参数

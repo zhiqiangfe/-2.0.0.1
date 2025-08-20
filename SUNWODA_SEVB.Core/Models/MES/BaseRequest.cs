@@ -17,34 +17,30 @@ namespace SUNWODA_SEVB.Core.Models.MES
             timestamp = DateTime.Now;
         }
 
-        /// <summary>
-        /// 请求ID
-        /// </summary>
-        public string RequestId
-        {
-            get => requestId;
-            set => SetProperty(ref requestId, value);
-        }
+        ///// <summary>
+        ///// 请求ID
+        ///// </summary>
+        //public string RequestId
+        //{
+        //    get => requestId;
+        //    set => SetProperty(ref requestId, value);
+        //}
 
-        /// <summary>
-        /// 时间戳
-        /// </summary>
-        public DateTime Timestamp
-        {
-            get => timestamp;
-            set => SetProperty(ref timestamp, value);
-        }
+        ///// <summary>
+        ///// 时间戳
+        ///// </summary>
+        //public DateTime Timestamp
+        //{
+        //    get => timestamp;
+        //    set => SetProperty(ref timestamp, value);
+        //}
 
-        public virtual string GetRequestId() => RequestId;
-        public virtual DateTime GetTimestamp() => Timestamp;
+        //public virtual string GetRequestId() => RequestId;
+        //public virtual DateTime GetTimestamp() => Timestamp;
 
         /// <summary>
         /// 验证请求参数
         /// </summary>
-        public virtual bool Validate(out string errorMessage)
-        {
-            errorMessage = string.Empty;
-            return true;
-        }
+        public abstract bool Validate(out string errorMessage);
     }
 }

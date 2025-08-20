@@ -99,7 +99,19 @@ namespace SUNWODA_SEVB.Data
                     )
                     .ExecuteCommand();
             }
-
+            if(!globalConfigs.Any(it => it.Name == "IsMESEnabled"))
+            {
+                _db.Insertable(
+                        new GlobalSetting
+                        {
+                            Name = "IsMESEnabled",
+                            Value = "false",
+                            Type = "bool",
+                            Remark = "是否启用MES功能",
+                        }
+                    )
+                    .ExecuteCommand();
+            }
             _logger.Info("GlobalSetting默认变量参数初始化完成");
 
             var plcConfigs = _db.Queryable<PLCConfig>();
@@ -156,22 +168,7 @@ namespace SUNWODA_SEVB.Data
                         }
                     )
                     .ExecuteCommand();
-            }
-
-            //if (!plcRWConfigs.Any(it => it.Name == "测试地址段2"))
-            //{
-            //    _db.Insertable(new PLCRWConfig()
-            //    {
-            //        Name = "测试地址段2",
-            //        PLCID = 1,
-            //        AreaName = "D",
-            //        StartAddress = "110",
-            //        Length = 26,
-            //        RWMode = "W",
-            //        AddressType = 1,
-            //        IsEnable = true
-            //    });
-            //}
+            }         
             _logger.Info("PLCRWConfig默认变量参数初始化完成");
 
             var plcAddressConfigs = _db.Queryable<PLCAddressConfig>();

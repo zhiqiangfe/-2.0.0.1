@@ -9,12 +9,15 @@ using NLog.Config;
 using NLog.Extensions.Logging;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Data;
 using SUNWODA_SEVB.Data.Repositories;
 using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Logging.Targets;
+using SUNWODA_SEVB.MES;
+using SUNWODA_SEVB.MES.Extensions;
+using SUNWODA_SEVB.MES.Services;
 using SUNWODA_SEVB.PLC;
-using SUNWODA_SEVB.Tool.Helper;
 
 namespace SUNWODA_SEVB
 {
@@ -101,9 +104,34 @@ namespace SUNWODA_SEVB
 
                 appLogger.Info("数据库初始化成功");
 
-                appLogger.Info("线程管理初始化开始");
-                ThreadManager.Init();
-                appLogger.Info("线程管理初始化成功");
+                // 初始化MES服务
+                var mesService = _host.Services.GetRequiredService<IMesService>();
+                var mesInitialized = await mesService.InitializeAsync();
+
+                if (mesInitialized)
+                {
+                    appLogger.Info("MES服务初始化成功");
+
+                    // 可选：测试具体服务
+                    var offlineService = _host.Services.GetService<IOfflineDataUploadService>();
+                    if (offlineService != null)
+                    {
+                        await offlineService.InitializeAsync();
+                        appLogger.Info("离线数据上传服务已就绪");
+                    }
+
+                    var markingService = _host.Services.GetService<IMarkingDataUploadService>();
+                    if (markingService != null)
+                    {
+                        await markingService.InitializeAsync();
+                        appLogger.Info("Marking数据上传服务已就绪");
+                    }
+                }
+                else
+                {
+                    appLogger.Info("MES服务未启用或初始化失败");
+                }
+
 
                 // 初始化PLC
                 var plcService = _host.Services.GetRequiredService<IPLCService>();
@@ -126,7 +154,6 @@ namespace SUNWODA_SEVB
                 appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
                 appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
                 appLogger.Info($"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}");
-
 
 
                 // 设置全局异常处理
@@ -167,12 +194,11 @@ namespace SUNWODA_SEVB
             // 添加数据库服务
             services.AddSingleton<IDatabaseService, DatabaseService>();
 
+            // 注册PLC服务
             services.AddSingleton<IPLCService, PLCService>();
 
-            // 注册MES日志仓储
-            services.AddSingleton<IMesInterfaceLogRepository, MesInterfaceLogRepository>();
-
-
+            // 注册MES服务
+            services.AddMesServices();
 
             // 注册 ViewModels
             services.AddTransient<ViewModels.MainWindowViewModel>();
@@ -311,14 +337,14 @@ namespace SUNWODA_SEVB
 
                     var appLogRepo = scope.ServiceProvider.GetRequiredService<IAppLogRepository>();
                     //后续可以根据需要添加其他日志仓储接口
-                    //var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
+                    var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
                     //var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
 
                     // 清理应用日志
                     var appLogResult = await CleanupAppLogs(appLogRepo, logger);
 
-                    //// 清理MES接口日志 (30天)
-                    //var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(30);
+                    // 清理MES接口日志 (30天)
+                    var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(30);
 
                     //// 清理Web接口日志 (30天)  
                     //var webLogCount = await webLogRepo.DeleteOldLogsAsync(30);
@@ -402,6 +428,7 @@ namespace SUNWODA_SEVB
                 base.OnExit(e);
             }
         }
+
 
 
         /// <summary>

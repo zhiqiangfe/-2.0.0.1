@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Data.Mappings;
 using SUNWODA_SEVB.Data.Repositories;
 using System.Text.RegularExpressions;
@@ -23,7 +24,7 @@ namespace SUNWODA_SEVB.Data
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
-                var logger = provider.GetService<ILoggerService<ISqlSugarClient>>();
+                //var logger = provider.GetService<ILoggerService<ISqlSugarClient>>();
 
                 var db = new SqlSugarScope(new ConnectionConfig()
                 {
@@ -75,7 +76,7 @@ namespace SUNWODA_SEVB.Data
                         if (!string.IsNullOrEmpty(tableName) && IsBusinessTable(tableName))
                         {
                             var operation = GetSqlOperation(sql);
-                            logger?.Debug($"SQL执行: {operation} 表[{tableName}]");
+                            Console.WriteLine($"SQL执行: {operation} 表[{tableName}]");
                         }
                     };
 
@@ -88,14 +89,14 @@ namespace SUNWODA_SEVB.Data
                         {
                             var tableName = ExtractTableName(sql);
                             var operation = GetSqlOperation(sql);
-                            logger?.Warn($"慢查询警告: {operation} 表[{tableName}] - 执行时间: {executionTime:F2}ms");
+                            Console.WriteLine($"慢查询警告: {operation} 表[{tableName}] - 执行时间: {executionTime:F2}ms");
                         }
                     };
 
                     // SQL出错事件
                     db.Aop.OnError = (exp) =>
                     {
-                        logger?.Error($"SQL执行出错: {exp.Message}", exp);
+                        Console.WriteLine($"SQL执行出错: {exp.Message}", exp);
                     };
                 });
 
@@ -115,6 +116,9 @@ namespace SUNWODA_SEVB.Data
             services.AddScoped<IPLCAddressConfigRepository, PLCAddressConfigRepository>();
             services.AddScoped<IPLCConfigRepository, PLCConfigRepository>();
             services.AddScoped<IPLCRWConfigRepository, PLCRWConfigRepository>();
+            services.AddScoped<IMesInterfaceLogRepository, MesInterfaceLogRepository>();
+            services.AddScoped<IProjectSettingRepository, ProjectSettingRepository>();
+            services.AddScoped<IMESSettingRepository, MESSettingRepository>();
 
             return services;
         }
