@@ -111,7 +111,7 @@ namespace SUNWODA_SEVB.Core.Interfaces
         /// 记录Web接口日志
         /// </summary>
         void LogWebInterface(string apiPath, string httpMethod, string requestBody,
-            string responseBody, string clientIP, int statusCode, long executionTime);
+            string responseBody, int statusCode, long executionTime);
 
         #endregion
     }

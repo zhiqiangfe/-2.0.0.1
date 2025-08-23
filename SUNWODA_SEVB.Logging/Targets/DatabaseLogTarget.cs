@@ -328,15 +328,21 @@ namespace SUNWODA_SEVB.Logging.Targets
                 if (mesLogs.Count > 0)
                 {
                     var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
-                    await mesLogRepo.BulkInsertAsync(mesLogs).ConfigureAwait(false);
-                    InternalLogger.Info($"Saved {mesLogs.Count} MES logs to database");
+                    var success = await mesLogRepo.BulkInsertAsync(mesLogs).ConfigureAwait(false);
+                    if (success)
+                    {
+                        InternalLogger.Info($"Successfully saved {mesLogs.Count} MES logs to database");
+                    }
                 }
 
                 if (webLogs.Count > 0)
                 {
                     var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
-                    await webLogRepo.BulkInsertAsync(webLogs).ConfigureAwait(false);
-                    InternalLogger.Info($"Saved {webLogs.Count} Web logs to database");
+                    var success = await webLogRepo.BulkInsertAsync(webLogs).ConfigureAwait(false);
+                    if (success)
+                    {
+                        InternalLogger.Info($"Successfully saved {webLogs.Count} Web logs to database");
+                    }
                 }
             }
             catch (Exception ex)
@@ -623,9 +629,7 @@ namespace SUNWODA_SEVB.Logging.Targets
                 {
                     Method = apiPath,
                     InputJson = inputJson,
-                    OutputJson = outputJson,
-                    StartTime = startTime,
-                    EndTime = endTime,
+                    OutputJson = outputJson,                  
                     ConsumingTime = executionTime > 0 ? executionTime : (long)(endTime - startTime).TotalMilliseconds,
                     SuccessFlag = successFlag,
                     LogDate = endTime

@@ -18,17 +18,11 @@ namespace SUNWODA_SEVB.Data.Models
         [SugarColumn(ColumnName = "method", ColumnDescription = "调用方法名")]
         public string Method { get; set; } = null!;
 
-        [SugarColumn(ColumnName = "input_json", ColumnDescription = "输入参数(JSON)", IsNullable = true)]
+        [SugarColumn(ColumnName = "input_json", ColumnDescription = "输入参数(JSON)", IsNullable = true, ColumnDataType = "TEXT")]
         public string InputJson { get; set; } = null!;
 
-        [SugarColumn(ColumnName = "output_json", ColumnDescription = "输出结果(JSON)", IsNullable = true)]
+        [SugarColumn(ColumnName = "output_json", ColumnDescription = "输出结果(JSON)", IsNullable = true, ColumnDataType = "TEXT")]
         public string OutputJson { get; set; } = null!;
-
-        [SugarColumn(ColumnName = "start_time", ColumnDescription = "开始时间")]
-        public DateTime StartTime { get; set; }
-
-        [SugarColumn(ColumnName = "end_time", ColumnDescription = "结束时间")]
-        public DateTime EndTime { get; set; }
 
         [SugarColumn(ColumnName = "consuming_time", ColumnDescription = "总耗时(毫秒)")]
         public long ConsumingTime { get; set; }

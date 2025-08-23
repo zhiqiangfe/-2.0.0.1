@@ -69,7 +69,9 @@ namespace SUNWODA_SEVB.Data
                 _logger.Warn("未找到任何数据模型类型");
             }
         }
-
+        /// <summary>
+        /// 初始化默认数据
+        /// </summary>
         private void InitializeData()
         {
             // 初始化默认的变量参数

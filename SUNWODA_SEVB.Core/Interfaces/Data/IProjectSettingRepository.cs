@@ -5,39 +5,81 @@ namespace SUNWODA_SEVB.Core.Interfaces.Data
     public interface IProjectSettingRepository : IRepository<ProjectSettingModel>
     {
         /// <summary>
-        /// 通过ID获取项目设置
+        /// 通过ID获取
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         Task<ProjectSettingModel?> GetByIDAsync(int id);
 
         /// <summary>
-        /// 通过名称获取项目设置
+        /// 通过ID获取
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        ProjectSettingModel? GetByID(int id);
+
+        /// <summary>
+        /// 通过项目名称获取该项目所有变量
+        /// </summary>
+        /// <param name="vmName"></param>
+        /// <returns></returns>
+        Task<List<ProjectSettingModel>?> GetByVMNameAsync(string vmName);
+
+        /// <summary>
+        /// 通过项目名称获取该项目所有变量
+        /// </summary>
+        /// <param name="vmName"></param>
+        /// <returns></returns>
+        List<ProjectSettingModel>? GetByVMName(string vmName);
+
+        /// <summary>
+        /// 通过项目名称和变量名称获取
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="vmName"></param>
         /// <returns></returns>
-        Task<List<ProjectSettingModel>> GetByNameAsync(string name);
+        Task<ProjectSettingModel?> GetByNameAndVMAsync(string name, string vmName);
 
         /// <summary>
-        /// 通过所属VM获取项目设置
+        /// 通过项目名称和变量名称获取
         /// </summary>
-        /// <param name="belongToVM"></param>
+        /// <param name="name"></param>
+        /// <param name="vmName"></param>
         /// <returns></returns>
-        Task<List<ProjectSettingModel>> GetByBelongToVMAsync(string belongToVM);
+        ProjectSettingModel? GetByNameAndVM(string name, string vmName);
 
         /// <summary>
-        /// 通过类型获取项目设置
+        /// 通过变量名称获取配置值
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="name"></param>
+        /// <param name="vmName"></param>
         /// <returns></returns>
-        Task<List<ProjectSettingModel>> GetByTypeAsync(string type);
+        Task<dynamic?> GetSettingValueAsync(string name, string vmName);
 
         /// <summary>
-        /// 通过项目名称和配置名称获取项目设置
+        /// 通过变量名称获取配置值
         /// </summary>
-        /// <param name="projectName">项目名称（BelongToVM）</param>
-        /// <param name="name">配置名称</param>
+        /// <param name="name"></param>
+        /// <param name="vmName"></param>
         /// <returns></returns>
-        Task<List<ProjectSettingModel>> GetByProjectAndNameAsync(string projectName, string name);
+        dynamic? GetSettingValue(string name, string vmName);
+
+        /// <summary>
+        /// 更新配置值
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="vmName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        Task<bool> UpdateSettingValueAsync(string name, string vmName, dynamic value);
+
+        /// <summary>
+        /// 更新配置值
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="vmName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        bool UpdateSettingValue(string name, string vmName, dynamic value);
     }
 }

@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Enumerations;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Core.Models;
 using SUNWODA_SEVB.Services;
 

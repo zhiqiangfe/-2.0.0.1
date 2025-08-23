@@ -30,6 +30,7 @@
     <ProjectReference Include="..\SUNWODA_SEVB.PLC\SUNWODA_SEVB.PLC.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Services\SUNWODA_SEVB.MES.csproj" />
     <ProjectReference Include="..\SUNWODA_SEVB.Tool\SUNWODA_SEVB.Tool.csproj" />
+    <ProjectReference Include="..\SUNWODA_SEVB.WEB\SUNWODA_SEVB.WEB.csproj" />
   </ItemGroup>
 
   <ItemGroup>

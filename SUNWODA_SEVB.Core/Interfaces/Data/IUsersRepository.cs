@@ -5,24 +5,31 @@ namespace SUNWODA_SEVB.Core.Interfaces.Data
     public interface IUsersRepository : IRepository<UsersModel>
     {
         /// <summary>
-        /// 通过ID获取用户
+        /// 通过ID获取
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         Task<UsersModel?> GetByIDAsync(int id);
 
         /// <summary>
-        /// 通过用户名获取用户 (用户名通常是唯一的)
+        /// 通过ID获取
         /// </summary>
-        /// <param name="userName"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        Task<UsersModel?> GetByUserNameAsync(string userName);
+        UsersModel? GetByID(int id);
 
         /// <summary>
-        /// 通过角色ID获取用户列表
+        /// 通过用户名称获取
         /// </summary>
-        /// <param name="roleId"></param>
+        /// <param name="username"></param>
         /// <returns></returns>
-        Task<List<UsersModel>> GetByRoleIDAsync(int roleId);
+        Task<UsersModel?> GetByUserNameAsync(string username);
+
+        /// <summary>
+        /// 通过用户名称获取
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        UsersModel? GetByUserName(string username);
     }
 }

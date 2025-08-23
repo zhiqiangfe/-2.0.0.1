@@ -97,7 +97,7 @@ namespace SUNWODA_SEVB.Data
                         {
                             var executionTime = db.Ado.SqlExecutionTime.TotalMilliseconds;
 
-                        if (executionTime > 1000) // 超过1秒的慢查询
+                        if (executionTime > 1500) // 超过1.5秒的慢查询
                         {
                             var tableName = ExtractTableName(sql);
                             var operation = GetSqlOperation(sql);
@@ -132,8 +132,8 @@ namespace SUNWODA_SEVB.Data
             services.AddScoped<IProjectSettingRepository, ProjectSettingRepository>();
             services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<IMesInterfaceLogRepository, MesInterfaceLogRepository>();
-
             services.AddScoped<IMESSettingRepository, MESSettingRepository>();
+            services.AddScoped<IWebInterfaceLogRepository, WebInterfaceLogRepository>();
 
             return services;
         }

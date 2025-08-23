@@ -1,5 +1,5 @@
 ﻿using SqlSugar;
-using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
 using SUNWODA_SEVB.Tool.Helper;

@@ -21,6 +21,7 @@ using SUNWODA_SEVB.PLC;
 using SUNWODA_SEVB.Services;
 using SUNWODA_SEVB.ViewModels.Windows.Common;
 using SUNWODA_SEVB.Views.Windows.Common;
+using SUNWODA_SEVB.WEB;
 
 namespace SUNWODA_SEVB
 {
@@ -131,41 +132,11 @@ namespace SUNWODA_SEVB
                 if (mesInitialized)
                 {
                     appLogger.Info("MES服务初始化成功");
-
-                    // 可选：测试具体服务
-                    var offlineService = _host.Services.GetService<IOfflineDataUploadService>();
-                    if (offlineService != null)
-                    {
-                        await offlineService.InitializeAsync();
-                        appLogger.Info("离线数据上传服务已就绪");
-                    }
-
-                    var markingService = _host.Services.GetService<IMarkingDataUploadService>();
-                    if (markingService != null)
-                    {
-                        await markingService.InitializeAsync();
-                        appLogger.Info("Marking数据上传服务已就绪");
-                    }
                 }
                 else
                 {
                     appLogger.Info("MES服务未启用或初始化失败");
                 }
-
-
-                // 初始化PLC
-                var plcService = _host.Services.GetRequiredService<IPLCService>();
-                var isInitPlcs = await plcService.InitPlcs();
-                if (!isInitPlcs)
-                {
-                    appLogger.Error("PLC初始化失败，应用程序将退出");
-                    MessageBox.Show("PLC初始化失败！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Shutdown();
-                    Environment.Exit(1);
-                    return;
-                }
-
-                appLogger.Info("PLC初始化成功");
 
                 // 记录应用启动
 
@@ -226,8 +197,9 @@ namespace SUNWODA_SEVB
             // 注册MES服务
             services.AddMesServices();
 
-            // 注册 ViewModels
-            services.AddTransient<ViewModels.MainWindowViewModel>();
+            // 添加Web服务
+            services.AddWebServices();
+
             // 添加MVVM框架服务
             services.AddMvvmFramework();
 

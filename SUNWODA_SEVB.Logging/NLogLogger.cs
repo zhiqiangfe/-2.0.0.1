@@ -279,7 +279,7 @@ namespace SUNWODA_SEVB.Logging
         /// 记录Web接口日志
         /// </summary>
         public void LogWebInterface(string apiPath, string httpMethod, string requestBody,
-            string responseBody, string clientIP, int statusCode, long executionTime)
+            string responseBody, int statusCode, long executionTime)
         {
             var logger = NLog.LogManager.GetLogger("WebInterface." + apiPath.Replace("/", "."));
             var logEvent = NLog.LogEventInfo.Create(
@@ -291,10 +291,9 @@ namespace SUNWODA_SEVB.Logging
             logEvent.Properties["HttpMethod"] = httpMethod;
             logEvent.Properties["RequestBody"] = requestBody;
             logEvent.Properties["ResponseBody"] = responseBody;
-            logEvent.Properties["ClientIP"] = clientIP;
             logEvent.Properties["StatusCode"] = statusCode;
             logEvent.Properties["ExecutionTime"] = executionTime;
-
+            logEvent.Properties["IsToDatabase"] = true; 
             logger.Log(logEvent);
         }
         #endregion
