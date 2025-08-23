@@ -318,14 +318,14 @@ namespace SUNWODA_SEVB.WEB.Services
             {
                 DevId = settings.DeviceSn,
                 Cpu = await GetCpuUsageAsync(),
-                Memory = memoryInfo.PrivateMemory,  // 私有内存作为主要内存显示
+                Memory = memoryInfo.PrivateMemory,  // 软件私有内存作为主要内存显示
                 PhysicalMemory = memoryInfo.PhysicalMemory,
                 VirtualMemory = memoryInfo.VirtualMemory,
                 ManagedMemory = memoryInfo.ManagedMemory,
                 SystemMemory = memoryInfo.SystemMemory,  // 系统内存信息
                 Disk = await GetDiskInfoAsync(),
                 EquipmentState = await GetPlcStatusAsync(),
-                Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                Time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.FFF")
             };
         }
 
@@ -370,24 +370,24 @@ namespace SUNWODA_SEVB.WEB.Services
                     // 1. 进程内存信息
                     // 私有内存（进程独占的内存）
                     var privateMemoryMB = currentProcess.PrivateMemorySize64 / (1024.0 * 1024.0);
-                    memInfo.PrivateMemory = $"{privateMemoryMB:F2}MB";
+                    memInfo.PrivateMemory = FormatMemorySize(privateMemoryMB);
 
                     // 物理内存（工作集）
                     var workingSetMB = currentProcess.WorkingSet64 / (1024.0 * 1024.0);
                     var peakWorkingSetMB = currentProcess.PeakWorkingSet64 / (1024.0 * 1024.0);
-                    memInfo.PhysicalMemory = $"{workingSetMB:F2}MB (峰值: {peakWorkingSetMB:F2}MB)";
+                    memInfo.PhysicalMemory = $"{FormatMemorySize(workingSetMB)} (峰值: {FormatMemorySize(peakWorkingSetMB)})";
 
                     // 虚拟内存
-                    var virtualMemoryMB = currentProcess.VirtualMemorySize64 / (1024.0 * 1024.0);
-                    var peakVirtualMemoryMB = currentProcess.PeakVirtualMemorySize64 / (1024.0 * 1024.0);
-                    memInfo.VirtualMemory = $"{virtualMemoryMB:F2}MB (峰值: {peakVirtualMemoryMB:F2}MB)";
+                    var virtualMemoryMB = currentProcess.PagedMemorySize64 / (1024.0 * 1024.0);
+                    var peakVirtualMemoryMB = currentProcess.PeakPagedMemorySize64 / (1024.0 * 1024.0);
+                    memInfo.VirtualMemory = $"{FormatMemorySize(virtualMemoryMB)} (峰值: {FormatMemorySize(peakVirtualMemoryMB)})";
 
                     // GC托管内存
                     var managedMemoryMB = GC.GetTotalMemory(false) / (1024.0 * 1024.0);
                     var gen0 = GC.CollectionCount(0);
                     var gen1 = GC.CollectionCount(1);
                     var gen2 = GC.CollectionCount(2);
-                    memInfo.ManagedMemory = $"{managedMemoryMB:F2}MB (GC: Gen0={gen0}, Gen1={gen1}, Gen2={gen2})";
+                    memInfo.ManagedMemory = $"{FormatMemorySize(managedMemoryMB)} (GC: Gen0={gen0}, Gen1={gen1}, Gen2={gen2})";
 
                     // 2. 系统内存信息
                     MEMORYSTATUSEX memStatus = new MEMORYSTATUSEX();
@@ -395,15 +395,15 @@ namespace SUNWODA_SEVB.WEB.Services
 
                     if (GlobalMemoryStatusEx(ref memStatus))
                     {
-                        var totalSystemGB = memStatus.ullTotalPhys / (1024.0 * 1024.0 * 1024.0);
-                        var availableSystemGB = memStatus.ullAvailPhys / (1024.0 * 1024.0 * 1024.0);
-                        var usedSystemGB = totalSystemGB - availableSystemGB;
+                        var totalSystemMB = memStatus.ullTotalPhys / (1024.0 * 1024.0);
+                        var availableSystemMB = memStatus.ullAvailPhys / (1024.0 * 1024.0);
+                        var usedSystemMB = totalSystemMB - availableSystemMB;
                         var usagePercent = memStatus.dwMemoryLoad;
 
-                        memInfo.SystemMemory = $"{usedSystemGB:F2}GB/{totalSystemGB:F2}GB ({usagePercent}%)";
+                        memInfo.SystemMemory = $"{FormatMemorySize(usedSystemMB)}/{FormatMemorySize(totalSystemMB)} ({usagePercent}%)";
 
                         // 计算进程占系统内存的百分比
-                        var processPercent = (workingSetMB / 1024.0) / totalSystemGB * 100;
+                        var processPercent = workingSetMB / totalSystemMB * 100;
                         memInfo.ProcessMemoryPercent = $"{processPercent:F2}%";
                     }
                     else
@@ -428,6 +428,26 @@ namespace SUNWODA_SEVB.WEB.Services
                 return memInfo;
             });
         }
+
+        /// <summary>
+        /// 格式化内存大小显示
+        /// 小于1024MB显示为MB，大于等于1024MB显示为GB
+        /// </summary>
+        /// <param name="memoryInMB">内存大小（MB）</param>
+        /// <returns>格式化后的字符串</returns>
+        private string FormatMemorySize(double memoryInMB)
+        {
+            if (memoryInMB < 1024)
+            {
+                return $"{memoryInMB:F2}MB";
+            }
+            else
+            {
+                var memoryInGB = memoryInMB / 1024.0;
+                return $"{memoryInGB:F2}GB";
+            }
+        }
+
 
         private async Task<string> GetDiskInfoAsync()
         {

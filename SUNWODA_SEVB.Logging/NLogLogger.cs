@@ -1,6 +1,7 @@
 ﻿using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Enumerations.Logging;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Core.Models.Data;
 using System;
 using System.Runtime.CompilerServices;

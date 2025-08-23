@@ -213,7 +213,7 @@ namespace SUNWODA_SEVB.WEB.Services
                 }
 
                 var statusCode = response?.Code ?? 0;
-                _logger.LogWebInterface(url, "machineHeart",json??string.Empty,result??string.Empty, statusCode, sw.ElapsedMilliseconds);
+                _logger.LogWebInterface(url, "pcinfo",json??string.Empty,result??string.Empty, statusCode, sw.ElapsedMilliseconds);
 
                 var hasFailedKeyword = !string.IsNullOrEmpty(result) &&
                                result.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0;
