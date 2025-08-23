@@ -1,5 +1,6 @@
 ﻿using SqlSugar;
 using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Data.Repositories;
 
 namespace SUNWODA_SEVB.Data

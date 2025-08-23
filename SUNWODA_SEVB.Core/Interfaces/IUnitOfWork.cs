@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 
 namespace SUNWODA_SEVB.Core.Interfaces
 {

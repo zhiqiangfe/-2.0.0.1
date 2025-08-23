@@ -1,6 +1,6 @@
 ﻿using SUNWODA_SEVB.Core.Entities;
 
-namespace SUNWODA_SEVB.Core.Interfaces
+namespace SUNWODA_SEVB.Core.Interfaces.Data
 {
     public interface IPLCAddressConfigRepository : IRepository<PLCAddressConfigModel>
     {

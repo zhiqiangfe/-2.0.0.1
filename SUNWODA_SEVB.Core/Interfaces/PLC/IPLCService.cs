@@ -1,7 +1,7 @@
 ﻿using SUNWODA_SEVB.Core.Models.PLC;
 using System.Collections.ObjectModel;
 
-namespace SUNWODA_SEVB.Core.Interfaces
+namespace SUNWODA_SEVB.Core.Interfaces.PLC
 {
     public interface IPLCService
     {

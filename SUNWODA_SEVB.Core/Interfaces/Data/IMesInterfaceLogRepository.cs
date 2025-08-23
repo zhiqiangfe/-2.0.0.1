@@ -1,6 +1,6 @@
 ﻿using SUNWODA_SEVB.Core.Models.Data;
 
-namespace SUNWODA_SEVB.Core.Interfaces
+namespace SUNWODA_SEVB.Core.Interfaces.Data
 {
     /// <summary>
     /// MES接口日志仓储接口
