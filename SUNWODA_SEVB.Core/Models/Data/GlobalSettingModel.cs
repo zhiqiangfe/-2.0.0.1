@@ -12,14 +12,17 @@
 
         public string Unit { get; set; } = null!;
 
+        public int RoleRank { get; set; }
+
         public string Remark { get; set; } = null!;
         public GlobalSettingModel() { }
 
-        public GlobalSettingModel(string name, string value, string type)
+        public GlobalSettingModel(string name, string value, string type, int roleRank)
         {
             Name = name;
             Value = value;
             Type = type;
+            RoleRank = roleRank;
         }
     }
 }

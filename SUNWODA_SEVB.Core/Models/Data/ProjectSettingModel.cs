@@ -14,14 +14,17 @@
 
         public string Unit { get; set; } = null!;
 
+        public int RoleRank { get; set; }
+
         public string Remark { get; set; } = null!;
         public ProjectSettingModel() { }
-        public ProjectSettingModel(string name, string belongToVM, string value, string type)
+        public ProjectSettingModel(string name, string belongToVM, string value, string type, int roleRank)
         {
             Name = name;
             BelongToVM = belongToVM;
             Value = value;
             Type = type;
+            RoleRank = roleRank;
         }
     }
 }

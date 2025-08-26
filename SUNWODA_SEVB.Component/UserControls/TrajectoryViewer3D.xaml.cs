@@ -20,6 +20,7 @@ namespace SUNWODA_SEVB.Component.UserControls
         private readonly Dictionary<string, TrajectoryVisual3D> trajectories = new();
         private DispatcherTimer animationTimer;
         private bool isInitialzed;
+        private readonly object legendLockObj = new object();
 
         public TrajectoryViewer3D()
         {
@@ -449,12 +450,51 @@ namespace SUNWODA_SEVB.Component.UserControls
             Title.FontSize = AxisLabelFontSize * 1.2;
             Title.Text = ChartTitle;
             Title.FontWeight = FontWeights.Bold;
-            LegendLabel1.FontSize = AxisLabelFontSize * 0.8;
-            LegendLabel1.FontWeight = FontWeights.Bold;
-            LegendLabel2.FontSize = AxisLabelFontSize * 0.8;
-            LegendLabel2.FontWeight = FontWeights.Bold;
-            LegendLabel3.FontSize = AxisLabelFontSize * 0.8;
-            LegendLabel3.FontWeight = FontWeights.Bold;
+            
+            LegendThresholdBoxLabel.FontSize = AxisLabelFontSize * 0.8;
+            LegendThresholdBoxLabel.FontWeight = FontWeights.Bold;
+            LegendThresholdWarnLineLabel.FontSize = AxisLabelFontSize * 0.8;
+            LegendThresholdWarnLineLabel.FontWeight = FontWeights.Bold;
+            if (ThresholdBoxHalfLength == 0 || ThresholdBoxHalfWidth == 0 || ThresholdBoxHalfHeight == 0)
+            {
+                LegendThresholdBox.Visibility = Visibility.Collapsed;
+                LegendThresholdWarnLine.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                LegendThresholdBox.Visibility = Visibility.Visible;
+                LegendThresholdWarnLine.Visibility = Visibility.Visible;
+            }
+
+            LegendLines.Children.Clear();
+            if (TrajectoriesSource != null)
+            {
+                foreach (var trajectory in TrajectoriesSource)
+                {
+                    var legendStackPanel = new StackPanel() { Margin = new Thickness(0, 10, 0, 0), Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Top };
+                    var legendIcon = new Viewport3D()
+                    {
+                        Width = 100,
+                        Height = 10,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Camera = new PerspectiveCamera(new Point3D(0, 0, 5), new Vector3D(0, 0, -5), new Vector3D(0, 1, 0), 60)
+                    };
+                    legendIcon.Children.Add(new ModelVisual3D() { Content = new DirectionalLight(Colors.White, new Vector3D(-0.2, -0.3, -1)) });
+                    var positions = new Point3DCollection
+                {
+                    new Point3D(-1, 0, -1),
+                    new Point3D(1, 0, -1),
+                    new Point3D(1, 0.2, -1),
+                    new Point3D(-1, 0.2, -1)
+                };
+                    legendIcon.Children.Add(new ModelVisual3D() { Content = new GeometryModel3D(new MeshGeometry3D() { Positions = positions, TriangleIndices = new Int32Collection([0, 1, 2, 0, 2, 3]) }, new DiffuseMaterial() { Brush = new SolidColorBrush(trajectory.Color) }) });
+                    legendStackPanel.Children.Add(legendIcon);
+
+                    legendStackPanel.Children.Add(new TextBlock() { Text = trajectory.Name, FontSize = AxisLabelFontSize * 0.8, FontWeight = FontWeights.Bold });
+
+                    LegendLines.Children.Add(legendStackPanel);
+                }
+            }
             Legend.Visibility = IsShowLegend ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -778,6 +818,11 @@ namespace SUNWODA_SEVB.Component.UserControls
                 sortingVisual3D?.Children.Remove(trajectory);
             }
             trajectories.Clear();
+
+            lock (legendLockObj)
+            {
+                SetTitleAndLegend();
+            }
 
             // 添加新轨迹
             foreach (var trajectory in TrajectoriesSource)

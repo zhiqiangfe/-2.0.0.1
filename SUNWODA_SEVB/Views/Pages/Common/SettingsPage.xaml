@@ -12,21 +12,12 @@
     FontSize="14"
     mc:Ignorable="d">
 
-    <!--<Grid>
-        <TextBlock
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Text="设置界面" />
-    </Grid>-->
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Page.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <TabControl Grid.Row="1">
+        <TabControl>
             <TabItem Header="全局设置">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -107,5 +98,14 @@
                 </Grid>
             </TabItem>
         </TabControl>
+        <Grid Background="#80000000" Visibility="{Binding IsSettingsLoading, Converter={StaticResource BoolToVisibility}}">
+            <hc:LoadingCircle
+                Width="50"
+                Height="50"
+                DotCount="5"
+                DotInterval="10"
+                DotSpeed="4"
+                IsRunning="{Binding IsSettingsLoading}" />
+        </Grid>
     </Grid>
 </Page>

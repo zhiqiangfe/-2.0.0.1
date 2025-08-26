@@ -19,6 +19,20 @@ namespace SUNWODA_SEVB.Core.Interfaces.Data
         UsersModel? GetByID(int id);
 
         /// <summary>
+        /// 通过账号获取
+        /// </summary>
+        /// <param name="userAccount"></param>
+        /// <returns></returns>
+        Task<UsersModel?> GetByUserAccountAsync(string userAccount);
+
+        /// <summary>
+        /// 通过账号获取
+        /// </summary>
+        /// <param name="userAccount"></param>
+        /// <returns></returns>
+        UsersModel? GetByUserAccount(string userAccount);
+
+        /// <summary>
         /// 通过用户名称获取
         /// </summary>
         /// <param name="username"></param>

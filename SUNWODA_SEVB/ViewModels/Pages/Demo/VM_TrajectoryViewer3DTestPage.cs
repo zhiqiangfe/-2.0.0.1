@@ -257,7 +257,137 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
             //Trajectories?.Add(sine);
 
             // 模拟动态轨迹
-            SimulateDynamicTrajectory();
+            //SimulateDynamicTrajectory();
+            SimulateDynamicCornerPointTrajectory();
+        }
+
+        private async void SimulateDynamicCornerPointTrajectory()
+        {
+            var topLeftTrajectory = new Trajectory3D
+            {
+                Id = "topLeftTrajectory",
+                Name = "上左角实际轨迹",
+                Color = Colors.Green,
+                Thickness = 0.4,
+                IsDynamic = true,
+                ShowAnimation = false,
+            };
+
+            var topRightTrajectory = new Trajectory3D
+            {
+                Id = "topRightTrajectory",
+                Name = "上右角实际轨迹",
+                Color = Colors.Blue,
+                Thickness = 0.4,
+                IsDynamic = true,
+                ShowAnimation = false,
+            };
+
+            var bottomLeftTrajectory = new Trajectory3D
+            {
+                Id = "bottomLeftTrajectory",
+                Name = "下左角实际轨迹",
+                Color = Colors.Yellow,
+                Thickness = 0.4,
+                IsDynamic = true,
+                ShowAnimation = false,
+            };
+
+            var bottomRightTrajectory = new Trajectory3D
+            {
+                Id = "bottomRightTrajectory",
+                Name = "下右角实际轨迹",
+                Color = Colors.Purple,
+                Thickness = 0.4,
+                IsDynamic = true,
+                ShowAnimation = false,
+            };
+            Trajectories?.Add(topLeftTrajectory);
+            Trajectories?.Add(topRightTrajectory);
+            Trajectories?.Add(bottomLeftTrajectory);
+            Trajectories?.Add(bottomRightTrajectory);
+
+            var task = Task.Run(async () =>
+            {
+                for (int i = 0; i <= 50; i++)
+                {
+                    await Task.Delay(500);
+
+                    RunOnUIThread(() =>
+                    {
+                        double t = i * 0.5;
+                        topLeftTrajectory.Points.Add(
+                            new TrajectoryPoint3D
+                            {
+                                Position = new Point3D(10 * Math.Sin(t * 0.2) + 2, -6, 25 - t),
+                                Timestamp = DateTime.Now,
+                            }
+                        );
+                    });
+                }
+            });
+
+            var task2 = Task.Run(async () =>
+            {
+                for (int i = 0; i <= 50; i++)
+                {
+                    await Task.Delay(500);
+
+                    RunOnUIThread(() =>
+                    {
+                        double t = i * 0.5;
+                        topRightTrajectory.Points.Add(
+                            new TrajectoryPoint3D
+                            {
+                                Position = new Point3D(10 * Math.Sin(t * 0.2) + 2, -2, 25 - t),
+                                Timestamp = DateTime.Now,
+                            }
+                        );
+                    });
+                }
+            });
+
+            var task3 = Task.Run(async () =>
+            {
+                for (int i = 0; i <= 50; i++)
+                {
+                    await Task.Delay(500);
+
+                    RunOnUIThread(() =>
+                    {
+                        double t = i * 0.5;
+                        bottomLeftTrajectory.Points.Add(
+                            new TrajectoryPoint3D
+                            {
+                                Position = new Point3D(10 * Math.Sin(t * 0.2) + 2, 2, 25 - t),
+                                Timestamp = DateTime.Now,
+                            }
+                        );
+                    });
+                }
+            });
+
+            var task4 = Task.Run(async () =>
+            {
+                for (int i = 0; i <= 50; i++)
+                {
+                    await Task.Delay(500);
+
+                    RunOnUIThread(() =>
+                    {
+                        double t = i * 0.5;
+                        bottomRightTrajectory.Points.Add(
+                            new TrajectoryPoint3D
+                            {
+                                Position = new Point3D(10 * Math.Sin(t * 0.2) + 2, 6, 25 - t),
+                                Timestamp = DateTime.Now,
+                            }
+                        );
+                    });
+                }
+            });
+
+            await Task.WhenAll(task, task2, task3, task4);
         }
 
         private async void SimulateDynamicTrajectory()
@@ -272,32 +402,21 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
                 ShowAnimation = false,
             };
 
-            Trajectories?.Add(dynamic);
-
-            // 模拟实时数据
-            await Task.Run(async () =>
+            var dynamic2 = new Trajectory3D
             {
-                //for (int i = 0; i < 50; i++)
-                //{
-                //    await Task.Delay(500);
+                Id = "dynamic2",
+                Name = "动态轨迹2",
+                Color = Colors.Blue,
+                Thickness = 0.4,
+                IsDynamic = true,
+                ShowAnimation = false,
+            };
 
-                //    RunOnUIThread(() =>
-                //    {
-                //        double t = i * 0.2;
-                //        dynamic.Points.Add(
-                //            new TrajectoryPoint3D
-                //            {
-                //                Position = new Point3D(
-                //                    15 * Math.Cos(t * 0.5),
-                //                    15 * Math.Sin(t * 0.5),
-                //                    -10 + i * 0.5
-                //                ),
-                //                Timestamp = DateTime.Now,
-                //            }
-                //        );
-                //    });
-                //}
+            Trajectories?.Add(dynamic);
+            Trajectories?.Add(dynamic2);
 
+            var task = Task.Run(async () =>
+            {
                 for (int i = 0; i <= 100; i++)
                 {
                     await Task.Delay(500);
@@ -315,6 +434,70 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
                     });
                 }
             });
+
+            var task2 = Task.Run(async () =>
+            {
+                for (int i = 0; i <= 100; i++)
+                {
+                    await Task.Delay(500);
+
+                    RunOnUIThread(() =>
+                    {
+                        double t = i * 0.5;
+                        dynamic2.Points.Add(
+                            new TrajectoryPoint3D
+                            {
+                                Position = new Point3D(10 * Math.Sin(t * 0.2), t - 25, 5 * Math.Cos(t * 0.2) + 10),
+                                Timestamp = DateTime.Now,
+                            }
+                        );
+                    });
+                }
+            });
+
+            await Task.WhenAll(task, task2);
+
+            //// 模拟实时数据
+            //await Task.Run(async () =>
+            //{
+            //    //for (int i = 0; i < 50; i++)
+            //    //{
+            //    //    await Task.Delay(500);
+
+            //    //    RunOnUIThread(() =>
+            //    //    {
+            //    //        double t = i * 0.2;
+            //    //        dynamic.Points.Add(
+            //    //            new TrajectoryPoint3D
+            //    //            {
+            //    //                Position = new Point3D(
+            //    //                    15 * Math.Cos(t * 0.5),
+            //    //                    15 * Math.Sin(t * 0.5),
+            //    //                    -10 + i * 0.5
+            //    //                ),
+            //    //                Timestamp = DateTime.Now,
+            //    //            }
+            //    //        );
+            //    //    });
+            //    //}
+
+            //    for (int i = 0; i <= 100; i++)
+            //    {
+            //        await Task.Delay(500);
+
+            //        RunOnUIThread(() =>
+            //        {
+            //            double t = i * 0.5;
+            //            dynamic.Points.Add(
+            //                new TrajectoryPoint3D
+            //                {
+            //                    Position = new Point3D(t - 25, 10 * Math.Sin(t * 0.2), 5 * Math.Cos(t * 0.2) + 10),
+            //                    Timestamp = DateTime.Now,
+            //                }
+            //            );
+            //        });
+            //    }
+            //});
         }
     }
 }

@@ -31,6 +31,18 @@ namespace SUNWODA_SEVB.Component.UserControls
             )
         );
 
+        public static readonly DependencyProperty ShowPasswordProperty =
+            DependencyProperty.Register(
+                "ShowPassword",
+                typeof(bool),
+                typeof(PasswordInputBox),
+                new FrameworkPropertyMetadata(
+                    false,
+                    FrameworkPropertyMetadataOptions.Inherits,
+                    new PropertyChangedCallback(OnShowPasswordChanged)
+                )
+            );
+
         public string Password
         {
             get { return (string)GetValue(PasswordProperty); }
@@ -41,6 +53,12 @@ namespace SUNWODA_SEVB.Component.UserControls
         {
             get { return (string)GetValue(WaterMarkProperty); }
             set { SetValue(WaterMarkProperty, value); }
+        }
+
+        public bool ShowPassword
+        {
+            get { return (bool)GetValue(ShowPasswordProperty); }
+            set { SetValue(ShowPasswordProperty, value); }
         }
         #endregion
 
@@ -62,6 +80,8 @@ namespace SUNWODA_SEVB.Component.UserControls
             {
                 if (passwordInputBox.passwordBox.Password != null)
                 {
+                    if (string.IsNullOrEmpty(e.NewValue.ToString()))
+                        passwordInputBox.passwordBox.Clear();
                     passwordInputBox.passwordBox.Password = e.NewValue.ToString();
                 }
             }
@@ -77,6 +97,21 @@ namespace SUNWODA_SEVB.Component.UserControls
                 passwordInputBox.SetValue(InfoElement.PlaceholderProperty, e.NewValue);
         }
 
+        private static void OnShowPasswordChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
+        {
+            var passwordInputBox = d as PasswordInputBox;
+            if (passwordInputBox is not null)
+            {
+                if (passwordInputBox.passwordBox != null)
+                {
+                    passwordInputBox.passwordBox.ShowPassword = (bool)e.NewValue;
+                }
+            }
+        }
+
         private void passwordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
             var passwordBox = sender as HandyControl.Controls.PasswordBox;
@@ -86,5 +121,14 @@ namespace SUNWODA_SEVB.Component.UserControls
             }
         }
         #endregion
+
+        private void passwordBox_Click(object sender, RoutedEventArgs e)
+        {
+            var passwordBox = sender as HandyControl.Controls.PasswordBox;
+            if (passwordBox != null)
+            {
+                ShowPassword = passwordBox.ShowPassword;
+            }
+        }
     }
 }

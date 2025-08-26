@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Windows;
 using System.Windows.Input;
+using HandyControl.Controls;
 using SUNWODA_SEVB.Core.Attributes;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Enumerations;
@@ -22,6 +23,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
         private readonly IWorkSpaceProjectRepository _workSpaceProjectRepository;
         private readonly IGlobalSettingRepository _globalSettingRepository;
         private readonly IProjectSettingRepository _projectSettingRepository;
+        private readonly IUsersRepository _usersRepository;
         private readonly AssemblyBuilder _assemblyBuilder;
         private readonly ModuleBuilder _moduleBuilder;
         private object? _globalSettingsExtraModelObject;
@@ -29,6 +31,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
         private List<ProjectSettingModel>? _projectSettings;
         private object? _projectSettingsExtraModelObject;
         private string? _selectedVM;
+        private bool isSettingsLoading = true;
 
         public ObservableCollection<string> VMNames { get; set; } =
             new ObservableCollection<string>();
@@ -39,10 +42,13 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
             {
                 if (HasUnsavedProjectChanges())
                 {
-                    var result = HandyControl.Controls.MessageBox.Ask(
-                        $"{_selectedVM} 项目设置有未保存的更改，是否保存？"
+                    var result = HandyControl.Controls.MessageBox.Show(
+                        $"{_selectedVM} 项目设置有未保存的更改，是否保存？",
+                        "确认保存",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question
                     );
-                    if (result == System.Windows.MessageBoxResult.OK)
+                    if (result == System.Windows.MessageBoxResult.Yes)
                     {
                         SaveProjectAsync();
                     }
@@ -50,6 +56,12 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                 SetProperty(ref _selectedVM, value);
                 _ = LoadProjectSettingsAsync();
             }
+        }
+
+        public bool IsSettingsLoading
+        {
+            get => isSettingsLoading;
+            set => SetProperty(ref isSettingsLoading, value);
         }
 
         public object? GlobalSettingsExtraModelObject
@@ -71,13 +83,15 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
             ILoggerService<VM_SettingsPage> logger,
             IWorkSpaceProjectRepository workSpaceProjectRepository,
             IGlobalSettingRepository globalSettingRepository,
-            IProjectSettingRepository projectSettingRepository
+            IProjectSettingRepository projectSettingRepository,
+            IUsersRepository usersRepository
         )
         {
             _logger = logger;
             _workSpaceProjectRepository = workSpaceProjectRepository;
             _globalSettingRepository = globalSettingRepository;
             _projectSettingRepository = projectSettingRepository;
+            _usersRepository = usersRepository;
 
             SaveGlobalCommand = new RelayCommand(SaveGlobalAsync);
             SaveProjectCommand = new RelayCommand(SaveProjectAsync);
@@ -119,6 +133,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
         {
             await HandleUnsavedChangesAsync();
             ClearAllSettings();
+            IsSettingsLoading = true;
             GC.Collect(2, GCCollectionMode.Forced);
             GC.WaitForPendingFinalizers();
             base.OnNavigatedFrom();
@@ -129,6 +144,8 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
             await LoadGlobalSettingsAsync();
             await LoadProjectSettingsAsync();
             base.OnNavigatedTo(parameter);
+            await Task.Delay(500);
+            IsSettingsLoading = false;
         }
 
         private async Task HandleUnsavedChangesAsync()
@@ -161,6 +178,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                         catch (Exception ex)
                         {
                             _logger.Error($"保存全局设置失败", ex, true);
+                            Growl.ErrorGlobal("保存全局设置失败");
                         }
                     }
                     if (hasUnsavedProjectChanges)
@@ -173,6 +191,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                         catch (Exception ex)
                         {
                             _logger.Error($"保存 {_selectedVM} 项目设置失败", ex, true);
+                            Growl.ErrorGlobal($"保存 {_selectedVM} 项目设置失败");
                         }
                     }
                     ShowSaveResults(savedItems, errors);
@@ -205,12 +224,13 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                         $"部分设置保存成功：\n{string.Join("、", savedItems)}\n\n{errorMessage}";
                 }
 
-                HandyControl.Controls.MessageBox.Error(errorMessage);
+                _logger.Error(errorMessage, true);
+                Growl.ErrorGlobal(errorMessage);
             }
             else if (savedItems.Any())
             {
                 var successMessage = $"{string.Join("、", savedItems)} 保存成功！";
-                HandyControl.Controls.MessageBox.Success(successMessage);
+                Growl.SuccessGlobal(successMessage);
             }
         }
 
@@ -300,12 +320,13 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                 if (hasModifySave)
                 {
                     // 显示成功消息
-                    HandyControl.Controls.MessageBox.Success("全局设置保存成功！");
+                    Growl.SuccessGlobal("全局设置保存成功！");
                 }
             }
             catch (Exception ex)
             {
-                HandyControl.Controls.MessageBox.Error($"全局设置保存失败：{ex.Message}");
+                _logger.Error($"全局设置保存失败", ex, true);
+                Growl.ErrorGlobal($"全局设置保存失败：{ex.Message}");
             }
         }
 
@@ -317,25 +338,34 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                 if (hasModifySave)
                 {
                     // 显示成功消息
-                    HandyControl.Controls.MessageBox.Success($"{_selectedVM} 项目设置保存成功！");
+                    Growl.SuccessGlobal($"{_selectedVM} 项目设置保存成功！");
                 }
             }
             catch (Exception ex)
             {
-                HandyControl.Controls.MessageBox.Error(
-                    $"{_selectedVM} 项目设置保存失败：{ex.Message}"
-                );
+                _logger.Error($"{_selectedVM} 项目设置保存失败", ex, true);
+                Growl.ErrorGlobal($"{_selectedVM} 项目设置保存失败：{ex.Message}");
             }
         }
 
         public async Task LoadGlobalSettingsAsync()
         {
-            _globalSettings = await _globalSettingRepository.GetAllAsync();
-            var golbalSettingsExtraModelType = _moduleBuilder.GetType("GlobalSettingsExtraModel");
+            //_globalSettings = await _globalSettingRepository.GetAllAsync();
+            var currentUser = (UsersModel)(
+                await _usersRepository.GetByUserAccountAsync(
+                    _globalSettingRepository.GetSettingValue("CurrentUserAccount")
+                )
+            );
+            _globalSettings = await _globalSettingRepository.GetListAsync(model =>
+                model.RoleRank <= currentUser.RoleId
+            );
+            var golbalSettingsExtraModelType = _moduleBuilder.GetType(
+                $"GlobalSettingsExtraModelByRole{currentUser.RoleId}"
+            );
             if (golbalSettingsExtraModelType == null)
             {
                 TypeBuilder typeBuilder = _moduleBuilder.DefineType(
-                    "GlobalSettingsExtraModel",
+                    $"GlobalSettingsExtraModelByRole{currentUser.RoleId}",
                     TypeAttributes.Public | TypeAttributes.Class
                 );
 
@@ -378,8 +408,14 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
         {
             if (_globalSettings == null || GlobalSettingsExtraModelObject == null)
                 return false;
-
-            var golbalSettingsExtraModelType = _moduleBuilder.GetType("GlobalSettingsExtraModel");
+            var currentUser = (UsersModel)(
+                await _usersRepository.GetByUserAccountAsync(
+                    _globalSettingRepository.GetSettingValue("CurrentUserAccount")
+                )
+            );
+            var golbalSettingsExtraModelType = _moduleBuilder.GetType(
+                $"GlobalSettingsExtraModelByRole{currentUser.RoleId}"
+            );
             if (golbalSettingsExtraModelType != null)
             {
                 var modifySettings = new List<GlobalSettingModel>();
@@ -413,8 +449,12 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
         {
             if (_globalSettings == null || GlobalSettingsExtraModelObject == null)
                 return false;
-
-            var golbalSettingsExtraModelType = _moduleBuilder.GetType("GlobalSettingsExtraModel");
+            var currentUser = _usersRepository.GetByUserAccount(
+                _globalSettingRepository.GetSettingValue("CurrentUserAccount")
+            );
+            var golbalSettingsExtraModelType = _moduleBuilder.GetType(
+                $"GlobalSettingsExtraModelByRole{currentUser.RoleId}"
+            );
             if (golbalSettingsExtraModelType != null)
             {
                 var modifySettings = new List<GlobalSettingModel>();
@@ -442,16 +482,23 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
         {
             if (_selectedVM == null)
                 return;
-            _projectSettings = await _projectSettingRepository.GetByVMNameAsync(_selectedVM);
+            var currentUser = (UsersModel)(
+                await _usersRepository.GetByUserAccountAsync(
+                    _globalSettingRepository.GetSettingValue("CurrentUserAccount")
+                )
+            );
+            _projectSettings = (await _projectSettingRepository.GetByVMNameAsync(_selectedVM))
+                ?.Where(model => model.RoleRank <= currentUser.RoleId)
+                .ToList();
             if (_projectSettings == null)
                 return;
             var projectSettingsExtraModelType = _moduleBuilder.GetType(
-                $"{_selectedVM}ProjectSettingsExtraModel"
+                $"{_selectedVM}ProjectSettingsExtraModelByRole{currentUser.RoleId}"
             );
             if (projectSettingsExtraModelType == null)
             {
                 TypeBuilder typeBuilder = _moduleBuilder.DefineType(
-                    $"{_selectedVM}ProjectSettingsExtraModel",
+                    $"{_selectedVM}ProjectSettingsExtraModelByRole{currentUser.RoleId}",
                     TypeAttributes.Public | TypeAttributes.Class
                 );
 
@@ -496,9 +543,13 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                 return false;
             if (_projectSettings == null || ProjectSettingsExtraModelObject == null)
                 return false;
-
+            var currentUser = (UsersModel)(
+                await _usersRepository.GetByUserAccountAsync(
+                    _globalSettingRepository.GetSettingValue("CurrentUserAccount")
+                )
+            );
             var projectSettingsExtraModelType = _moduleBuilder.GetType(
-                $"{_selectedVM}ProjectSettingsExtraModel"
+                $"{_selectedVM}ProjectSettingsExtraModelByRole{currentUser.RoleId}"
             );
             if (projectSettingsExtraModelType != null)
             {
@@ -535,8 +586,11 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                 return false;
             if (_projectSettings == null || ProjectSettingsExtraModelObject == null)
                 return false;
+            var currentUser = _usersRepository.GetByUserAccount(
+                _globalSettingRepository.GetSettingValue("CurrentUserAccount")
+            );
             var projectSettingsExtraModelType = _moduleBuilder.GetType(
-                $"{_selectedVM}ProjectSettingsExtraModel"
+                $"{_selectedVM}ProjectSettingsExtraModelByRole{currentUser.RoleId}"
             );
             if (projectSettingsExtraModelType != null)
             {
