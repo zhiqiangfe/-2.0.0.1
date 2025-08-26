@@ -464,7 +464,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                     if (prop != null)
                     {
                         var newValue = prop.GetValue(GlobalSettingsExtraModelObject);
-                        if (newValue != null && newValue.ToString() != setting.Value)
+                        if (newValue != null && newValue.ToString()?.ToUpper() != setting.Value.ToUpper())
                         {
                             modifySettings.Add(setting);
                         }
@@ -601,7 +601,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                     if (prop != null)
                     {
                         var newValue = prop.GetValue(ProjectSettingsExtraModelObject);
-                        if (newValue != null && newValue.ToString() != setting.Value)
+                        if (newValue != null && newValue.ToString()?.ToUpper() != setting.Value.ToUpper())
                         {
                             modifySettings.Add(setting);
                         }
