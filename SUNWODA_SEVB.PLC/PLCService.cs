@@ -58,6 +58,8 @@ namespace SUNWODA_SEVB.PLC
 
         private bool IsCycleWritePLC { get; set; }
 
+        private int PLCConnectTime { get; set; }
+
         public PLCService(
             ILoggerService<PLCService> logger,
             IGlobalSettingRepository globalSettingRepository,
@@ -106,6 +108,7 @@ namespace SUNWODA_SEVB.PLC
                     await _globalSettingRepository.GetSettingValueAsync("IsCycleReadPLC") ?? false;
                 IsCycleWritePLC =
                     await _globalSettingRepository.GetSettingValueAsync("IsCycleWritePLC") ?? false;
+                PLCConnectTime = await _globalSettingRepository.GetSettingValue("PLCConnectTime") ?? 5000;
 
                 // 加载配置
                 await LoadConfigurationsAsync(cancellationToken);
@@ -368,7 +371,7 @@ namespace SUNWODA_SEVB.PLC
             // 需要自定义PLC重试连接时间可在此设置
             return protocol switch
             {
-                _ => (retryCount + 1) * 5000, // 默认5秒
+                _ => (retryCount + 1) * PLCConnectTime, // 默认5秒
             };
         }
 

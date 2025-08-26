@@ -283,7 +283,7 @@ namespace SUNWODA_SEVB
 
                     // 确保当前用户设置
                     var currentUser = await globalSettingRepo.GetSettingValueAsync("CurrentUserAccount");
-                    if (currentUser!= "guest")
+                    if (currentUser != "guest")
                     {
                         await globalSettingRepo.UpdateSettingValueAsync("CurrentUserAccount", "guest");                     
                         logger.Info("初始化默认用户账户为 guest");
