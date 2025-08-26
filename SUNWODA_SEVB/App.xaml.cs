@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Windows;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,9 +17,12 @@ using SUNWODA_SEVB.MES.Extensions;
 using SUNWODA_SEVB.MES.Services;
 using SUNWODA_SEVB.PLC;
 using SUNWODA_SEVB.Services;
+using SUNWODA_SEVB.Tool.Configuration;
 using SUNWODA_SEVB.ViewModels.Windows.Common;
 using SUNWODA_SEVB.Views.Windows.Common;
 using SUNWODA_SEVB.WEB;
+using System.IO;
+using System.Windows;
 
 namespace SUNWODA_SEVB
 {
@@ -37,38 +38,41 @@ namespace SUNWODA_SEVB
             {
                 // 创建 Host，使用标准的配置加载方式
                 _host = Host.CreateDefaultBuilder()
-                    .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
-                    .ConfigureAppConfiguration(
-                        (context, config) =>
-                        {
-                            config.Sources.Clear();
-                            config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
-                            config.AddJsonFile(
-                                "appsettings.json",
-                                optional: false,
-                                reloadOnChange: true
-                            );
-                            config.AddJsonFile(
-                                $"appsettings.{context.HostingEnvironment.EnvironmentName}.json",
-                                optional: true,
-                                reloadOnChange: true
-                            );
-                            config.AddEnvironmentVariables();
-                        }
-                    )
-                    .ConfigureServices(
-                        (context, services) =>
-                        {
-                            ConfigurationHelper.SetConfiguration(context.Configuration);
-                            ConfigureServices(services, context.Configuration);
-                        }
-                    )
-                    .ConfigureLogging(logging =>
-                    {
-                        logging.ClearProviders();
-                        logging.AddNLog();
-                    })
-                    .Build();
+                     .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
+                     .ConfigureAppConfiguration((context, config) =>
+                     {
+                         config.Sources.Clear();
+                         config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
+
+                         // 使用支持加密的JSON配置文件加载器
+                         config.AddEncryptedJsonFile(
+                             path: "appsettings.json",
+                             optional: false,
+                             reloadOnChange: true,
+                             encryptionKey: null,  // 使用默认密钥，或从环境变量读取
+                             encryptionIV: null    // 使用默认IV，或从环境变量读取
+                         );
+
+                         // 环境特定的配置文件也支持加密
+                         config.AddEncryptedJsonFile(
+                             path: $"appsettings.{context.HostingEnvironment.EnvironmentName}.json",
+                             optional: true,
+                             reloadOnChange: true
+                         );
+
+                         config.AddEnvironmentVariables();
+                     })
+                     .ConfigureServices((context, services) =>
+                     {
+                         ConfigurationHelper.SetConfiguration(context.Configuration);
+                         ConfigureServices(services, context.Configuration);
+                     })
+                     .ConfigureLogging(logging =>
+                     {
+                         logging.ClearProviders();
+                         logging.AddNLog();
+                     })
+                     .Build();
 
                 var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
                 // 正确加载 NLog 配置
@@ -386,8 +390,8 @@ namespace SUNWODA_SEVB
 
             try
             {
-                // 1. 按时间清理：删除3天前的日志
-                result.TimeBasedCount = await appLogRepo.DeleteOldLogsAsync(3);
+                // 1. 按时间清理：删除7天前的日志
+                result.TimeBasedCount = await appLogRepo.DeleteOldLogsAsync(7);
 
                 // 2. 按大小清理：检查数据库大小，如果超过100M则删除更多日志
                 var databaseSizeMB = await appLogRepo.GetDatabaseSizeAsync();
