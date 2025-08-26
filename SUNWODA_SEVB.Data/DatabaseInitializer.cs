@@ -200,11 +200,9 @@ namespace SUNWODA_SEVB.Data
                 new GlobalSetting { Name = "IsCycleReadPLC", Value = "true", Type = "bool", Remark = "是否开启循环读取PLC", RoleRank = 2 },
                 new GlobalSetting { Name = "IsCycleWritePLC", Value = "true", Type = "bool", Remark = "是否开启循环写入PLC", RoleRank = 2 },
                 new GlobalSetting { Name = "DefaultProject", Value = "", Type = "string", Remark = "启动默认显示项目(VM)", RoleRank = 2 },
-                new GlobalSetting { Name = "CurrentUserAccount", Value = "guest", Type = "string", Remark = "当前用户", RoleRank = 0b1000 },
+                new GlobalSetting { Name = "CurrentUserAccount", Value = "guest", Type = "string", Remark = "当前用户", RoleRank = 0b1000 },//000访客 001工程师  010管理员 100超级管理员 
                 new GlobalSetting { Name = "IsMESEnabled", Value = "false", Type = "bool", Remark = "是否启用MES功能", RoleRank = 2 },
-                new GlobalSetting { Name = "DatabaseVersion", Value = "1.0.0", Type = "string", Remark = "数据库版本", RoleRank = 1 },
-                new GlobalSetting { Name = "PLCReadTimeout", Value = "5000", Type = "int", Remark = "PLC读取超时时间(ms)", RoleRank = 2 },
-                new GlobalSetting { Name = "PLCWriteTimeout", Value = "5000", Type = "int", Remark = "PLC写入超时时间(ms)", RoleRank = 2 }
+                new GlobalSetting { Name = "PLCConnectTime", Value = "5000", Type = "int", Remark = "PLC连接超时时间(ms)", RoleRank = 2 }
             };
 
             foreach (var setting in settings)
