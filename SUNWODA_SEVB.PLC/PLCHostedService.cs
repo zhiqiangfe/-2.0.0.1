@@ -24,6 +24,7 @@ namespace SUNWODA_SEVB.PLC
             try
             {
                 _logger.Info("启动PLC后台服务");
+                await Task.Delay(2000);
                 await _plcService.InitializeAsync(stoppingToken);
 
                 // 保持服务运行

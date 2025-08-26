@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Org.BouncyCastle.Crypto.Generators;
 using SqlSugar;
 using SUNWODA_SEVB.Core.Attributes;
 using SUNWODA_SEVB.Core.Common;
+using SUNWODA_SEVB.Core.Enumerations;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Data.Models;
 
@@ -85,6 +87,7 @@ namespace SUNWODA_SEVB.Data
                             Value = "true",
                             Type = "bool",
                             Remark = "是否开启循环读取PLC",
+                            RoleRank = 2
                         }
                     )
                     .ExecuteCommand();
@@ -98,6 +101,7 @@ namespace SUNWODA_SEVB.Data
                             Value = "true",
                             Type = "bool",
                             Remark = "是否开启循环读取PLC",
+                            RoleRank = 2
                         }
                     )
                     .ExecuteCommand();
@@ -112,6 +116,22 @@ namespace SUNWODA_SEVB.Data
                             Value = "",
                             Type = "string",
                             Remark = "启动默认显示项目(VM)",
+                            RoleRank = 2
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+
+            if (!globalConfigs.Any(it => it.Name == "CurrentUserAccount"))
+            {
+                _db.Insertable(
+                        new GlobalSetting
+                        {
+                            Name = "CurrentUserAccount",
+                            Value = "",
+                            Type = "string",
+                            Remark = "当前用户",
+                            RoleRank = 0b1000
                         }
                     )
                     .ExecuteCommand();
@@ -267,7 +287,9 @@ namespace SUNWODA_SEVB.Data
                     {
                         if (!workSpaceProjects.Any(it => it.VMClassName == vmType.Name))
                         {
-                            _db.Insertable(
+                            if (moduleAttr.Type == Core.Enumerations.ModuleType.Settings || moduleAttr.Type == Core.Enumerations.ModuleType.UserCenter)
+                            {
+                                _db.Insertable(
                                     new WorkSpaceProject()
                                     {
                                         VMClassName = vmType.Name,
@@ -275,6 +297,18 @@ namespace SUNWODA_SEVB.Data
                                     }
                                 )
                                 .ExecuteCommand();
+                            }
+                            else
+                            {
+                                _db.Insertable(
+                                    new WorkSpaceProject()
+                                    {
+                                        VMClassName = vmType.Name,
+                                        IsEnabled = false,
+                                    }
+                                )
+                                .ExecuteCommand();
+                            }
                         }
                     }
                     else
@@ -285,6 +319,64 @@ namespace SUNWODA_SEVB.Data
             }
 
             _logger?.Info("WorkSpaceProject默认变量参数初始化完成");
+
+            var users = _db.Queryable<Users>();
+            if (!users.Any(it => it.UserAccount == "guest"))
+            {
+                _db.Insertable(
+                        new Users()
+                        {
+                            UserAccount = "guest",
+                            UserName = "访客(默认)",
+                            Password = BCrypt.Net.BCrypt.HashPassword(""),
+                            RoleId = (int)UserRole.Guest,
+                            CreatedTime = DateTime.Now
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            if (!users.Any(it => it.UserAccount == "engineer"))
+            {
+                _db.Insertable(
+                        new Users()
+                        {
+                            UserAccount = "engineer",
+                            UserName = "工程师(默认)",
+                            Password = BCrypt.Net.BCrypt.HashPassword("swd123456"),
+                            RoleId = (int)UserRole.Engineer,
+                            CreatedTime = DateTime.Now
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            if (!users.Any(it => it.UserAccount == "admin"))
+            {
+                _db.Insertable(
+                        new Users()
+                        {
+                            UserAccount = "admin",
+                            UserName = "管理员(默认)",
+                            Password = BCrypt.Net.BCrypt.HashPassword("ime123456"),
+                            RoleId = (int)UserRole.Admin,
+                            CreatedTime = DateTime.Now
+                        }
+                    )
+                    .ExecuteCommand();
+            }
+            if (!users.Any(it => it.UserAccount == "sadmin"))
+            {
+                _db.Insertable(
+                        new Users()
+                        {
+                            UserAccount = "sadmin",
+                            UserName = "超级管理员(默认)",
+                            Password = BCrypt.Net.BCrypt.HashPassword("sime123456"),
+                            RoleId = (int)UserRole.SuperAdmin,
+                            CreatedTime = DateTime.Now
+                        }
+                    )
+                    .ExecuteCommand();
+            }
         }
 
         private List<Type> GetModelTypes()

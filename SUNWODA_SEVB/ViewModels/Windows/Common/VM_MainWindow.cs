@@ -21,7 +21,7 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
         private ModuleInfo? _selectedModule;
         private bool _isNavigating;
         private string _loadingMessage = "";
-        private bool _isNavigationExpanded = true;
+        private bool _isNavigationExpanded = false;
         private GridLength _navigationColumnDefinitionWidth;
 
         // 添加导航防抖
@@ -121,6 +121,9 @@ namespace SUNWODA_SEVB.ViewModels.Windows.Common
             );
 
             NavigateToDefaultAsync();
+
+            LoadingMessage = "";
+            IsNavigating = false;
         }
 
         private void PreLoadModule()

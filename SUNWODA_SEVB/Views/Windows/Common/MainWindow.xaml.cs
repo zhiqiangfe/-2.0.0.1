@@ -13,6 +13,15 @@ namespace SUNWODA_SEVB.Views.Windows.Common
         public MainWindow()
         {
             InitializeComponent();
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (NavigationBar.Visibility == System.Windows.Visibility.Visible)
+            {
+                NavigationColumnDefinition.MinWidth = 200;
+            }
         }
     }
 }

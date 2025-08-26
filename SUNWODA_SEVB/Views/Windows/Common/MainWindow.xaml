@@ -9,7 +9,7 @@
     xmlns:local="clr-namespace:SUNWODA_SEVB.Views.Windows.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="clr-namespace:SUNWODA_SEVB.Component.UserControls;assembly=SUNWODA_SEVB.Component"
-    Title="MainWindow"
+    Title="单机数字化平台"
     Width="800"
     Height="450"
     WindowState="Maximized"
@@ -36,8 +36,8 @@
                                         <PathFigure StartPoint="0,0">
                                             <ArcSegment
                                                 IsLargeArc="True"
-                                                Point="0,30"
-                                                Size="15,15"
+                                                Point="0,40"
+                                                Size="20,20"
                                                 SweepDirection="Clockwise" />
                                             <LineSegment Point="0,0" />
                                         </PathFigure>
@@ -70,8 +70,8 @@
             </Setter>
             <Setter Property="Background" Value="#FF1A252F" />
             <Setter Property="BorderBrush" Value="#FF2C3E50" />
-            <Setter Property="Width" Value="15" />
-            <Setter Property="Height" Value="30" />
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="40" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
     </Window.Resources>
@@ -80,8 +80,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition
                 x:Name="NavigationColumnDefinition"
-                Width="200"
-                MinWidth="200"
+                Width="Auto"
                 MaxWidth="500" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -91,6 +90,7 @@
 
         <!--  左侧导航栏  -->
         <Grid
+            x:Name="NavigationBar"
             Grid.Column="0"
             Background="#FF2C3E50"
             Visibility="{Binding IsNavigationExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -303,7 +303,7 @@
         </Grid>
 
         <Button
-            Margin="-15,0"
+            Margin="-20,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
             Command="{Binding ToggleNavigationStateCommand}"

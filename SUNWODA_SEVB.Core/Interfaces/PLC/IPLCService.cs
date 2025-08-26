@@ -5,6 +5,8 @@ namespace SUNWODA_SEVB.Core.Interfaces.PLC
 {
     public interface IPLCService
     {
+        IReadOnlyDictionary<string, ConnectInfo> ConnectionStatus { get; }
+        IReadOnlyDictionary<int, PLCRWAddress> RWAddresses { get; }
         /// <summary>
         /// 初始化PLC
         /// </summary>

@@ -19,6 +19,16 @@ namespace SUNWODA_SEVB.Data.Repositories
             return await GetByIdAsync(id);
         }
 
+        public UsersModel? GetByUserAccount(string userAccount)
+        {
+            return Get(model => model.UserAccount == userAccount);
+        }
+
+        public async Task<UsersModel?> GetByUserAccountAsync(string userAccount)
+        {
+            return await GetAsync(model => model.UserAccount == userAccount);
+        }
+
         public UsersModel? GetByUserName(string username)
         {
             return Get(model => model.UserName == username);

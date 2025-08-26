@@ -14,8 +14,8 @@
     <Grid>
         <uc:ModelViewerControl
             x:Name="ModelViewer"
-            IsShowCameraInfo="True"
-            IsShowFrameRate="True"
+            IsShowCameraInfo="False"
+            IsShowFrameRate="False"
             IsShowTestToolBar="False" />
         <!--<TextBlock
             HorizontalAlignment="Center"

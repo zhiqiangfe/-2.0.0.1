@@ -157,6 +157,42 @@ namespace SUNWODA_SEVB
                 // 启动日志清理任务
                 StartLogCleanupTask();
 
+                // 初始化当前账户
+                if (
+                    !_host
+                        .Services.GetRequiredService<IGlobalSettingRepository>()
+                        .UpdateSettingValue("CurrentUserAccount", "guest")
+                )
+                {
+                    MessageBox.Show(
+                        $"应用程序启动失败: 账户未正确初始化",
+                        "错误",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
+                    Shutdown();
+                    Environment.Exit(1);
+                }
+
+                // 当有默认模块设置时，会自动启用默认模块
+                var defaultProject = _host
+                    .Services.GetRequiredService<IGlobalSettingRepository>()
+                    .GetSettingValue("DefaultProject");
+                if (!string.IsNullOrEmpty(defaultProject))
+                {
+                    if (
+                        !_host
+                            .Services.GetRequiredService<IWorkSpaceProjectRepository>()
+                            .UpdateIsEnabled(defaultProject, true)
+                    )
+                    {
+                        appLogger.Warn(
+                            $"未找到 {defaultProject} 模块，检查默认项目命名是否正确",
+                            true
+                        );
+                    }
+                }
+
                 // 创建并显示主窗口
                 var mainWindow = _host.Services.GetRequiredService<MainWindow>();
 

@@ -41,7 +41,7 @@ namespace SUNWODA_SEVB.Core.Common
         }
 
         /// <summary>
-        /// 导航完成前
+        /// 导航离开前
         /// </summary>
         public virtual void OnNavigatedFrom()
         {
@@ -85,7 +85,7 @@ namespace SUNWODA_SEVB.Core.Common
         }
 
         /// <summary>
-        /// 导航完成前
+        /// 导航离开前
         /// </summary>
         /// <returns></returns>
         protected virtual async Task OnNavigatedFromAsync()
