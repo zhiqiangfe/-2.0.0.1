@@ -6,7 +6,7 @@ using SUNWODA_SEVB.Data.Models;
 
 namespace SUNWODA_SEVB.Data.Repositories
 {
-    public class MesInterfaceLogRepository : MappingRepository<MesInterfaceLogModel, Models.MesInterfaceLog>, IMesInterfaceLogRepository
+    public class MesInterfaceLogRepository : MappingRepository<MesInterfaceLogModel, MesInterfaceLog>, IMesInterfaceLogRepository
     {
         public MesInterfaceLogRepository(ISqlSugarClient db) : base(db)
         {

@@ -2,7 +2,6 @@
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Core.Models.Data;
-using SUNWODA_SEVB.Data.Models;
 
 namespace SUNWODA_SEVB.Data
 {
@@ -398,9 +397,9 @@ namespace SUNWODA_SEVB.Data
         }
 
         private async Task TestFailedTransaction(
-     IUnitOfWork unitOfWork,
-     IPLCConfigRepository plcConfigRepo,
-     IPLCRWConfigRepository plcRWConfigRepo)
+            IUnitOfWork unitOfWork,
+            IPLCConfigRepository plcConfigRepo,
+            IPLCRWConfigRepository plcRWConfigRepo)
         {
             // 将变量声明移到try-catch外面
             PLCConfigModel? plcConfig = null;

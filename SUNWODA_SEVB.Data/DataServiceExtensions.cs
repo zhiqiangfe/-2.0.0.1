@@ -25,7 +25,7 @@ namespace SUNWODA_SEVB.Data
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
-                var logger = provider.GetService<ILoggerService<ISqlSugarClient>>();
+                //var logger = provider.GetService<ILoggerService<ISqlSugarClient>>();
 
                 var db = new SqlSugarScope(
                     new ConnectionConfig()
@@ -84,36 +84,33 @@ namespace SUNWODA_SEVB.Data
                                 return;
                             }
 
-                            // 只记录业务表操作
-                            if (!string.IsNullOrEmpty(tableName) && IsBusinessTable(tableName))
-                            {
-                                var operation = GetSqlOperation(sql);
-                                logger?.Debug($"SQL执行: {operation} 表[{tableName}]");
-                            }
-                        };
+                        // 只记录业务表操作
+                        if (!string.IsNullOrEmpty(tableName) && IsBusinessTable(tableName))
+                        {
+                            var operation = GetSqlOperation(sql);
+                            Console.WriteLine($"SQL执行: {operation} 表[{tableName}]");
+                        }
+                    };
 
                         // SQL执行后事件 - 只在慢查询时记录
                         db.Aop.OnLogExecuted = (sql, pars) =>
                         {
                             var executionTime = db.Ado.SqlExecutionTime.TotalMilliseconds;
 
-                            if (executionTime > 1000) // 超过1秒的慢查询
-                            {
-                                var tableName = ExtractTableName(sql);
-                                var operation = GetSqlOperation(sql);
-                                logger?.Warn(
-                                    $"慢查询警告: {operation} 表[{tableName}] - 执行时间: {executionTime:F2}ms"
-                                );
-                            }
-                        };
-
-                        // SQL出错事件
-                        db.Aop.OnError = (exp) =>
+                        if (executionTime > 1500) // 超过1.5秒的慢查询
                         {
-                            logger?.Error($"SQL执行出错: {exp.Message}", exp);
-                        };
-                    }
-                );
+                            var tableName = ExtractTableName(sql);
+                            var operation = GetSqlOperation(sql);
+                            Console.WriteLine($"慢查询警告: {operation} 表[{tableName}] - 执行时间: {executionTime:F2}ms");
+                        }
+                    };
+
+                    // SQL出错事件
+                    db.Aop.OnError = (exp) =>
+                    {
+                        Console.WriteLine($"SQL执行出错: {exp.Message}", exp);
+                    };
+                });
 
                 return db;
             });
@@ -134,6 +131,9 @@ namespace SUNWODA_SEVB.Data
             services.AddScoped<IWorkSpaceProjectRepository, WorkSpaceProjectRepository>();
             services.AddScoped<IProjectSettingRepository, ProjectSettingRepository>();
             services.AddScoped<IUsersRepository, UsersRepository>();
+            services.AddScoped<IMesInterfaceLogRepository, MesInterfaceLogRepository>();
+            services.AddScoped<IMESSettingRepository, MESSettingRepository>();
+            services.AddScoped<IWebInterfaceLogRepository, WebInterfaceLogRepository>();
 
             return services;
         }

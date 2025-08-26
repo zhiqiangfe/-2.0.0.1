@@ -11,12 +11,17 @@ using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Data;
+using SUNWODA_SEVB.Data.Repositories;
 using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Logging.Targets;
+using SUNWODA_SEVB.MES;
+using SUNWODA_SEVB.MES.Extensions;
+using SUNWODA_SEVB.MES.Services;
 using SUNWODA_SEVB.PLC;
 using SUNWODA_SEVB.Services;
 using SUNWODA_SEVB.ViewModels.Windows.Common;
 using SUNWODA_SEVB.Views.Windows.Common;
+using SUNWODA_SEVB.WEB;
 
 namespace SUNWODA_SEVB
 {
@@ -120,19 +125,27 @@ namespace SUNWODA_SEVB
 
                 appLogger.Info("数据库初始化成功");
 
+                // 初始化MES服务
+                var mesService = _host.Services.GetRequiredService<IMesService>();
+                var mesInitialized = await mesService.InitializeAsync();
+
+                if (mesInitialized)
+                {
+                    appLogger.Info("MES服务初始化成功");
+                }
+                else
+                {
+                    appLogger.Info("MES服务未启用或初始化失败");
+                }
+
                 // 记录应用启动
 
                 appLogger.Info("========== 应用程序启动 ==========", true);
                 appLogger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}", true);
-                appLogger.Info(
-                    $"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}"
-                );
-                appLogger.Info(
-                    $"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}"
-                );
-                appLogger.Info(
-                    $"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}"
-                );
+                appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
+                appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
+                appLogger.Info($"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}");
+
 
                 // 设置全局异常处理
                 SetupGlobalExceptionHandling();
@@ -216,6 +229,12 @@ namespace SUNWODA_SEVB
 
             // 添加PLC服务
             services.AddPLCService();
+
+            // 注册MES服务
+            services.AddMesServices();
+
+            // 添加Web服务
+            services.AddWebServices();
 
             // 添加MVVM框架服务
             services.AddMvvmFramework();
@@ -359,14 +378,14 @@ namespace SUNWODA_SEVB
 
                     var appLogRepo = scope.ServiceProvider.GetRequiredService<IAppLogRepository>();
                     //后续可以根据需要添加其他日志仓储接口
-                    //var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
+                    var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
                     //var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
 
                     // 清理应用日志
                     var appLogResult = await CleanupAppLogs(appLogRepo, logger);
 
-                    //// 清理MES接口日志 (30天)
-                    //var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(30);
+                    // 清理MES接口日志 (30天)
+                    var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(30);
 
                     //// 清理Web接口日志 (30天)
                     //var webLogCount = await webLogRepo.DeleteOldLogsAsync(30);
