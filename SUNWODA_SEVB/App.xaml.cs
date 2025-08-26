@@ -9,12 +9,9 @@ using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Interfaces;
 using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Data;
-using SUNWODA_SEVB.Data.Repositories;
 using SUNWODA_SEVB.Logging;
 using SUNWODA_SEVB.Logging.Targets;
-using SUNWODA_SEVB.MES;
 using SUNWODA_SEVB.MES.Extensions;
-using SUNWODA_SEVB.MES.Services;
 using SUNWODA_SEVB.PLC;
 using SUNWODA_SEVB.Services;
 using SUNWODA_SEVB.Tool.Configuration;
@@ -24,11 +21,13 @@ using SUNWODA_SEVB.WEB;
 using System.IO;
 using System.Windows;
 
+
 namespace SUNWODA_SEVB
 {
     public partial class App : Application
     {
         private IHost? _host;
+        private CancellationTokenSource _shutdownCts = new CancellationTokenSource();
 
         protected override async void OnStartup(StartupEventArgs e)
         {
@@ -36,183 +35,92 @@ namespace SUNWODA_SEVB
 
             try
             {
-                // 创建 Host，使用标准的配置加载方式
-                _host = Host.CreateDefaultBuilder()
-                     .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
-                     .ConfigureAppConfiguration((context, config) =>
-                     {
-                         config.Sources.Clear();
-                         config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
+                // 步骤1：构建Host
+                _host = BuildHost();
 
-                         // 使用支持加密的JSON配置文件加载器
-                         config.AddEncryptedJsonFile(
-                             path: "appsettings.json",
-                             optional: false,
-                             reloadOnChange: true,
-                             encryptionKey: null,  // 使用默认密钥，或从环境变量读取
-                             encryptionIV: null    // 使用默认IV，或从环境变量读取
-                         );
-
-                         // 环境特定的配置文件也支持加密
-                         config.AddEncryptedJsonFile(
-                             path: $"appsettings.{context.HostingEnvironment.EnvironmentName}.json",
-                             optional: true,
-                             reloadOnChange: true
-                         );
-
-                         config.AddEnvironmentVariables();
-                     })
-                     .ConfigureServices((context, services) =>
-                     {
-                         ConfigurationHelper.SetConfiguration(context.Configuration);
-                         ConfigureServices(services, context.Configuration);
-                     })
-                     .ConfigureLogging(logging =>
-                     {
-                         logging.ClearProviders();
-                         logging.AddNLog();
-                     })
-                     .Build();
-
-                var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
-                // 正确加载 NLog 配置
-                var env = _host.Services.GetRequiredService<IHostEnvironment>();
-                var config = _host.Services.GetRequiredService<IConfiguration>();
-
-                // 加载 NLog.config
-                var nlogConfigPath = Path.Combine(env.ContentRootPath, "NLog.config");
-                LogManager.Configuration = new XmlLoggingConfiguration(nlogConfigPath);
-
-                // 安全设置配置变量 - 修复空引用警告
-                var connectionString = config.GetConnectionString("DefaultConnection");
-
-                // 验证连接字符串是否有效
-                if (string.IsNullOrWhiteSpace(connectionString))
-                {
-                    throw new InvalidOperationException("数据库连接字符串未配置或为空");
-                }
-
-                // 安全设置变量 - 使用非空值
-                if (LogManager.Configuration.Variables.ContainsKey("dbConnection"))
-                {
-                    LogManager.Configuration.Variables["dbConnection"] = connectionString;
-                }
-                else
-                {
-                    LogManager.Configuration.Variables.Add("dbConnection", connectionString);
-                }
-
-                // 启动 Host
+                // 步骤2：启动Host
                 await _host.StartAsync();
 
-                // 初始化NLog的数据库目标
-                InitializeNLogDatabaseTarget();
+                var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
 
-                // 测试
-                //await RunDataLayerTests();
-
-                // 初始化数据库
-                var databaseService = _host.Services.GetRequiredService<IDatabaseService>();
-                if (!databaseService.Initialize())
+                // 步骤3：初始化数据库（核心步骤，必须首先完成）
+                if (!await InitializeDatabaseWithRetry(appLogger))
                 {
-                    appLogger.Error("数据库初始化失败，应用程序将退出");
-                    MessageBox.Show(
-                        "数据库初始化失败！",
-                        "错误",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error
-                    );
-                    Shutdown();
-                    Environment.Exit(1);
+                    await ShowErrorAndExit("数据库初始化失败！请检查连接配置。");
                     return;
                 }
 
-                appLogger.Info("数据库初始化成功");
+                // 步骤4：配置NLog数据库目标（数据库就绪后）
+                await ConfigureNLogDatabase(appLogger);
 
-                // 初始化MES服务
-                var mesService = _host.Services.GetRequiredService<IMesService>();
-                var mesInitialized = await mesService.InitializeAsync();
+                // 步骤5：初始化MES服务（可选）
+                await InitializeMESService(appLogger);
 
-                if (mesInitialized)
-                {
-                    appLogger.Info("MES服务初始化成功");
-                }
-                else
-                {
-                    appLogger.Info("MES服务未启用或初始化失败");
-                }
+                // 步骤6：初始化应用设置
+                await InitializeApplicationSettings(appLogger);
 
-                // 记录应用启动
+                // 记录应用启动信息
+                LogApplicationStartup(appLogger);
 
-                appLogger.Info("========== 应用程序启动 ==========", true);
-                appLogger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}", true);
-                appLogger.Info($"版本: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
-                appLogger.Info($"配置文件路径: {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
-                appLogger.Info($"环境: {_host.Services.GetRequiredService<IHostEnvironment>().EnvironmentName}");
-
-
-                // 设置全局异常处理
+                // 步骤7：设置全局异常处理
                 SetupGlobalExceptionHandling();
 
-                // 启动日志清理任务
-                StartLogCleanupTask();
+                // 步骤8：启动后台任务
+                StartBackgroundTasks();
 
-                // 初始化当前账户
-                if (
-                    !_host
-                        .Services.GetRequiredService<IGlobalSettingRepository>()
-                        .UpdateSettingValue("CurrentUserAccount", "guest")
-                )
-                {
-                    MessageBox.Show(
-                        $"应用程序启动失败: 账户未正确初始化",
-                        "错误",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error
-                    );
-                    Shutdown();
-                    Environment.Exit(1);
-                }
-
-                // 当有默认模块设置时，会自动启用默认模块
-                var defaultProject = _host
-                    .Services.GetRequiredService<IGlobalSettingRepository>()
-                    .GetSettingValue("DefaultProject");
-                if (!string.IsNullOrEmpty(defaultProject))
-                {
-                    if (
-                        !_host
-                            .Services.GetRequiredService<IWorkSpaceProjectRepository>()
-                            .UpdateIsEnabled(defaultProject, true)
-                    )
-                    {
-                        appLogger.Warn(
-                            $"未找到 {defaultProject} 模块，检查默认项目命名是否正确",
-                            true
-                        );
-                    }
-                }
-
-                // 创建并显示主窗口
-                var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-
-                mainWindow.Show();
+                // 步骤9：创建并显示主窗口
+                ShowMainWindow();
             }
             catch (Exception ex)
             {
-                // 启动失败时记录日志
-                var logger = LogManager.GetLogger("AppStartup");
-                logger.Fatal(ex, "应用程序启动失败", true);
-                MessageBox.Show(
-                    $"应用程序启动失败: {ex.Message}",
-                    "错误",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
-                Shutdown();
-                Environment.Exit(1);
+                await HandleStartupError(ex);
             }
         }
+
+        /// <summary>
+        /// 构建Host
+        /// </summary>
+        private IHost BuildHost()
+        {
+            return Host.CreateDefaultBuilder()
+                .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    config.Sources.Clear();
+                    config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
+
+                    // 使用支持加密的JSON配置文件加载器
+                    config.AddEncryptedJsonFile(
+                        path: "appsettings.json",
+                        optional: false,
+                        reloadOnChange: true,
+                        encryptionKey: null,
+                        encryptionIV: null
+                    );
+
+                    // 环境特定的配置文件
+                    config.AddEncryptedJsonFile(
+                        path: $"appsettings.{context.HostingEnvironment.EnvironmentName}.json",
+                        optional: true,
+                        reloadOnChange: true
+                    );
+
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices((context, services) =>
+                {
+                    ConfigurationHelper.SetConfiguration(context.Configuration);
+                    ConfigureServices(services, context.Configuration);
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Information);
+                    logging.AddNLog();
+                })
+                .Build();
+        }
+
 
         private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
@@ -255,13 +163,174 @@ namespace SUNWODA_SEVB
             });
         }
 
-        private void InitializeNLogDatabaseTarget()
+        /// <summary>
+        /// 初始化数据库（带重试机制）
+        /// </summary>
+        private async Task<bool> InitializeDatabaseWithRetry(ILoggerService<App> logger, int maxRetries = 3)
         {
-            // 初始化DatabaseLogTarget的服务提供者
-            if (_host != null)
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                DatabaseLogTarget.Initialize(_host.Services);
+                try
+                {
+                    logger.Info($"开始初始化数据库 (尝试 {attempt}/{maxRetries})...");
+
+                    // 调用扩展方法进行数据库初始化
+                    var result = await _host!.Services.InitializeDatabaseAsync();
+
+                    if (result)
+                    {
+                        logger.Info("数据库初始化成功");
+                        return true;
+                    }
+
+                    logger.Warn($"数据库初始化失败 (尝试 {attempt}/{maxRetries})");
+                }
+                catch (Exception ex)
+                {
+                    logger.Error($"数据库初始化异常 (尝试 {attempt}/{maxRetries}): {ex.Message}", ex);
+                }
+
+                if (attempt < maxRetries)
+                {
+                    var delay = attempt * 2000; // 递增延迟
+                    logger.Info($"等待 {delay}ms 后重试...");
+                    await Task.Delay(delay);
+                }
             }
+
+            return false;
+        }
+
+
+        /// <summary>
+        /// 配置NLog数据库目标
+        /// </summary>
+        private async Task ConfigureNLogDatabase(ILoggerService<App> logger)
+        {
+            try
+            {
+                // 短暂延迟确保数据库表完全就绪
+                await Task.Delay(500);
+
+                // 初始化DatabaseLogTarget
+                DatabaseLogTarget.Initialize(_host!.Services);
+
+                // 加载NLog配置文件
+                var env = _host.Services.GetRequiredService<IHostEnvironment>();
+                var config = _host.Services.GetRequiredService<IConfiguration>();
+                var nlogConfigPath = Path.Combine(env.ContentRootPath, "NLog.config");
+
+                if (File.Exists(nlogConfigPath))
+                {
+                    LogManager.Configuration = new XmlLoggingConfiguration(nlogConfigPath);
+
+                    // 设置数据库连接字符串变量
+                    var connectionString = config.GetConnectionString("DefaultConnection");
+                    if (!string.IsNullOrWhiteSpace(connectionString))
+                    {
+                        LogManager.Configuration.Variables["dbConnection"] = connectionString;
+                    }
+
+                    logger.Info("NLog数据库目标配置成功");
+                }
+                else
+                {
+                    logger.Warn($"NLog配置文件不存在: {nlogConfigPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // NLog配置失败不应该阻止应用启动
+                logger.Error($"NLog数据库目标配置失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 初始化MES服务
+        /// </summary>
+        private async Task InitializeMESService(ILoggerService<App> logger)
+        {
+            try
+            {
+                var mesService = _host!.Services.GetRequiredService<IMesService>();
+                var mesInitialized = await mesService.InitializeAsync();
+
+                if (mesInitialized)
+                {
+                    logger.Info("MES服务初始化成功");
+                }
+                else
+                {
+                    logger.Info("MES服务未启用或初始化失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"MES服务初始化异常: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 初始化应用设置
+        /// </summary>
+        private async Task InitializeApplicationSettings(ILoggerService<App> logger)
+        {
+            using (var scope = _host!.Services.CreateScope())
+            {
+                try
+                {
+                    var globalSettingRepo = scope.ServiceProvider.GetRequiredService<IGlobalSettingRepository>();                  
+
+                    // 确保当前用户设置
+                    var currentUser = await globalSettingRepo.GetSettingValueAsync("CurrentUserAccount");
+                    if (string.IsNullOrEmpty(currentUser))
+                    {
+                        await globalSettingRepo.UpdateSettingValueAsync("CurrentUserAccount", "guest");                     
+                        logger.Info("初始化默认用户账户为 guest");
+                    }
+
+                    // 加载默认项目
+                    var defaultProject = await globalSettingRepo.GetSettingValueAsync("DefaultProject");
+                    if (!string.IsNullOrEmpty(defaultProject))
+                    {
+                        var projectRepo = scope.ServiceProvider.GetRequiredService<IWorkSpaceProjectRepository>();
+
+                        // 使用异步方法更新项目状态
+                        var updateResult = await projectRepo.UpdateIsEnabledAsync(defaultProject, true);
+
+                        if (!updateResult)
+                        {
+                            logger.Warn($"未找到默认项目: {defaultProject}");
+                        }
+                        else
+                        {
+                            logger.Info($"已启用默认项目: {defaultProject}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error($"初始化应用设置失败: {ex.Message}", ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 记录应用启动信息
+        /// </summary>
+        private void LogApplicationStartup(ILoggerService<App> logger)
+        {
+            var env = _host!.Services.GetRequiredService<IHostEnvironment>();
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+            logger.Info("========================================", true);
+            logger.Info("          应用程序启动成功", true);
+            logger.Info("========================================", true);
+            logger.Info($"启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}", true);
+            logger.Info($"应用版本: {version}");
+            logger.Info($"运行环境: {env.EnvironmentName}");
+            logger.Info($"基础路径: {AppDomain.CurrentDomain.BaseDirectory}");
+            logger.Info("========================================", true);
         }
 
         private void SetupGlobalExceptionHandling()
@@ -310,62 +379,71 @@ namespace SUNWODA_SEVB
             };
         }
 
+
+        /// <summary>
+        /// 启动后台任务
+        /// </summary>
+        private void StartBackgroundTasks()
+        {
+            // 启动日志清理任务
+            _ = Task.Run(async () => await RunLogCleanupTask(), _shutdownCts.Token);
+        }
+
+
+
         /// <summary>
         /// 启动日志清理任务
         /// </summary>
-        private void StartLogCleanupTask()
+        private async Task RunLogCleanupTask()
         {
-            _ = Task.Run(async () =>
-            {
-                var logger = _host?.Services?.GetService<ILoggerService<App>>();
-                var logManagementService = _host?.Services?.GetService<ILogManagementService>();
+            var logger = _host?.Services?.GetService<ILoggerService<App>>();
+            var logManagementService = _host?.Services?.GetService<ILogManagementService>();
 
+            // 延迟启动，确保应用完全初始化
+            await Task.Delay(3000, _shutdownCts.Token);
+
+            try
+            {
+                // 执行初始清理
+                logger?.Info("执行初始日志清理...");
+                logManagementService?.CleanupOldLogs(90);
+                await CleanupDatabaseLogs(logger);
+                logger?.Info("初始日志清理完成");
+            }
+            catch (Exception ex)
+            {
+                logger?.Error($"初始日志清理失败: {ex.Message}", ex);
+            }
+
+            // 定时清理循环
+            while (!_shutdownCts.Token.IsCancellationRequested)
+            {
                 try
                 {
-                    // 程序启动时立即执行一次清理
-                    logger?.Info("应用启动，开始执行初始日志清理任务");
+                    // 计算下次执行时间（每天凌晨2点）
+                    var now = DateTime.Now;
+                    var nextRun = now.Date.AddDays(1).AddHours(2);
+                    var delay = nextRun - now;
 
-                    // 清理启动时的文件日志 (90天)
+                    await Task.Delay(delay, _shutdownCts.Token);
+
+                    if (_shutdownCts.Token.IsCancellationRequested)
+                        break;
+
+                    logger?.Info("执行定时日志清理...");
                     logManagementService?.CleanupOldLogs(90);
-
-                    // 清理启动时的数据库日志
                     await CleanupDatabaseLogs(logger);
-
-                    logger?.Info("初始日志清理任务完成");
+                    logger?.Info("定时日志清理完成");
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
                 }
                 catch (Exception ex)
                 {
-                    logger?.Error("初始日志清理任务执行失败", ex);
+                    logger?.Error($"定时日志清理失败: {ex.Message}", ex);
                 }
-
-                // 定时清理任务循环
-                while (_host != null)
-                {
-                    try
-                    {
-                        // 每天凌晨2点执行清理
-                        var now = DateTime.Now;
-                        var nextRun = now.Date.AddDays(1).AddHours(2);
-                        var delay = nextRun - now;
-
-                        await Task.Delay(delay);
-
-                        logger?.Info("开始执行定时日志清理任务");
-
-                        // 清理文件日志 (90天)
-                        logManagementService?.CleanupOldLogs(90);
-
-                        // 清理数据库日志
-                        await CleanupDatabaseLogs(logger);
-
-                        logger?.Info("定时日志清理任务完成");
-                    }
-                    catch (Exception ex)
-                    {
-                        logger?.Error("定时日志清理任务执行失败", ex);
-                    }
-                }
-            });
+            }
         }
 
         /// <summary>
@@ -373,36 +451,69 @@ namespace SUNWODA_SEVB
         /// </summary>
         private async Task CleanupDatabaseLogs(ILoggerService<App>? logger)
         {
-            try
+            if (_host == null) return;
+
+            using (var scope = _host.Services.CreateScope())
             {
-                using (var scope = _host?.Services?.CreateScope())
+                try
                 {
-                    if (scope == null)
-                        return;
-
                     var appLogRepo = scope.ServiceProvider.GetRequiredService<IAppLogRepository>();
-                    //后续可以根据需要添加其他日志仓储接口
                     var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
-                    //var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
+                    var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
 
-                    // 清理应用日志
-                    var appLogResult = await CleanupAppLogs(appLogRepo, logger);
+                    // 清理应用日志（7天）
+                    var appLogCount = await appLogRepo.DeleteOldLogsAsync(7);
 
-                    // 清理MES接口日志 (30天)
+                    // 清理MES日志（30天）
                     var mesLogCount = await mesLogRepo.DeleteOldLogsAsync(30);
 
-                    //// 清理Web接口日志 (30天)
-                    //var webLogCount = await webLogRepo.DeleteOldLogsAsync(30);
+                    // 清理Web日志（30天）
+                    var webLogCount = await webLogRepo.DeleteOldLogsAsync(30);
 
-                    logger?.Info(
-                        $"数据库日志清理完成 - 应用日志: 按时间删除{appLogResult.TimeBasedCount}条,按大小删除{appLogResult.SizeBasedCount}条"
-                    );
+                    logger?.Info($"数据库日志清理完成 - 应用日志: {appLogCount}条, MES日志: {mesLogCount}条, Web日志: {webLogCount}条");
+                }
+                catch (Exception ex)
+                {
+                    logger?.Error($"数据库日志清理失败: {ex.Message}", ex);
                 }
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// 显示主窗口
+        /// </summary>
+        private void ShowMainWindow()
+        {
+            var mainWindow = _host!.Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+        }
+
+        /// <summary>
+        /// 处理启动错误
+        /// </summary>
+        private async Task HandleStartupError(Exception ex)
+        {
+            var logger = LogManager.GetLogger("AppStartup");
+            logger.Fatal(ex, "应用程序启动失败");
+
+            await ShowErrorAndExit($"应用程序启动失败:\n{ex.Message}");
+        }
+
+        /// <summary>
+        /// 显示错误并退出
+        /// </summary>
+        private async Task ShowErrorAndExit(string message)
+        {
+            MessageBox.Show(message, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+
+            if (_host != null)
             {
-                logger?.Error("数据库日志清理失败", ex);
+                await _host.StopAsync(TimeSpan.FromSeconds(5));
+                _host.Dispose();
             }
+
+            Shutdown();
+            Environment.Exit(1);
         }
 
         /// <summary>
@@ -454,19 +565,24 @@ namespace SUNWODA_SEVB
         {
             try
             {
-                // 记录应用退出
+                // 取消后台任务
+                _shutdownCts.Cancel();
+
                 var appLogger = _host?.Services?.GetService<ILoggerService<App>>();
-                appLogger?.Info("========== 应用程序退出 ==========", true);
+
+                appLogger?.Info("========================================", true);
+                appLogger?.Info("          应用程序正在退出", true);
+                appLogger?.Info("========================================", true);
                 appLogger?.Info($"退出时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}", true);
 
                 // 清理日志资源
                 var logManagementService = _host?.Services?.GetService<ILogManagementService>();
                 logManagementService?.Flush();
 
-                // 停止 Host
+                // 停止Host
                 if (_host != null)
                 {
-                    await _host.StopAsync();
+                    await _host.StopAsync(TimeSpan.FromSeconds(5));
                     _host.Dispose();
                 }
             }

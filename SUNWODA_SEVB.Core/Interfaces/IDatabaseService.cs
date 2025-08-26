@@ -8,11 +8,6 @@ namespace SUNWODA_SEVB.Core.Interfaces
     public interface IDatabaseService
     {
         /// <summary>
-        /// 初始化数据库
-        /// </summary>
-        bool Initialize();
-
-        /// <summary>
         /// 备份数据库
         /// </summary>
         void Backup(string backupPath);

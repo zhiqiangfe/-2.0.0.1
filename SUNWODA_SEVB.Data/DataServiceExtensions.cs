@@ -15,6 +15,10 @@ namespace SUNWODA_SEVB.Data
 
     public static class DataServiceExtensions
     {
+        private static readonly object _initLock = new object();
+        private static bool _isInitialized = false;
+        private static readonly SemaphoreSlim _connectionSemaphore = new SemaphoreSlim(1, 1);
+
         public static IServiceCollection AddDataServices(this IServiceCollection services)
         {
             // 配置Mapster
@@ -26,6 +30,17 @@ namespace SUNWODA_SEVB.Data
                 var configuration = provider.GetRequiredService<IConfiguration>();
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
                 //var logger = provider.GetService<ILoggerService<ISqlSugarClient>>();
+                // 验证连接字符串
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    throw new InvalidOperationException("数据库连接字符串未配置或为空");
+                }
+
+                // 添加连接池参数
+                if (!connectionString.Contains("Pooling="))
+                {
+                    connectionString += ";Pooling=true;Min Pool Size=5;Max Pool Size=100;Connection Lifetime=300;";
+                }
 
                 var db = new SqlSugarScope(
                     new ConnectionConfig()
@@ -38,7 +53,11 @@ namespace SUNWODA_SEVB.Data
                         {
                             IsAutoRemoveDataCache = true,
                             IsWithNoLockQuery = false,
+                            // 设置命令超时时间
+                            SqlServerCodeFirstNvarchar = false,
+                            DefaultCacheDurationInSeconds = 10
                         },
+                       
                         ConfigureExternalServices = new ConfigureExternalServices
                         {
                             // 配置实体服务
@@ -51,69 +70,35 @@ namespace SUNWODA_SEVB.Data
                                 }
 
                                 // 设置时间字段默认值
-                                if (
-                                    p.PropertyInfo.PropertyType == typeof(DateTime)
-                                    && (
-                                        p.PropertyName.Equals(
-                                            "CreateTime",
-                                            StringComparison.OrdinalIgnoreCase
-                                        )
-                                        || p.PropertyName.Equals(
-                                            "UpdateTime",
-                                            StringComparison.OrdinalIgnoreCase
-                                        )
-                                    )
-                                )
+                                if (p.PropertyInfo.PropertyType == typeof(DateTime))
                                 {
-                                    p.DefaultValue = "CURRENT_TIMESTAMP";
+                                    if (p.PropertyName.Equals("CreateTime", StringComparison.OrdinalIgnoreCase) ||
+                                        p.PropertyName.Equals("CreatedTime", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        p.DefaultValue = "CURRENT_TIMESTAMP";
+                                    }
+                                    else if (p.PropertyName.Equals("UpdateTime", StringComparison.OrdinalIgnoreCase) ||
+                                             p.PropertyName.Equals("UpdatedTime", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        p.DefaultValue = "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+                                    }
                                 }
                             },
                         },
                     },
                     db =>
                     {
-                        // SQL执行前事件 - 优化日志记录
-                        db.Aop.OnLogExecuting = (sql, pars) =>
-                        {
-                            var tableName = ExtractTableName(sql);
-
-                            // 过滤掉系统表查询的日志记录，减少噪音
-                            if (IsSystemQuery(sql, tableName))
-                            {
-                                // 系统查询不记录，或者只在Debug级别记录
-                                return;
-                            }
-
-                        // 只记录业务表操作
-                        if (!string.IsNullOrEmpty(tableName) && IsBusinessTable(tableName))
-                        {
-                            var operation = GetSqlOperation(sql);
-                            Console.WriteLine($"SQL执行: {operation} 表[{tableName}]");
-                        }
-                    };
-
-                        // SQL执行后事件 - 只在慢查询时记录
-                        db.Aop.OnLogExecuted = (sql, pars) =>
-                        {
-                            var executionTime = db.Ado.SqlExecutionTime.TotalMilliseconds;
-
-                        if (executionTime > 1500) // 超过1.5秒的慢查询
-                        {
-                            var tableName = ExtractTableName(sql);
-                            var operation = GetSqlOperation(sql);
-                            Console.WriteLine($"慢查询警告: {operation} 表[{tableName}] - 执行时间: {executionTime:F2}ms");
-                        }
-                    };
-
-                    // SQL出错事件
-                    db.Aop.OnError = (exp) =>
-                    {
-                        Console.WriteLine($"SQL执行出错: {exp.Message}", exp);
-                    };
-                });
+                        ConfigureSqlAop(db);
+                    });
 
                 return db;
             });
+
+            // 注册数据库初始化服务（作为单例，确保只初始化一次）
+            services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
+
+            // 注册原DatabaseService（保留备份/恢复功能）
+            services.AddSingleton<IDatabaseService, DatabaseService>();
 
             // 注册工作单元
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -122,22 +107,139 @@ namespace SUNWODA_SEVB.Data
             services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
 
             // 注册特定仓储
-            services.AddScoped<IAppLogRepository, AppLogRepository>();
-            services.AddScoped<IDeviceRepository, DeviceRepository>();
-            services.AddScoped<IGlobalSettingRepository, GlobalSettingRepository>();
-            services.AddScoped<IPLCAddressConfigRepository, PLCAddressConfigRepository>();
-            services.AddScoped<IPLCConfigRepository, PLCConfigRepository>();
-            services.AddScoped<IPLCRWConfigRepository, PLCRWConfigRepository>();
-            services.AddScoped<IWorkSpaceProjectRepository, WorkSpaceProjectRepository>();
-            services.AddScoped<IProjectSettingRepository, ProjectSettingRepository>();
-            services.AddScoped<IUsersRepository, UsersRepository>();
-            services.AddScoped<IMesInterfaceLogRepository, MesInterfaceLogRepository>();
-            services.AddScoped<IMESSettingRepository, MESSettingRepository>();
-            services.AddScoped<IWebInterfaceLogRepository, WebInterfaceLogRepository>();
+            RegisterRepositories(services);
 
             return services;
         }
 
+        /// <summary>
+        /// 注册所有仓储
+        /// </summary>
+        private static void RegisterRepositories(IServiceCollection services)
+        {
+            // 基础仓储
+            services.AddScoped<IAppLogRepository, AppLogRepository>();
+            services.AddScoped<IDeviceRepository, DeviceRepository>();
+            services.AddScoped<IGlobalSettingRepository, GlobalSettingRepository>();
+            services.AddScoped<IUsersRepository, UsersRepository>();
+
+            // PLC相关仓储
+            services.AddScoped<IPLCConfigRepository, PLCConfigRepository>();
+            services.AddScoped<IPLCRWConfigRepository, PLCRWConfigRepository>();
+            services.AddScoped<IPLCAddressConfigRepository, PLCAddressConfigRepository>();
+
+            // 项目配置仓储
+            services.AddScoped<IWorkSpaceProjectRepository, WorkSpaceProjectRepository>();
+            services.AddScoped<IProjectSettingRepository, ProjectSettingRepository>();
+
+            // MES相关仓储
+            services.AddScoped<IMesInterfaceLogRepository, MesInterfaceLogRepository>();
+            services.AddScoped<IMESSettingRepository, MESSettingRepository>();
+
+            // Web相关仓储
+            services.AddScoped<IWebInterfaceLogRepository, WebInterfaceLogRepository>();
+        }
+        /// <summary>
+        /// 配置SQL日志记录
+        /// </summary>
+        private static void ConfigureSqlAop(SqlSugarClient db)
+        {
+            // SQL执行前事件 - 优化日志记录
+            db.Aop.OnLogExecuting = (sql, pars) =>
+            {
+                // 防止初始化时的日志循环
+                if (sql.ToUpper().Contains("APP_LOGS") && !_isInitialized)
+                {
+                    return;
+                }
+
+                var tableName = ExtractTableName(sql);
+
+                // 过滤掉系统表查询
+                if (IsSystemQuery(sql, tableName))
+                {
+                    return;
+                }
+
+                // 只记录业务表操作
+                if (!string.IsNullOrEmpty(tableName) && IsBusinessTable(tableName))
+                {
+                    var operation = GetSqlOperation(sql);
+                    Console.WriteLine($"[SQL] {operation} 表[{tableName}]");
+                }
+            };
+
+            // SQL执行后事件 - 只在慢查询时记录
+            db.Aop.OnLogExecuted = (sql, pars) =>
+            {
+                var executionTime = db.Ado.SqlExecutionTime.TotalMilliseconds;
+
+                if (executionTime > 1000) // 超过1秒的慢查询
+                {
+                    var tableName = ExtractTableName(sql);
+                    var operation = GetSqlOperation(sql);
+                    Console.WriteLine($"[慢查询] {operation} 表[{tableName}] - 执行时间: {executionTime:F2}ms");
+                }
+            };
+
+            // SQL出错事件
+            db.Aop.OnError = (exp) =>
+            {
+                // 不记录表不存在的错误（初始化时会出现）
+                if (!exp.Message.Contains("doesn't exist"))
+                {
+                    Console.WriteLine($"[SQL错误] {exp.Message}");
+                }
+            };
+        }
+
+        /// <summary>
+        /// 初始化数据库（在应用启动时调用）
+        /// </summary>
+        public static async Task<bool> InitializeDatabaseAsync(this IServiceProvider serviceProvider)
+        {
+            // 确保只初始化一次
+            if (_isInitialized)
+            {
+                return true;
+            }
+
+            // 使用信号量防止并发初始化
+            await _connectionSemaphore.WaitAsync();
+            try
+            {
+                if (_isInitialized)
+                {
+                    return true;
+                }
+
+                var initializer = serviceProvider.GetRequiredService<IDatabaseInitializer>();
+                var result = await Task.Run(() => initializer.Initialize());
+
+                if (result)
+                {
+                    _isInitialized = true;
+                    Console.WriteLine("[数据库] 初始化成功");
+                }
+                else
+                {
+                    Console.WriteLine("[数据库] 初始化失败");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[数据库] 初始化异常: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                _connectionSemaphore.Release();
+            }
+        }
+
+        #region SQL分析辅助方法
         /// <summary>
         /// 从SQL语句中提取表名
         /// </summary>
@@ -183,29 +285,15 @@ namespace SUNWODA_SEVB.Data
             sql = sql.ToUpper();
 
             // 系统表查询
-            if (
-                tableName == "INFORMATION_SCHEMA"
-                || sql.Contains("INFORMATION_SCHEMA")
-                || sql.Contains("PERFORMANCE_SCHEMA")
-                || sql.Contains("MYSQL.")
-                || sql.Contains("SYS.")
-            )
+            var systemKeywords = new[]
             {
-                return true;
-            }
+                "INFORMATION_SCHEMA", "PERFORMANCE_SCHEMA",
+                "MYSQL.", "SYS.", "SHOW TABLES",
+                "SHOW COLUMNS", "DESCRIBE ", "EXPLAIN "
+            };
 
-            // 表结构检查相关的查询
-            if (
-                sql.Contains("SHOW TABLES")
-                || sql.Contains("SHOW COLUMNS")
-                || sql.Contains("DESCRIBE ")
-                || sql.Contains("EXPLAIN ")
-            )
-            {
-                return true;
-            }
-
-            return false;
+            return systemKeywords.Any(keyword => sql.Contains(keyword));
+          
         }
 
         /// <summary>
@@ -230,6 +318,7 @@ namespace SUNWODA_SEVB.Data
                 "GLOBAL_SETTING",
                 "PROJECT_SETTING",
                 "WORKSPACE_PROJECT",
+                "MES_SETTING"
             };
 
             return businessTables.Contains(tableName.ToUpper());
@@ -245,22 +334,25 @@ namespace SUNWODA_SEVB.Data
 
             sql = sql.ToUpper().Trim();
 
-            if (sql.StartsWith("SELECT"))
-                return "查询";
-            if (sql.StartsWith("INSERT"))
-                return "插入";
-            if (sql.StartsWith("UPDATE"))
-                return "更新";
-            if (sql.StartsWith("DELETE"))
-                return "删除";
-            if (sql.StartsWith("CREATE"))
-                return "创建";
-            if (sql.StartsWith("ALTER"))
-                return "修改";
-            if (sql.StartsWith("DROP"))
-                return "删除";
+            var operations = new Dictionary<string, string>
+            {
+                { "SELECT", "查询" },
+                { "INSERT", "插入" },
+                { "UPDATE", "更新" },
+                { "DELETE", "删除" },
+                { "CREATE", "创建" },
+                { "ALTER", "修改" },
+                { "DROP", "删除" }
+            };
+
+            foreach (var op in operations)
+            {
+                if (sql.StartsWith(op.Key))
+                    return op.Value;
+            }
 
             return "操作";
         }
+        #endregion
     }
 }
