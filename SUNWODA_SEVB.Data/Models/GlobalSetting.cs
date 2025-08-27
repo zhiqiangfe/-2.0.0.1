@@ -16,6 +16,8 @@ namespace SUNWODA_SEVB.Data.Models
         public string Type { get; set; } = null!;
         [SugarColumn(ColumnName = "unit", ColumnDescription = "单位", IsNullable = true)]
         public string Unit { get; set; } = null!;
+        [SugarColumn(ColumnName = "role_rank", ColumnDescription = "用户权限")]
+        public int RoleRank { get; set; }
         [SugarColumn(ColumnName = "remark", ColumnDescription = "注释", IsNullable = true)]
         public string Remark { get; set; } = null!;
 

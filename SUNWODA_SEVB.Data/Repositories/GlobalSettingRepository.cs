@@ -1,8 +1,9 @@
-﻿using SqlSugar;
-using SUNWODA_SEVB.Core.Interfaces;
+﻿using Mapster;
+using SqlSugar;
+using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Data.Models;
-using SUNWODA_SEVB.Tool.Extension;
+using SUNWODA_SEVB.Tool.Helper;
 
 namespace SUNWODA_SEVB.Data.Repositories
 {
@@ -15,27 +16,39 @@ namespace SUNWODA_SEVB.Data.Repositories
             return await GetByIdAsync(id);
         }
 
+        public GlobalSettingModel? GetByID(int id)
+        {
+            return GetById(id);
+        }
+
         public async Task<GlobalSettingModel?> GetByNameAsync(string name)
         {
             return await GetAsync(model => model.Name == name);
         }
 
+        public GlobalSettingModel? GetByName(string name)
+        {
+            return Get(model => model.Name == name);
+        }
+
         public async Task<dynamic?> GetSettingValueAsync(string name)
         {
             var model = await GetByNameAsync(name);
-            
-            if (model is not null)
-                return StringToAny(model.Type, model.Value);
-            else
-                return null;
+            return model != null ? DataTypeConverter.StringToValue(model.Type, model.Value) : null;
+        }
+
+        public dynamic? GetSettingValue(string name)
+        {
+            var model = GetByName(name);
+            return model != null ? DataTypeConverter.StringToValue(model.Type, model.Value) : null;
         }
 
         public async Task<bool> UpdateSettingValueAsync(string name, dynamic value)
         {
             var model = await GetByNameAsync(name);
-            if (model is not null)
+            if (model != null)
             {
-                model.Value = value.ToSqlValue();
+                model.Value = DataTypeConverter.ValueToString(value);
                 return await UpdateAsync(model);
             }
             else
@@ -44,43 +57,17 @@ namespace SUNWODA_SEVB.Data.Repositories
             }
         }
 
-        public dynamic StringToAny(string type, string value)
+        public bool UpdateSettingValue(string name, dynamic value)
         {
-            type = type.ToUpper();
-            switch (type)
+            var model = GetByName(name);
+            if (model != null)
             {
-                case "STRING":
-                    return value;
-                case "FLOAT":
-                    return value.ToFloat();
-                case "DOUBLE":
-                    return value.ToDouble();
-                case "DECIMAL":
-                    return value.ToDecimal();
-                case "SBYTE":
-                    return value.ToSByte();
-                case "BYTE":
-                    return value.ToByte();
-                case "SHORT":
-                    return value.ToShort();
-                case "USHORT":
-                    return value.ToUShort();
-                case "INT":
-                    return value.ToInt();
-                case "UINT":
-                    return value.ToUInt();
-                case "LONG":
-                    return value.ToLong();
-                case "ULONG":
-                    return value.ToLong();
-                case "BOOL":
-                    return value.ToBool();
-                case "DATETIME":
-                    return value.ToDateTime("yyyy-MM-dd HH:mm:ss");
-                case "WINDOWSTATE":
-                    return value.ToWindowSate();
-                default:
-                    throw new FormatException("无效类型");
+                model.Value = DataTypeConverter.ValueToString(value);
+                return Update(model);
+            }
+            else
+            {
+                return false;
             }
         }
     }

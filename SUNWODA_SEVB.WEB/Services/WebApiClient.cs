@@ -1,0 +1,499 @@
+﻿using System.Diagnostics;
+using System.IO;
+using SUNWODA_SEVB.Core.Interfaces;
+using SUNWODA_SEVB.Core.Interfaces.Web;
+using SUNWODA_SEVB.Core.Models.Web;
+using SUNWODA_SEVB.Tool.Helper;
+
+namespace SUNWODA_SEVB.WEB.Services
+{
+    public class WebApiClient : IWebApiClient
+    {
+        private readonly ILoggerService<WebApiClient> _logger;
+        private readonly IWebConfiguration _configuration;
+        private readonly HttpHelper _httpHelper;
+
+        // 问题1：将 _uuid 声明为可空类型
+        private string? _uuid;
+
+        public WebApiClient(
+            ILoggerService<WebApiClient> logger,
+            IWebConfiguration configuration)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _httpHelper = new HttpHelper();
+        }
+
+        public void SetUuid(string uuid)
+        {
+            _uuid = uuid;
+        }
+
+        public string? GetUuid()
+        {
+            return _uuid;
+        }
+
+        public async Task<DeviceBindingResponse> BindDeviceAsync(DeviceBindingRequest request)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (string.IsNullOrEmpty(settings.CentralControlWebUrl))
+                {
+                    return new DeviceBindingResponse
+                    {
+                        Code = 00,
+                        Message = "CentralControlWebUrl未配置"
+                    };
+                }
+
+                var url = $"{settings.CentralControlWebUrl}machine/insert";
+
+                var json = JsonHelper.Serialize(request);
+                var result = await Task.Run(() => _httpHelper.IMEWebPost(url, json));
+
+                if (!result.Contains("failed"))
+                {
+                    if (JsonHelper.TryDeserialize<DeviceBindingResponse>(result, out var response))
+                    {
+                        if (response != null && response.IsSuccess && !string.IsNullOrEmpty(response.Data))
+                        {
+                            _uuid = response.Data;
+                        }
+                        return response ?? new DeviceBindingResponse
+                        {
+                            Code = 00,
+                            Message = "反序列化结果为空"
+                        };
+                    }
+                }
+
+                return new DeviceBindingResponse
+                {
+                    Code = 00,
+                    Message = result
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("设备绑定API调用失败", ex);
+                return new DeviceBindingResponse
+                {
+                    Code = 00,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<HeartbeatResponse> SendHeartbeatAsync(string deviceSn, string state, string info, string uuid)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (settings == null || string.IsNullOrWhiteSpace(settings.CentralControlWebUrl))
+                {
+                    return new HeartbeatResponse
+                    {
+                        Code = 0,
+                        Message = "CentralControlWebUrl未配置"
+                    };
+                }
+
+                var baseUrl = settings.CentralControlWebUrl!;
+                if (!baseUrl.EndsWith("/")) baseUrl += "/";
+
+                var url = $"{baseUrl}machineHeart/heart";
+
+                // 参数容错处理，避免 null
+                var parameters = new Dictionary<string, string>
+                {
+                    { "devId", deviceSn ?? string.Empty },
+                    { "state", state ?? string.Empty },
+                    { "info",  info  ?? string.Empty },
+                    { "UUID",  uuid  ?? string.Empty }
+                };
+
+                var sw = Stopwatch.StartNew();
+                var result = await Task.Run(() => _httpHelper.IMEWebGet(url, parameters));
+                sw.Stop();
+
+                HeartbeatResponse? response = null;
+                if (!string.IsNullOrWhiteSpace(result))
+                {
+                    try
+                    {
+                        //var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                        //{
+                        //    PropertyNameCaseInsensitive = true,
+                        //    NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+                        //};
+                        response = JsonHelper.Deserialize<HeartbeatResponse>(result);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("心跳API反序列化失败", ex);
+                    }
+                }
+                var statusCode = response?.Code ?? 0;
+                //_logger.LogWebInterface(url, "GET", string.Join("&", parameters.Select(kv => $"{kv.Key}={kv.Value}")), result ?? string.Empty, statusCode, sw.ElapsedMilliseconds);
+
+                var hasFailedKeyword = !string.IsNullOrEmpty(result) &&result.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (!hasFailedKeyword)
+                {
+                    // 成功路径：若反序列化失败，给出提示
+                    return response ?? new HeartbeatResponse
+                    {
+                        Code = 0,
+                        Message = "反序列化失败"
+                    };
+                }
+
+                // 失败路径：返回原始返回体或空提示
+                return new HeartbeatResponse
+                {
+                    Code = 00,
+                    Message = result
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("心跳API调用失败", ex);
+                return new HeartbeatResponse
+                {
+                    Code = 00,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<PcInfoResponse> UploadPcInfoAsync(PcInfoRequest request, string uuid)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (string.IsNullOrEmpty(settings.CentralControlWebUrl))
+                {
+                    return new PcInfoResponse
+                    {
+                        Code = 00,
+                        Message = "CentralControlWebUrl未配置"
+                    };
+                }
+
+                var baseUrl = settings.CentralControlWebUrl!;
+                if (!baseUrl.EndsWith("/")) baseUrl += "/";
+
+                var url = $"{baseUrl}machineHeart/pcInfo";
+                var json = JsonHelper.Serialize(request);
+
+                var headers = new Dictionary<string, string>
+                {
+                    {"UUID", uuid ?? string.Empty}
+                };
+
+                var sw = Stopwatch.StartNew();
+                var result = await Task.Run(() => _httpHelper.IMEWebPost(url, json, headers));
+                sw.Stop();
+
+                PcInfoResponse? response = null;
+                if (!string.IsNullOrWhiteSpace(result))
+                {
+                    try
+                    {
+                        response = JsonHelper.Deserialize<PcInfoResponse>(result!);
+                    }
+                    catch (Exception ex)
+                    {
+                        // 反序列化失败也记录，但不中断后续流程
+                        _logger.Error("PC信息上传API反序列化失败", ex);
+                    }
+                }
+
+                var statusCode = response?.Code ?? 0;
+                _logger.LogWebInterface(url, "pcinfo",json??string.Empty,result??string.Empty, statusCode, sw.ElapsedMilliseconds);
+
+                var hasFailedKeyword = !string.IsNullOrEmpty(result) &&
+                               result.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (!hasFailedKeyword)
+                {
+                    return response ?? new PcInfoResponse
+                    {
+                        Code = 00,
+                        Message = "反序列化失败"
+                    };
+                }
+
+                return new PcInfoResponse
+                {
+                    Code = 0,
+                    Message = result ?? "调用返回为空"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("PC信息上传API调用失败", ex);
+                return new PcInfoResponse
+                {
+                    Code = 00,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<CheckVersionResponse> CheckVersionAsync(string softName, string softVersion, string deviceSn)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (string.IsNullOrEmpty(settings.CentralControlWebUrl))
+                {
+                    return new CheckVersionResponse
+                    {
+                        Code = 00,
+                        Message = "CentralControlWebUrl未配置"
+                    };
+                }
+
+                var url = $"{settings.CentralControlWebUrl}machineHeart/checkVerInfo";
+                var headers = new Dictionary<string, string>
+                {
+                    {"softName", softName},
+                    {"softVersion", softVersion},
+                    {"devId", deviceSn}
+                };
+
+                var result = await Task.Run(() => _httpHelper.IMEWebGet(url, headers));
+
+                if (!result.Contains("failed"))
+                {
+                    var response = JsonHelper.Deserialize<CheckVersionResponse>(result);
+                    return response ?? new CheckVersionResponse
+                    {
+                        Code = 00,
+                        Message = "反序列化失败"
+                    };
+                }
+
+                return new CheckVersionResponse
+                {
+                    Code = 00,
+                    Message = result
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("版本检查API调用失败", ex);
+                return new CheckVersionResponse
+                {
+                    Code = 00,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<DownloadFileResponse> DownloadFileAsync(string softName, string softVersion, string savePath, string fileName, string uuid)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (string.IsNullOrEmpty(settings.CentralControlWebUrl))
+                {
+                    return new DownloadFileResponse
+                    {
+                        Code = 00,
+                        Message = "CentralControlWebUrl未配置"
+                    };
+                }
+
+                var url = $"{settings.CentralControlWebUrl}MachineSoftUpdateController/downloadFile";
+                var headers = new Dictionary<string, string>
+                {
+                    {"softName", softName},
+                    {"softVersion", softVersion},
+                    {"UUID", uuid}
+                };
+
+                var result = await Task.Run(() =>
+                    _httpHelper.DownloadFileGet(url, savePath, fileName, headers));
+
+                if (!result.Contains("failed"))
+                {
+                    // 使用 TryDeserialize 安全地反序列化
+                    if (JsonHelper.TryDeserialize<DownloadFileResponse>(result, out var response) && response != null)
+                    {
+                        // 如果下载成功，读取文件内容
+                        if (response.IsSuccess)
+                        {
+                            var filePath = Path.Combine(savePath, fileName);
+                            if (File.Exists(filePath))
+                            {
+                                response.FileData = File.ReadAllBytes(filePath);
+                            }
+                        }
+                        return response;
+                    }
+                }
+
+                return new DownloadFileResponse
+                {
+                    Code = 00,
+                    Message = result
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("文件下载API调用失败", ex);
+                return new DownloadFileResponse
+                {
+                    Code = 00,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<UploadFileResponse> UploadFileAsync(string filePath, string version, string name, string fileName)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (string.IsNullOrEmpty(settings.CentralControlWebUrl))
+                {
+                    return new UploadFileResponse
+                    {
+                        Code = 00,
+                        Message = "CentralControlWebUrl未配置"
+                    };
+                }
+
+                var url = $"{settings.CentralControlWebUrl}MachineSoftUpdateController/uploadFile";
+                var body = new Dictionary<string, string>
+                {
+                    {"softVersion", version},
+                    {"softName", name}
+                };
+
+                var result = await Task.Run(() =>
+                    _httpHelper.FileWebPost(url, filePath, fileName, "file", 60000, null, body));
+
+                if (!result.Contains("failed"))
+                {
+                    var response = JsonHelper.Deserialize<UploadFileResponse>(result);
+                    return response ?? new UploadFileResponse
+                    {
+                        Code = 00,
+                        Message = "反序列化失败"
+                    };
+                }
+
+                return new UploadFileResponse
+                {
+                    Code = 00,
+                    Message = result
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("文件上传API调用失败", ex);
+                return new UploadFileResponse
+                {
+                    Code = 00,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<SysCenterFileResponse> DownloadSysCenterFileAsync(string appKey, string signature, string pythonCode, string executeType)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (string.IsNullOrEmpty(settings.WebTestUrlSysCenter))
+                {
+                    return new SysCenterFileResponse
+                    {
+                        Success = false,
+                        Message = "WebTestUrlSysCenter未配置"
+                    };
+                }
+
+                var url = $"{settings.WebTestUrlSysCenter}sysCenter/interfaceApi/downloadFile";
+                var request = new SysCenterFileRequest
+                {
+                    AppKey = appKey,
+                    Signature = signature,
+                    PythonCode = pythonCode,
+                    ExecuteType = executeType
+                };
+
+                var json = JsonHelper.Serialize(request);
+                var result = await Task.Run(() => _httpHelper.IMEWebPost(url, json, "application/json"));
+
+                // 尝试反序列化，如果失败则将结果作为 DataStr 返回
+                if (JsonHelper.TryDeserialize<SysCenterFileResponse>(result, out var response) && response != null)
+                {
+                    return response;
+                }
+
+                // 如果不能反序列化为 SysCenterFileResponse，则将原始结果作为 DataStr 返回
+                return new SysCenterFileResponse
+                {
+                    Success = true,
+                    DataStr = result
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("SysCenter文件下载API调用失败", ex);
+                return new SysCenterFileResponse
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<FileVersionResponse> GetFileVersionAsync(string pythonCode)
+        {
+            try
+            {
+                var settings = _configuration.GetSettings();
+                if (string.IsNullOrEmpty(settings.WebTestUrlSysCenter))
+                {
+                    return new FileVersionResponse
+                    {
+                        Success = false,
+                        Message = "WebTestUrlSysCenter未配置"
+                    };
+                }
+
+                var url = $"{settings.WebTestUrlSysCenter}sysCenter/interfaceApi/selFileVersion";
+                var parameters = new Dictionary<string, string>
+                {
+                    {"pythonCode", pythonCode}
+                };
+
+                var result = await Task.Run(() => _httpHelper.IMEWebGet(url, parameters));
+
+                var response = JsonHelper.Deserialize<FileVersionResponse>(result);
+                return response ?? new FileVersionResponse
+                {
+                    Success = false,
+                    Message = "反序列化失败"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("获取文件版本API调用失败", ex);
+                return new FileVersionResponse
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+        }
+    }
+}

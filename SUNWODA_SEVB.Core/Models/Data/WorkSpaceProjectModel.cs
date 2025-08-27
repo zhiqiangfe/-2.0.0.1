@@ -9,13 +9,11 @@
 
         public bool IsEnabled { get; set; }
 
-        public bool IsInitShow { get; set; }
         public WorkSpaceProjectModel() { }
-        public WorkSpaceProjectModel(string vmClassName, bool isEnabled, bool isInitShow)
+        public WorkSpaceProjectModel(string vmClassName, bool isEnabled)
         {
             VMClassName = vmClassName;
             IsEnabled = isEnabled;
-            IsInitShow = isInitShow;
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
-using SUNWODA_SEVB.Core.Interfaces;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using NLog.Common;
 using NLog.Targets.Wrappers;
 using SUNWODA_SEVB.Core.Models.Data;
+using SUNWODA_SEVB.Core.Interfaces.Data;
+using SUNWODA_SEVB.Tool.Helper;
 
 namespace SUNWODA_SEVB.Logging.Targets
 {
@@ -181,7 +182,6 @@ namespace SUNWODA_SEVB.Logging.Targets
                 // 检查服务提供者
                 if (_serviceProvider == null)
                 {
-                    // 不要频繁记录这个警告
                     if (DateTime.Now.Second % 10 == 0)
                     {
                         InternalLogger.Warn($"DatabaseLogTarget '{Name}': ServiceProvider is null");
@@ -194,71 +194,45 @@ namespace SUNWODA_SEVB.Logging.Targets
                 {
                     InitializeInstance();
                 }
-                //// 是否写入数据库
-                bool writeToDatabase = false;
-                if (logEvent.Properties.ContainsKey("IsToDatabase"))
-                {
-                    var value = logEvent.Properties["IsToDatabase"];
-                    if (value is bool boolValue)
-                    {
-                        writeToDatabase = boolValue;
-                    }
-                    else if (value != null)
-                    {
-                        writeToDatabase = Convert.ToBoolean(value);
-                    }
-                }
-
-                // 如果不写入数据库，则直接返回
-                if (!writeToDatabase)
-                {
-                    return;
-                }
 
                 var logType = Enum.TryParse<DatabaseLogType>(LogType, out var type) ? type : DatabaseLogType.AppLog;
 
                 switch (logType)
                 {
                     case DatabaseLogType.AppLog:
-                        
+                        // 是否写入数据库
+                        bool writeToDatabase = GetPropertyValue(logEvent, "IsToDatabase", false);
+                        if (!writeToDatabase)
+                        {
+                            return;
+                        }
+
                         var appLog = new AppLogModel
                         {
                             LogTime = logEvent.TimeStamp,
                             LogLevel = logEvent.Level.Name,
-                            Logger = string.IsNullOrEmpty(logEvent.CallerMemberName)? (logEvent.LoggerName ?? "Unknown"): $"{logEvent.LoggerName ?? "Unknown"}.{logEvent.CallerMemberName}",
-                            Message = logEvent.FormattedMessage ?? string.Empty, // 只保存纯消息内容
+                            Logger = string.IsNullOrEmpty(logEvent.CallerMemberName)
+                                ? (logEvent.LoggerName ?? "Unknown")
+                                : $"{logEvent.LoggerName ?? "Unknown"}.{logEvent.CallerMemberName}",
+                            Message = logEvent.FormattedMessage ?? string.Empty,
                             Exception = logEvent.Exception?.ToString(),
-                           
                         };
                         _logQueue.Enqueue(appLog);
                         break;
 
                     case DatabaseLogType.MesInterfaceLog:
-                        if (logEvent.Properties.Count > 0)
+                        // MES日志总是写入数据库，不需要检查IsToDatabase
+                        var mesLog = CreateMesInterfaceLog(logEvent);
+                        if (mesLog != null)
                         {
-                            var mesLog = new MesInterfaceLogModel
-                            {
-                                Method = logEvent.Properties["Method"]?.ToString() ?? "",
-                                InputJson = logEvent.Properties["InputJson"]?.ToString() ?? "",
-                                OutputJson = logEvent.Properties["OutputJson"]?.ToString() ?? "",
-                                SuccessFlag = Convert.ToBoolean(logEvent.Properties["SuccessFlag"] ?? false),
-                                StartTime = logEvent.TimeStamp
-                            };
                             _logQueue.Enqueue(mesLog);
                         }
                         break;
 
                     case DatabaseLogType.WebInterfaceLog:
-                        if (logEvent.Properties.Count > 0)
+                        var webLog = CreateWebInterfaceLog(logEvent);
+                        if (webLog != null)
                         {
-                            var webLog = new WebInterfaceLogModel
-                            {
-                                Method = logEvent.Properties["Method"]?.ToString() ?? "",
-                                InputJson = logEvent.Properties["InputJson"]?.ToString() ?? "",
-                                OutputJson = logEvent.Properties["OutputJson"]?.ToString() ?? "",
-                                SuccessFlag = Convert.ToBoolean(logEvent.Properties["SuccessFlag"] ?? false),
-                                StartTime = logEvent.TimeStamp
-                            };
                             _logQueue.Enqueue(webLog);
                         }
                         break;
@@ -354,15 +328,21 @@ namespace SUNWODA_SEVB.Logging.Targets
                 if (mesLogs.Count > 0)
                 {
                     var mesLogRepo = scope.ServiceProvider.GetRequiredService<IMesInterfaceLogRepository>();
-                    await mesLogRepo.BulkInsertAsync(mesLogs).ConfigureAwait(false);
-                    InternalLogger.Info($"Saved {mesLogs.Count} MES logs to database");
+                    var success = await mesLogRepo.BulkInsertAsync(mesLogs).ConfigureAwait(false);
+                    if (success)
+                    {
+                        InternalLogger.Info($"Successfully saved {mesLogs.Count} MES logs to database");
+                    }
                 }
 
                 if (webLogs.Count > 0)
                 {
                     var webLogRepo = scope.ServiceProvider.GetRequiredService<IWebInterfaceLogRepository>();
-                    await webLogRepo.BulkInsertAsync(webLogs).ConfigureAwait(false);
-                    InternalLogger.Info($"Saved {webLogs.Count} Web logs to database");
+                    var success = await webLogRepo.BulkInsertAsync(webLogs).ConfigureAwait(false);
+                    if (success)
+                    {
+                        InternalLogger.Info($"Successfully saved {webLogs.Count} Web logs to database");
+                    }
                 }
             }
             catch (Exception ex)
@@ -442,5 +422,263 @@ namespace SUNWODA_SEVB.Logging.Targets
             }
             base.Dispose(disposing);
         }
+
+        #region 辅助方法
+        /// <summary>
+        /// 创建MES接口日志
+        /// </summary>
+        private MesInterfaceLogModel? CreateMesInterfaceLog(LogEventInfo logEvent)
+        {
+            try
+            {
+                // 从事件属性中获取数据
+                var interfaceName = GetPropertyValue<string?>(logEvent, "InterfaceName", null);
+                if (string.IsNullOrEmpty(interfaceName))
+                {
+                    // 如果没有InterfaceName，尝试从Method获取
+                    interfaceName = GetPropertyValue<string?>(logEvent, "Method", null);
+                }
+
+                if (string.IsNullOrEmpty(interfaceName))
+                {
+                    InternalLogger.Warn("MES日志缺少接口名称");
+                    return null;
+                }
+
+                var startTime = GetPropertyValue<DateTime>(logEvent, "StartTime", DateTime.Now);
+                var endTime = GetPropertyValue<DateTime>(logEvent, "EndTime", DateTime.Now);
+                var executionTime = GetPropertyValue<int>(logEvent, "ExecutionTime", 0);
+
+                // 如果没有明确的开始/结束时间，根据执行时间计算
+                if (executionTime > 0 && startTime == endTime)
+                {
+                    startTime = endTime.AddMilliseconds(-executionTime);
+                }
+
+                var mesLog = new MesInterfaceLogModel
+                {
+                    Method = interfaceName,
+                    InputJson = GetPropertyValue<string?>(logEvent, "RequestData", "{}")
+                               ?? GetPropertyValue<string?>(logEvent, "InputJson", "{}")
+                               ?? "{}",
+                    OutputJson = GetPropertyValue<string?>(logEvent, "ResponseData", "{}")
+                                ?? GetPropertyValue<string?>(logEvent, "OutputJson", "{}")
+                                ?? "{}",
+                    SuccessFlag = GetPropertyValue<bool>(logEvent, "IsSuccess", false)
+                                 || GetPropertyValue<bool>(logEvent, "SuccessFlag", false),
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    ConsumingTime = executionTime,
+                    LogDate = endTime,
+
+                    // 扩展字段
+                    ApiType = GetPropertyValue<string?>(logEvent, "ApiType", null),
+                    Endpoint = GetPropertyValue<string?>(logEvent, "Endpoint", null),
+                    HttpStatusCode = GetPropertyValue<int?>(logEvent, "HttpStatusCode", null),
+                    ErrorCode = GetPropertyValue<string?>(logEvent, "ErrorCode", null),
+                    OperatorId = GetPropertyValue<string?>(logEvent, "OperatorId", null),
+                    DeviceNumber = GetPropertyValue<string?>(logEvent, "DeviceNumber", null)
+                };
+
+                // 如果有异常，提取错误信息
+                if (logEvent.Exception != null && string.IsNullOrEmpty(mesLog.ErrorCode))
+                {
+                    mesLog.ErrorCode = logEvent.Exception.GetType().Name;
+                }
+
+                // 如果有错误消息，也保存到OutputJson中
+                var errorMessage = GetPropertyValue<string?>(logEvent, "ErrorMessage", null);
+                if (!string.IsNullOrEmpty(errorMessage) && !mesLog.SuccessFlag)
+                {
+                    // 使用 JsonHelper 进行序列化和反序列化
+                    if (JsonHelper.TryDeserialize<Dictionary<string, object>>(mesLog.OutputJson ?? "{}", out var outputObj))
+                    {
+                        outputObj ??= new Dictionary<string, object>();
+                        outputObj["errorMessage"] = errorMessage;
+                        mesLog.OutputJson = JsonHelper.Serialize(outputObj);
+                    }
+                    else
+                    {
+                        // 如果解析失败，直接创建错误信息
+                        mesLog.OutputJson = JsonHelper.Serialize(new { error = errorMessage });
+                    }
+                }
+
+                return mesLog;
+            }
+            catch (Exception ex)
+            {
+                InternalLogger.Error(ex, "创建MES日志失败");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 创建Web接口日志
+        /// </summary>
+        private WebInterfaceLogModel? CreateWebInterfaceLog(LogEventInfo logEvent)
+        {
+            try
+            {
+                // 获取API路径
+                var apiPath = GetPropertyValue<string?>(logEvent, "ApiPath", null);
+                if (string.IsNullOrEmpty(apiPath))
+                {
+                    // 尝试从其他可能的属性名获取
+                    apiPath = GetPropertyValue<string?>(logEvent, "Path", null)
+                             ?? GetPropertyValue<string?>(logEvent, "RequestPath", null)
+                             ?? GetPropertyValue<string?>(logEvent, "Method", null);
+                }
+
+                if (string.IsNullOrEmpty(apiPath))
+                {
+                    InternalLogger.Warn("Web日志缺少API路径");
+                    return null;
+                }
+
+                // 获取时间相关信息
+                var startTime = GetPropertyValue<DateTime>(logEvent, "StartTime", logEvent.TimeStamp);
+                var endTime = GetPropertyValue<DateTime>(logEvent, "EndTime", DateTime.Now);
+                var executionTime = GetPropertyValue<long>(logEvent, "ExecutionTime", 0L);
+
+                // 如果没有明确的开始/结束时间，根据执行时间计算
+                if (executionTime > 0 && startTime == endTime)
+                {
+                    startTime = endTime.AddMilliseconds(-executionTime);
+                }
+
+                // 获取状态码
+                var statusCode = GetPropertyValue<int>(logEvent, "StatusCode", 0);
+                if (statusCode == 0)
+                {
+                    // 尝试从其他可能的属性名获取
+                    statusCode = GetPropertyValue<int>(logEvent, "HttpStatusCode", 0);
+                }
+
+                // 获取输入输出数据
+                var inputJson = GetPropertyValue<string?>(logEvent, "RequestBody", "{}")
+                               ?? GetPropertyValue<string?>(logEvent, "Request", "{}")
+                               ?? GetPropertyValue<string?>(logEvent, "InputJson", "{}")
+                               ?? "{}";
+
+                var outputJson = GetPropertyValue<string?>(logEvent, "ResponseBody", "{}")
+                                ?? GetPropertyValue<string?>(logEvent, "Response", "{}")
+                                ?? GetPropertyValue<string?>(logEvent, "OutputJson", "{}")
+                                ?? "{}";
+
+                // 判断成功标志
+                var successFlag = statusCode >= 200 && statusCode < 300;
+
+                // 如果有明确的成功标志，使用它
+                var explicitSuccess = GetPropertyValue<bool?>(logEvent, "SuccessFlag", null);
+                if (explicitSuccess.HasValue)
+                {
+                    successFlag = explicitSuccess.Value;
+                }
+
+                // 如果有异常，设置为失败
+                if (logEvent.Exception != null)
+                {
+                    successFlag = false;
+
+                    // 将异常信息添加到输出JSON中
+                    if (JsonHelper.TryDeserialize<Dictionary<string, object>>(outputJson, out var outputObj))
+                    {
+                        outputObj ??= new Dictionary<string, object>();
+                        outputObj["exception"] = new
+                        {
+                            type = logEvent.Exception.GetType().Name,
+                            message = logEvent.Exception.Message,
+                            stackTrace = logEvent.Exception.StackTrace
+                        };
+                        outputJson = JsonHelper.Serialize(outputObj);
+                    }
+                    else
+                    {
+                        outputJson = JsonHelper.Serialize(new
+                        {
+                            error = "Exception occurred",
+                            exception = new
+                            {
+                                type = logEvent.Exception.GetType().Name,
+                                message = logEvent.Exception.Message,
+                                stackTrace = logEvent.Exception.StackTrace
+                            }
+                        });
+                    }
+                }
+
+                // 处理错误消息
+                var errorMessage = GetPropertyValue<string?>(logEvent, "ErrorMessage", null);
+                if (!string.IsNullOrEmpty(errorMessage) && !successFlag)
+                {
+                    if (JsonHelper.TryDeserialize<Dictionary<string, object>>(outputJson, out var outputObj))
+                    {
+                        outputObj ??= new Dictionary<string, object>();
+                        outputObj["errorMessage"] = errorMessage;
+                        outputJson = JsonHelper.Serialize(outputObj);
+                    }
+                    else
+                    {
+                        outputJson = JsonHelper.Serialize(new { error = errorMessage });
+                    }
+                }
+
+                // 创建 WebInterfaceLogModel
+                var webLog = new WebInterfaceLogModel
+                {
+                    Method = apiPath,
+                    InputJson = inputJson,
+                    OutputJson = outputJson,                  
+                    ConsumingTime = executionTime > 0 ? executionTime : (long)(endTime - startTime).TotalMilliseconds,
+                    SuccessFlag = successFlag,
+                    LogDate = endTime
+                };
+
+                return webLog;
+            }
+            catch (Exception ex)
+            {
+                InternalLogger.Error(ex, "创建Web日志失败");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 从LogEventInfo中获取属性值
+        /// </summary>
+        private T? GetPropertyValue<T>(LogEventInfo logEvent, string propertyName, T? defaultValue = default)
+        {
+            if (logEvent.Properties.TryGetValue(propertyName, out var value))
+            {
+                if (value is T typedValue)
+                    return typedValue;
+
+                try
+                {
+                    if (typeof(T) == typeof(bool))
+                    {
+                        // 特殊处理布尔值
+                        if (value is string strValue)
+                        {
+                            return (T)(object)bool.Parse(strValue);
+                        }
+                    }
+
+                    if (value != null)
+                    {
+                        return (T)Convert.ChangeType(value, typeof(T));
+                    }
+                }
+                catch
+                {
+                    // 转换失败，返回默认值
+                }
+            }
+
+            return defaultValue;
+        }
+
+        #endregion
     }
 }
