@@ -1,10 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Windows;
-using System.Windows.Input;
-using HandyControl.Controls;
+﻿using HandyControl.Controls;
 using SUNWODA_SEVB.Core.Attributes;
 using SUNWODA_SEVB.Core.Common;
 using SUNWODA_SEVB.Core.Enumerations;
@@ -13,6 +7,13 @@ using SUNWODA_SEVB.Core.Interfaces.Data;
 using SUNWODA_SEVB.Core.Models.Data;
 using SUNWODA_SEVB.Tool.Extension;
 using SUNWODA_SEVB.Tool.Helper;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Windows;
+using System.Windows.Input;
 
 namespace SUNWODA_SEVB.ViewModels.Pages.Common
 {
@@ -424,13 +425,12 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                     var prop = golbalSettingsExtraModelType.GetProperty(setting.Name);
                     if (prop != null)
                     {
-                        var newValue = prop.GetValue(GlobalSettingsExtraModelObject);
-                        if (newValue != null && newValue.ToString() != setting.Value)
+                        var newValue = prop.GetValue(GlobalSettingsExtraModelObject);                    
+                        if (AreDifferent(setting.Type, setting.Value, newValue))
                         {
-                            _logger.Info(
-                                $"全局变量 {setting.Name} 修改值 [{setting.Value}] --> [{newValue}]"
-                            );
-                            setting.Value = newValue.ToString()!;
+                            var newString = NormalizeToString(setting.Type, newValue);
+                            _logger.Info($"全局变量 {setting.Name} 修改值 [{setting.Value}] --> [{newString}]");
+                            setting.Value = newString;
                             modifySettings.Add(setting);
                         }
                     }
@@ -464,7 +464,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                     if (prop != null)
                     {
                         var newValue = prop.GetValue(GlobalSettingsExtraModelObject);
-                        if (newValue != null && newValue.ToString()?.ToUpper() != setting.Value.ToUpper())
+                        if (AreDifferent(setting.Type, setting.Value, newValue))
                         {
                             modifySettings.Add(setting);
                         }
@@ -560,12 +560,11 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                     if (prop != null)
                     {
                         var newValue = prop.GetValue(ProjectSettingsExtraModelObject);
-                        if (newValue != null && newValue.ToString() != setting.Value)
+                        if (AreDifferent(setting.Type, setting.Value, newValue))
                         {
-                            _logger.Info(
-                                $"{setting.BelongToVM} 项目变量 {setting.Name} 修改值 [{setting.Value}] --> [{newValue}]"
-                            );
-                            setting.Value = newValue.ToString()!;
+                            var newString = NormalizeToString(setting.Type, newValue);
+                            _logger.Info($"{setting.BelongToVM} 项目变量 {setting.Name} 修改值 [{setting.Value}] --> [{newString}]");
+                            setting.Value = newString;
                             modifySettings.Add(setting);
                         }
                     }
@@ -601,7 +600,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
                     if (prop != null)
                     {
                         var newValue = prop.GetValue(ProjectSettingsExtraModelObject);
-                        if (newValue != null && newValue.ToString()?.ToUpper() != setting.Value.ToUpper())
+                        if (AreDifferent(setting.Type, setting.Value, newValue))
                         {
                             modifySettings.Add(setting);
                         }
@@ -614,5 +613,16 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Common
             }
             return false;
         }
+
+        private static bool AreDifferent(string typeName, string? oldValue, object? newValue)
+        {
+            return !DataTypeConverter.AreEqual(typeName, oldValue, newValue);
+        }
+
+        private static string NormalizeToString(string typeName, object? value)
+        {
+            return DataTypeConverter.ValueToString(typeName, value);
+        }
+
     }
 }

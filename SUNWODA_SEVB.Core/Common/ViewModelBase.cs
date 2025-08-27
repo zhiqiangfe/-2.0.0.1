@@ -5,28 +5,14 @@ using System.Windows.Threading;
 
 namespace SUNWODA_SEVB.Core.Common
 {
-    public abstract class ViewModelBase : INotifyPropertyChanged
+    public abstract class ViewModelBase : ModelBase
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
         private readonly Dispatcher _dispatcher;
 
         public ViewModelBase()
         {
             // 保存UI的Dispatcher，用于后续的UI更新
             _dispatcher = Application.Current.Dispatcher;
-        }
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public void SetProperty<T>(ref T field, T value, [CallerMemberName] string propName = "")
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value))
-                return;
-            field = value;
-            OnPropertyChanged(propName);
         }
 
         // 生命周期方法

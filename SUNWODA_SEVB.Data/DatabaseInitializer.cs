@@ -200,7 +200,7 @@ namespace SUNWODA_SEVB.Data
                 new GlobalSetting { Name = "IsCycleReadPLC", Value = "true", Type = "bool", Remark = "是否开启循环读取PLC", RoleRank = 2 },
                 new GlobalSetting { Name = "IsCycleWritePLC", Value = "true", Type = "bool", Remark = "是否开启循环写入PLC", RoleRank = 2 },
                 new GlobalSetting { Name = "DefaultProject", Value = "", Type = "string", Remark = "启动默认显示项目(VM)", RoleRank = 2 },
-                new GlobalSetting { Name = "CurrentUserAccount", Value = "guest", Type = "string", Remark = "当前用户", RoleRank = 0b1000 },
+                new GlobalSetting { Name = "CurrentUserAccount", Value = "guest", Type = "string", Remark = "当前用户", RoleRank = 0b1000 },//000访客 001工程师  010管理员 100超级管理员 
                 new GlobalSetting { Name = "IsMESEnabled", Value = "false", Type = "bool", Remark = "是否启用MES功能", RoleRank = 2 },
                 new GlobalSetting { Name = "PLCConnectTime", Value = "5000", Type = "int", Unit = "ms", Remark = "PLC重连时间", RoleRank = 2 },
             };
