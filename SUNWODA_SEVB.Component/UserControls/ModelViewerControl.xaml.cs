@@ -518,7 +518,6 @@ namespace SUNWODA_SEVB.Component.UserControls
                     // 计算模型的边界和中心
                     var (bounds, center) = CalculateModelBounds(model3DGroup);
                     _modelCenterMap[modelInfo.Id!] = center;
-
                     // 如果preserveOriginalMaterial为true，材质已经由ModelImporter加载
                     // 只有在不保留原始材质时才应用随机颜色
                     if (!preserveOriginalMaterial)

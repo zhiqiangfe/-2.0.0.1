@@ -7,9 +7,16 @@ namespace SUNWODA_SEVB.Core.Interfaces.PLC
     {
         IReadOnlyDictionary<string, ConnectInfo> ConnectionStatus { get; }
         IReadOnlyDictionary<int, PLCRWAddress> RWAddresses { get; }
+
+
         /// <summary>
         /// 初始化PLC
         /// </summary>
         Task<bool> InitializeAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// 写入指定PLC地址的值
+        /// </summary>
+        Task<bool> WriteValueAsync(int addressId, object value, CancellationToken cancellationToken = default);
     }
 }

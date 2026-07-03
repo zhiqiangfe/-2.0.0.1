@@ -14,6 +14,7 @@ using SUNWODA_SEVB.Logging.Targets;
 using SUNWODA_SEVB.MES.Extensions;
 using SUNWODA_SEVB.PLC;
 using SUNWODA_SEVB.Services;
+using SUNWODA_SEVB.Services.TcpDevices;
 using SUNWODA_SEVB.Tool.Configuration;
 using SUNWODA_SEVB.ViewModels.Windows.Common;
 using SUNWODA_SEVB.Views.Windows.Common;
@@ -37,18 +38,17 @@ namespace SUNWODA_SEVB
             {
                 // 步骤1：构建Host
                 _host = BuildHost();
-
-                // 步骤2：启动Host
-                await _host.StartAsync();
-
                 var appLogger = _host.Services.GetRequiredService<ILoggerService<App>>();
 
-                // 步骤3：初始化数据库（核心步骤，必须首先完成）
+                // 步骤2：初始化数据库（核心步骤，必须首先完成）
                 if (!await InitializeDatabaseWithRetry(appLogger))
                 {
                     await ShowErrorAndExit("数据库初始化失败！请检查连接配置。");
                     return;
                 }
+
+                // 步骤3：启动Host（数据库就绪后再启动后台服务）
+                await _host.StartAsync();
 
                 // 步骤4：配置NLog数据库目标（数据库就绪后）
                 await ConfigureNLogDatabase(appLogger);
@@ -147,6 +147,9 @@ namespace SUNWODA_SEVB
 
             // 添加Web服务
             services.AddWebServices();
+
+            // 注册扫码枪/相机/机器人等 TCP 设备通讯服务
+            services.AddTcpDeviceServices();
 
             // 添加MVVM框架服务
             services.AddMvvmFramework();

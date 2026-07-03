@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Windows.Media.Media3D;
 using SUNWODA_SEVB.Component.UserControls;
 using SUNWODA_SEVB.Core.Attributes;
@@ -30,7 +30,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
             _moduleManager = moduleManager;
         }
 
-        protected override async Task OnNavigatedToAsync(object? parameter)
+        protected override async Task OnNavigatedToAsync(object? parameter) 
         {
             if (!_initializedView)
             {

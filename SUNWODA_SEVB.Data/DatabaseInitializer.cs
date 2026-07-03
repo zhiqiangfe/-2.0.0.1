@@ -349,7 +349,8 @@ namespace SUNWODA_SEVB.Data
                             if (!_db.Queryable<WorkSpaceProject>().Any(it => it.VMClassName == vmType.Name))
                             {
                                 var isEnabled = moduleAttr.Type == ModuleType.Settings
-                                    || moduleAttr.Type == ModuleType.UserCenter;
+                                    || moduleAttr.Type == ModuleType.UserCenter
+                                    || vmType.Name == "VM_DeviceOeeAnalysisPage";
 
                                 _db.Insertable(new WorkSpaceProject
                                 {

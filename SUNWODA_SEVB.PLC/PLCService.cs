@@ -108,7 +108,7 @@ namespace SUNWODA_SEVB.PLC
                     await _globalSettingRepository.GetSettingValueAsync("IsCycleReadPLC") ?? false;
                 IsCycleWritePLC =
                     await _globalSettingRepository.GetSettingValueAsync("IsCycleWritePLC") ?? false;
-                PLCConnectTime = await _globalSettingRepository.GetSettingValue("PLCConnectTime") ?? 5000;
+                PLCConnectTime =  5000; //await _globalSettingRepository.GetSettingValue("PLCConnectTime") ??
 
                 // 加载配置
                 await LoadConfigurationsAsync(cancellationToken);
@@ -559,7 +559,12 @@ namespace SUNWODA_SEVB.PLC
                             {
                                 try
                                 {
-                                    await WriteAddressAsync(plc, address, ct);
+                                    await WriteAddressAsync(
+                                        plc,
+                                        address,
+                                        address.MonitorValue!,
+                                        ct
+                                    );
                                 }
                                 catch (Exception ex)
                                 {
@@ -588,28 +593,58 @@ namespace SUNWODA_SEVB.PLC
         /// <summary>
         /// 写入地址
         /// </summary>
-        private async Task WriteAddressAsync(
+        /// 
+        public async Task<bool> WriteValueAsync(
+            int addressId,
+            object value,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (!_rwAddresses.TryGetValue(addressId, out var address))
+            {
+                _logger.Warn($"未找到ID为 {addressId} 的PLC地址配置");
+                return false;
+            }
+
+            if (!_plcs.TryGetValue(address.PlcId, out var plc))
+            {
+                _logger.Warn($"PLC索引 {address.PlcId} 不存在");
+                return false;
+            }
+
+            return await WriteAddressAsync(plc, address, value, cancellationToken);
+        }
+
+        private async Task<bool> WriteAddressAsync(
             PLC plc,
             PLCRWAddress address,
+            object value,
             CancellationToken cancellationToken
         )
         {
-            if (address.MonitorValue == null)
-                return;
+            if (string.IsNullOrWhiteSpace(address.Address) || string.IsNullOrWhiteSpace(address.Type))
+            {
+                _logger.Warn($"地址配置无效，无法写入: {address.ParameterName}");
+                return false;
+            }
 
             var result = await Task.Run(
-                async () =>
-                    await plc.WriteAsync(address.Address, address.Type, address.MonitorValue),
+                async () => await plc.WriteAsync(address.Address, address.Type, value),
                 cancellationToken
             );
 
             if (!result.IsSuccess)
             {
                 _logger.Warn(
-                    $"写入失败: {address.Address}, 值: {address.MonitorValue}, 原因: {result.Message}",
+                    $"写入失败: {address.Address}, 值: {value}, 原因: {result.Message}",
                     true
                 );
+                return false;
             }
+
+            address.MonitorValue = value;
+            _logger.Info($"写入成功: {address.Address}, 值: {value}");
+            return true;
         }
 
         /// <summary>

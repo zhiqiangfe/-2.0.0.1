@@ -17,8 +17,8 @@ namespace SUNWODA_SEVB.Services
 
         private readonly SemaphoreSlim _navigationLock = new SemaphoreSlim(1, 1);
 
-        private bool _isNavigationComplete = true;
         private CancellationTokenSource? _navigationCts;
+        private TaskCompletionSource<object?>? _navigationTcs;
 
         public event EventHandler<NavigationEventArgs>? Navigated;
         public event EventHandler<NavigatingEventArgs>? Navigating;
@@ -76,18 +76,16 @@ namespace SUNWODA_SEVB.Services
                 return;
             }
 
-            // 等待之前的导航完成
-            while (!_isNavigationComplete && !cancellationToken.IsCancellationRequested)
-            {
-                await Task.Delay(50, cancellationToken);
-            }
-
-            await _navigationLock.WaitAsync();
+            await _navigationLock.WaitAsync(cancellationToken);
             try
             {
                 if (cancellationToken.IsCancellationRequested)
                     return;
-                _isNavigationComplete = false;
+
+                // 创建新的导航完成信号源，替代轮询等待
+                _navigationTcs?.TrySetCanceled();
+                _navigationTcs = new TaskCompletionSource<object?>();
+
                 _logger?.Info($"开始导航到业务模块: {moduleName}");
 
                 var module = _moduleManager.GetModule(moduleName);
@@ -118,7 +116,6 @@ namespace SUNWODA_SEVB.Services
                     if (currentVm != null && !currentVm.CanNavigateFrom())
                     {
                         _logger?.Info($"当前业务模块 {_currentModule.Name} 阻止导航");
-                        _isNavigationComplete = true;
                         return;
                     }
                     currentVm?.OnNavigatedFrom();
@@ -130,23 +127,35 @@ namespace SUNWODA_SEVB.Services
                 if (page == null)
                 {
                     _logger?.Error($"无法创建页面: {moduleName}", true);
-                    _isNavigationComplete = true;
                     return;
                 }
 
                 var viewModel = page.DataContext as ViewModelBase;
 
                 // 在UI线程执行导航 - 使用同步方式避免持续渲染
+                bool navigateStarted = false;
                 await Application.Current.Dispatcher.InvokeAsync(
                     () =>
                     {
                         if (_navigationFrame != null && page != null)
                         {
-                            _navigationFrame.Navigate(page);
+                            navigateStarted = _navigationFrame.Navigate(page);
                         }
                     },
                     DispatcherPriority.Normal
                 );
+
+                if (!navigateStarted)
+                {
+                    _logger?.Warn($"导航被Frame拒绝: {moduleName}");
+                    return;
+                }
+
+                // 等待Frame导航完成事件，而不是轮询标志位
+                using (cancellationToken.Register(() => _navigationTcs?.TrySetCanceled()))
+                {
+                    await _navigationTcs.Task;
+                }
 
                 _currentModule = module;
 
@@ -170,7 +179,6 @@ namespace SUNWODA_SEVB.Services
             }
             finally
             {
-                _isNavigationComplete = true;
                 _navigationLock.Release();
             }
         }
@@ -180,7 +188,7 @@ namespace SUNWODA_SEVB.Services
             System.Windows.Navigation.NavigationEventArgs e
         )
         {
-            _isNavigationComplete = true;
+            _navigationTcs?.TrySetResult(null);
         }
 
         private void OnFrameNavigationFailed(
@@ -188,14 +196,15 @@ namespace SUNWODA_SEVB.Services
             System.Windows.Navigation.NavigationFailedEventArgs e
         )
         {
-            _isNavigationComplete = true;
             if (e.Exception != null)
             {
+                _navigationTcs?.TrySetException(e.Exception);
                 _logger?.Error($"Frame导航失败: {e.Exception?.Message}", e.Exception!, true);
             }
             else
             {
-                _logger?.Error($"Frame导航失败: {e.Exception?.Message}", true);
+                _navigationTcs?.TrySetException(new InvalidOperationException("Frame导航失败"));
+                _logger?.Error($"Frame导航失败", true);
             }
         }
 
