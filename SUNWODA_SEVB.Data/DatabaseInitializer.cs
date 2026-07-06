@@ -350,7 +350,13 @@ namespace SUNWODA_SEVB.Data
                             {
                                 var isEnabled = moduleAttr.Type == ModuleType.Settings
                                     || moduleAttr.Type == ModuleType.UserCenter
-                                    || vmType.Name == "VM_DeviceOeeAnalysisPage";
+                                    || vmType.Name == "VM_DeviceOeeAnalysisPage"
+                                    || vmType.Name == "VM_StationCtBottleneckAnalysisPage"
+                                    || vmType.Name == "VM_HmiAlarmTopAnalysisPage"
+                                    || vmType.Name == "VM_PlcSnapshotTracePage"
+                                    || vmType.Name == "VM_ProductQualityTracePage"
+                                    || vmType.Name == "VM_CpkProcessCapabilityPage"
+                                    || vmType.Name == "VM_ServoFrequentAlarmMonitorPage";
 
                                 _db.Insertable(new WorkSpaceProject
                                 {

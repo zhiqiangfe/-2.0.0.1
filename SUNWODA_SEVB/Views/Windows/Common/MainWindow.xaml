@@ -9,7 +9,7 @@
     xmlns:local="clr-namespace:SUNWODA_SEVB.Views.Windows.Common"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="clr-namespace:SUNWODA_SEVB.Component.UserControls;assembly=SUNWODA_SEVB.Component"
-    Title="单机数字化平台"
+    Title="设备智慧系统"
     Width="800"
     Height="450"
     WindowState="Maximized"
@@ -112,7 +112,7 @@
                     VerticalAlignment="Center"
                     FontSize="20"
                     Foreground="White"
-                    Text="单机数字化平台" />
+                    Text="设备智慧系统" />
             </Border>
 
             <!--  菜单列表  -->
