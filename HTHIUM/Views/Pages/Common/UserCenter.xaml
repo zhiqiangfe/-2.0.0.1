@@ -1,0 +1,868 @@
+﻿<Page
+    x:Class="HTHIUM.Views.Pages.Common.UserCenter"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converter="clr-namespace:HTHIUM.Core.Converters;assembly=HTHIUM.Core"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local="clr-namespace:HTHIUM.Views.Pages.Common"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="clr-namespace:HTHIUM.Component.UserControls;assembly=HTHIUM.Component"
+    Title="UserCenter"
+    d:DesignHeight="700"
+    d:DesignWidth="1200"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+
+        <!--  定义样式资源  -->
+
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+
+        <!--  权限等级颜色  -->
+
+        <SolidColorBrush x:Key="SuperAdminBrush" Color="#E91E63" />
+        <SolidColorBrush x:Key="AdminBrush" Color="#2196F3" />
+        <SolidColorBrush x:Key="EngineerBrush" Color="#4CAF50" />
+        <SolidColorBrush x:Key="GuestBrush" Color="#9E9E9E" />
+
+
+        <!--  数据转换器  -->
+
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <converter:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+    </Page.Resources>
+
+    <Grid>
+        <!--  主容器  -->
+        <Border Background="White" Effect="{DynamicResource EffectShadow2}">
+            <Grid>
+                <!--  登录界面  -->
+                <Grid x:Name="LoginPanel" Visibility="{Binding IsLoggedIn, Converter={StaticResource InverseBoolToVisibility}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.58*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" ClipToBounds="True">
+                        <Grid.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Offset="0" Color="#021121" />
+                                <GradientStop Offset="0.52" Color="#062A55" />
+                                <GradientStop Offset="1" Color="#010814" />
+                            </LinearGradientBrush>
+                        </Grid.Background>
+
+                        <Canvas Opacity="0.45">
+                            <Path
+                                Canvas.Left="-80"
+                                Canvas.Top="450"
+                                Width="1180"
+                                Height="310"
+                                Data="M 0,220 C 180,160 260,240 430,170 C 590,104 720,160 910,70 C 1040,8 1110,60 1180,20"
+                                Stroke="#1D8DFF"
+                                StrokeThickness="3" />
+                            <Path
+                                Canvas.Left="-120"
+                                Canvas.Top="500"
+                                Width="1220"
+                                Height="260"
+                                Data="M 0,200 C 180,120 360,180 520,120 C 700,52 800,150 1000,82 C 1110,44 1170,55 1220,10"
+                                Stroke="#12B5FF"
+                                StrokeThickness="1.5" />
+                            <Polyline
+                                Points="30,590 170,530 300,560 460,500 650,520 800,470"
+                                Stroke="#155FA8"
+                                StrokeThickness="2" />
+                            <Polyline
+                                Points="360,495 360,555 470,590 470,520 430,498"
+                                Fill="#0A274A"
+                                Stroke="#1883E6"
+                                StrokeThickness="1" />
+                            <Polyline
+                                Points="470,520 560,485 650,515 650,590 560,620 470,590"
+                                Fill="#0B2B52"
+                                Stroke="#1883E6"
+                                StrokeThickness="1" />
+                            <Polyline
+                                Points="650,520 735,490 820,520 820,586 735,620 650,590"
+                                Fill="#08213E"
+                                Stroke="#1883E6"
+                                StrokeThickness="1" />
+                            <Line X1="0" Y1="660" X2="1050" Y2="625" Stroke="#0D5EAA" StrokeThickness="2" />
+                            <Line X1="0" Y1="704" X2="1050" Y2="660" Stroke="#0D5EAA" StrokeThickness="1" />
+                            <Ellipse Canvas.Left="320" Canvas.Top="535" Width="7" Height="7" Fill="#26C6FF" />
+                            <Ellipse Canvas.Left="642" Canvas.Top="602" Width="8" Height="8" Fill="#26C6FF" />
+                            <Ellipse Canvas.Left="760" Canvas.Top="462" Width="6" Height="6" Fill="#26C6FF" />
+                        </Canvas>
+
+                        <Grid Margin="52,42,42,34">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Grid Width="64" Height="64" Margin="0,0,16,0">
+                                    <Path Data="M 32,2 L 58,17 L 58,47 L 32,62 L 6,47 L 6,17 Z" Fill="#2367F6" />
+                                    <Path Data="M 32,17 L 45,24 L 45,39 L 32,47 L 19,39 L 19,24 Z" Fill="#021121" />
+                                    <Path Data="M 7,17 L 20,25 L 20,40 L 7,48 Z" Fill="#33A8FF" />
+                                    <Path Data="M 57,17 L 44,25 L 44,40 L 57,48 Z" Fill="#1559D8" />
+                                </Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock
+                                        FontSize="27"
+                                        FontWeight="Bold"
+                                        Foreground="White"
+                                        Text="HTHIUM" />
+                                    <TextBlock
+                                        Margin="2,2,0,0"
+                                        FontSize="17"
+                                        Foreground="#D7E6FF"
+                                        Text="设备智慧系统" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                                <TextBlock
+                                    FontSize="46"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="HTHIUM 设备智慧系统" />
+                                <TextBlock
+                                    Margin="0,18,0,42"
+                                    FontSize="20"
+                                    Foreground="#B9CCE9"
+                                    Text="连接设备  ·  洞察数据  ·  智能运维  ·  安全高效" />
+
+                                <UniformGrid Columns="4" MaxWidth="780" HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Width="44" Height="44" Margin="0,0,12,0" BorderBrush="#2BCBFF" BorderThickness="1" CornerRadius="12">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" Foreground="#2BCBFF" Text="◇" />
+                                        </Border>
+                                        <StackPanel>
+                                            <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="White" Text="智慧监控" />
+                                            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#9CB3D0" Text="实时感知设备状态" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Width="44" Height="44" Margin="0,0,12,0" BorderBrush="#2BCBFF" BorderThickness="1" CornerRadius="12">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" Foreground="#2BCBFF" Text="↗" />
+                                        </Border>
+                                        <StackPanel>
+                                            <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="White" Text="数据驱动" />
+                                            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#9CB3D0" Text="多维分析精准决策" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Width="44" Height="44" Margin="0,0,12,0" BorderBrush="#2BCBFF" BorderThickness="1" CornerRadius="12">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Foreground="#2BCBFF" Text="✓" />
+                                        </Border>
+                                        <StackPanel>
+                                            <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="White" Text="智能运维" />
+                                            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#9CB3D0" Text="主动预警防患未然" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Width="44" Height="44" Margin="0,0,12,0" BorderBrush="#2BCBFF" BorderThickness="1" CornerRadius="12">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" Foreground="#2BCBFF" Text="⌘" />
+                                        </Border>
+                                        <StackPanel>
+                                            <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="White" Text="高效协同" />
+                                            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#9CB3D0" Text="工单闭环降本增效" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </UniformGrid>
+                            </StackPanel>
+
+                            <Border
+                                Grid.Row="2"
+                                Height="66"
+                                Padding="28,0"
+                                Background="#142A4555"
+                                BorderBrush="#24517F"
+                                BorderThickness="1"
+                                CornerRadius="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock VerticalAlignment="Center" FontSize="15" Foreground="#D8E6FA" Text="安全运行    328 天" />
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="15" Foreground="#D8E6FA" Text="服务器时间    2026-07-02 10:42:11" />
+                                    <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="15" Foreground="#42E08B" Text="●  系统状态    正常运行" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Column="1" Background="#FAFBFE">
+                        <StackPanel
+                            Width="470"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <Grid Height="190" Margin="0,0,0,16">
+                                <Image
+                                    x:Name="AssistantImage"
+                                    Width="178"
+                                    Height="178"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                    RenderTransformOrigin="0.5,0.5"
+                                    Stretch="Uniform">
+                                    <Image.RenderTransform>
+                                        <ScaleTransform x:Name="AssistantImageScale" ScaleX="1" ScaleY="1" />
+                                    </Image.RenderTransform>
+                                </Image>
+                            </Grid>
+
+                            <TextBlock
+                                x:Name="AssistantStatusText"
+                                HorizontalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Foreground="#334155"
+                                Text="准备登录，智能助手正在守护安全" />
+                            <TextBlock
+                                x:Name="AssistantHintText"
+                                Margin="0,8,0,32"
+                                HorizontalAlignment="Center"
+                                FontSize="14"
+                                Foreground="#9AA4B2"
+                                Text="请输入账号与密码" />
+
+                            <TextBlock Margin="0,0,0,8" FontSize="14" Foreground="#6B7280" Text="账号" />
+                            <hc:TextBox
+                                x:Name="UserAccountTextBox"
+                                Height="50"
+                                Margin="0,0,0,22"
+                                FontSize="16"
+                                hc:InfoElement.Placeholder="请输入用户账号"
+                                hc:InfoElement.ShowClearButton="True"
+                                Text="{Binding UserAccount, UpdateSourceTrigger=PropertyChanged}">
+                                <hc:TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding LoginCommand}" />
+                                </hc:TextBox.InputBindings>
+                            </hc:TextBox>
+
+                            <TextBlock Margin="0,0,0,8" FontSize="14" Foreground="#6B7280" Text="密码" />
+                            <uc:PasswordInputBox
+                                x:Name="PasswordBox"
+                                Height="50"
+                                Margin="0,0,0,18"
+                                GotKeyboardFocus="PasswordBox_GotKeyboardFocus"
+                                LostKeyboardFocus="PasswordBox_LostKeyboardFocus"
+                                Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                ShowPassword="{Binding ShowPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                WaterMark="请输入密码">
+                                <uc:PasswordInputBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding LoginCommand}" />
+                                </uc:PasswordInputBox.InputBindings>
+                            </uc:PasswordInputBox>
+
+                            <CheckBox
+                                Margin="0,0,0,26"
+                                Foreground="#667085"
+                                IsChecked="True"
+                                Content="记住账号" />
+
+                            <Button
+                                Height="56"
+                                Margin="0,0,0,18"
+                                Command="{Binding LoginCommand}"
+                                Content="登录"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Style="{StaticResource ButtonPrimary}" />
+
+                            <Grid>
+                                <TextBlock HorizontalAlignment="Left">
+                                    <Hyperlink Command="{Binding GuestModeCommand}">
+                                        <Run Foreground="#2367F6" Text="使用访客登录" />
+                                    </Hyperlink>
+                                </TextBlock>
+                                <TextBlock HorizontalAlignment="Right">
+                                    <Run Foreground="#2367F6" Text="系统设置" />
+                                </TextBlock>
+                            </Grid>
+
+                            <Grid Margin="0,102,0,0">
+                                <TextBlock HorizontalAlignment="Center" Foreground="#9AA4B2" Text="© 2026 HTHIUM. All rights reserved." />
+                                <TextBlock HorizontalAlignment="Right" Foreground="#9AA4B2" Text="版本 2.1.0" />
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
+                <!--  用户中心界面（登录后显示）  -->
+                <Grid
+                    x:Name="UserCenterPanel"
+                    d:Visibility="Collapsed"
+                    Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibility}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!--  顶部用户信息栏  -->
+                    <Border
+                        Grid.Row="0"
+                        Background="{DynamicResource RegionBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1">
+                        <Grid Margin="20,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  用户头像  -->
+                            <Border
+                                Grid.Column="0"
+                                Width="50"
+                                Height="50"
+                                Margin="0,0,15,0"
+                                d:Background="#2196F3"
+                                Background="{Binding RoleBrush}"
+                                CornerRadius="25">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    d:Text="管"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="{Binding UserLogoText}" />
+                            </Border>
+
+                            <!--  用户信息  -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock FontSize="18" FontWeight="SemiBold">
+                                    <Run Text="欢迎，" />
+                                    <Run d:Text="Admin" Text="{Binding UserName}" />
+                                </TextBlock>
+                                <TextBlock Margin="0,2,0,0">
+                                    <Run Foreground="Gray" Text="权限等级：" />
+                                    <Run
+                                        d:Text="管理员"
+                                        FontWeight="SemiBold"
+                                        Foreground="{Binding RoleBrush}"
+                                        Text="{Binding RoleDisplay}" />
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!--  操作按钮  -->
+                            <StackPanel
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <Button
+                                    Margin="0,0,10,0"
+                                    Command="{Binding ChangePasswordCommand}"
+                                    Content="修改密码"
+                                    Style="{StaticResource ButtonInfo}" />
+                                <Button
+                                    Command="{Binding LogoutCommand}"
+                                    Content="退出登录"
+                                    Style="{StaticResource ButtonDanger}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!--  主内容区域  -->
+                    <TabControl
+                        Grid.Row="1"
+                        FontSize="15"
+                        Style="{StaticResource TabControlInLine}">
+                        <!--  个人信息标签  -->
+                        <TabItem Header="个人信息" IsSelected="{Binding SelectInfoTab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="20">
+                                    <hc:Card Margin="0,0,0,15">
+                                        <Grid Margin="20">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="35" />
+                                                <RowDefinition Height="35" />
+                                                <RowDefinition Height="35" />
+                                                <RowDefinition Height="35" />
+                                                <RowDefinition Height="35" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Text="用户ID：" />
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding UserAccount}" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Text="用户名：" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding UserName}" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Text="权限角色：" />
+                                            <Border
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Padding="8,2"
+                                                HorizontalAlignment="Left"
+                                                Background="{Binding RoleBrush}"
+                                                CornerRadius="3">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="White"
+                                                    Text="{Binding RoleDisplay}" />
+                                            </Border>
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Text="创建时间：" />
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding CreatedTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
+
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Text="最后登录：" />
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding LastLoginTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
+                                        </Grid>
+                                    </hc:Card>
+
+                                    <!--  权限说明  -->
+                                    <hc:Card>
+                                        <StackPanel Margin="20">
+                                            <TextBlock
+                                                Margin="0,0,0,15"
+                                                FontSize="16"
+                                                FontWeight="SemiBold"
+                                                Text="当前权限说明" />
+                                            <ItemsControl ItemsSource="{Binding CurrentPermissions}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,5">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="20" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <iconPacks:PackIconModern
+                                                                Grid.Column="0"
+                                                                Foreground="#4CAF50"
+                                                                Kind="Check" />
+                                                            <TextBlock
+                                                                Grid.Column="1"
+                                                                Margin="5,0,0,0"
+                                                                Text="{Binding}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </hc:Card>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!--  用户管理标签（仅管理员可见）  -->
+                        <TabItem Header="用户管理" Visibility="{Binding CanManageUsers, Converter={StaticResource BoolToVisibility}}">
+                            <Grid Margin="20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!--  工具栏  -->
+                                <hc:ButtonGroup Grid.Row="0">
+                                    <Button Command="{Binding AddUserCommand}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Kind="AccountPlus" />
+                                            <TextBlock Margin="10,0" Text="新增用户" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Command="{Binding RefreshUsersCommand}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconRemixIcon Kind="RefreshLine" />
+                                            <TextBlock Margin="10,0" Text="刷新" />
+                                        </StackPanel>
+                                    </Button>
+                                </hc:ButtonGroup>
+
+
+                                <!--  用户列表  -->
+                                <DataGrid
+                                    Grid.Row="1"
+                                    Margin="0,10,0,0"
+                                    AutoGenerateColumns="False"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CanUserAddRows="False"
+                                    HeadersVisibility="All"
+                                    ItemsSource="{Binding UserList}"
+                                    SelectedItem="{Binding SelectedUser}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="120"
+                                            Binding="{Binding Account}"
+                                            Header="账号" />
+                                        <DataGridTextColumn
+                                            Width="120"
+                                            Binding="{Binding Name}"
+                                            Header="用户名" />
+
+                                        <DataGridTemplateColumn Width="100" Header="权限角色">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border
+                                                        Margin="2"
+                                                        Padding="6,2"
+                                                        Background="{Binding RoleColorBrush}"
+                                                        CornerRadius="3">
+                                                        <TextBlock
+                                                            FontSize="12"
+                                                            Foreground="White"
+                                                            Text="{Binding Role}" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTextColumn
+                                            Width="200"
+                                            Binding="{Binding CreatedDateTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                            Header="创建时间" />
+                                        <DataGridTextColumn
+                                            Width="200"
+                                            Binding="{Binding LastLoginDateTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                            Header="最后登录" />
+
+                                        <DataGridTemplateColumn Width="300" Header="操作">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button
+                                                            Margin="2"
+                                                            Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource ButtonInfo.Small}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <iconPacks:PackIconMaterial Kind="AccountEdit" />
+                                                                <TextBlock Margin="5,0" Text="编辑" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                        <Button
+                                                            Margin="2"
+                                                            Command="{Binding DataContext.ResetPasswordCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                            Style="{StaticResource ButtonWarning.Small}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <iconPacks:PackIconMaterial Kind="LockReset" />
+                                                                <TextBlock Margin="5,0" Text="重置密码" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                        <Button
+                                                            Margin="2"
+                                                            Command="{Binding DataContext.DeleteUserCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                            Style="{StaticResource ButtonDanger.Small}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <iconPacks:PackIconMaterial Kind="AccountRemove" />
+                                                                <TextBlock Margin="5,0" Text="删除" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </TabItem>
+
+                        <!--  权限设置标签（仅超级管理员可见）  -->
+                        <TabItem Header="权限设置" Visibility="{Binding IsSuperAdmin, Converter={StaticResource BoolToVisibility}}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="20">
+                                    <!--  权限等级说明  -->
+                                    <hc:Card Margin="0,0,0,20">
+                                        <StackPanel Margin="20">
+                                            <TextBlock
+                                                Margin="0,0,0,15"
+                                                FontSize="18"
+                                                FontWeight="Bold"
+                                                Text="系统权限等级" />
+
+                                            <!--  超级管理员  -->
+                                            <Border
+                                                Margin="0,0,0,10"
+                                                Padding="15"
+                                                Background="#FFF3E0"
+                                                CornerRadius="5">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                        <Border
+                                                            Padding="8,3"
+                                                            Background="{StaticResource SuperAdminBrush}"
+                                                            CornerRadius="3">
+                                                            <TextBlock
+                                                                FontWeight="Bold"
+                                                                Foreground="White"
+                                                                Text="超级管理员" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        TextWrapping="Wrap">
+                                                        拥有系统所有权限，可管理所有用户和设置
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+
+                                            <!--  管理员  -->
+                                            <Border
+                                                Margin="0,0,0,10"
+                                                Padding="15"
+                                                Background="#E3F2FD"
+                                                CornerRadius="5">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                        <Border
+                                                            Padding="8,3"
+                                                            Background="{StaticResource AdminBrush}"
+                                                            CornerRadius="3">
+                                                            <TextBlock
+                                                                FontWeight="Bold"
+                                                                Foreground="White"
+                                                                Text="管理员" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        TextWrapping="Wrap">
+                                                        可管理普通用户，修改系统配置，查看所有数据
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+
+                                            <!--  工程师  -->
+                                            <Border
+                                                Margin="0,0,0,10"
+                                                Padding="15"
+                                                Background="#E8F5E9"
+                                                CornerRadius="5">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                        <Border
+                                                            Padding="8,3"
+                                                            Background="{StaticResource EngineerBrush}"
+                                                            CornerRadius="3">
+                                                            <TextBlock
+                                                                FontWeight="Bold"
+                                                                Foreground="White"
+                                                                Text="工程师" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        TextWrapping="Wrap">
+                                                        可执行技术操作，修改部分配置，查看相关数据
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+
+                                            <!--  访客  -->
+                                            <Border
+                                                Padding="15"
+                                                Background="#F5F5F5"
+                                                CornerRadius="5">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                        <Border
+                                                            Padding="8,3"
+                                                            Background="{StaticResource GuestBrush}"
+                                                            CornerRadius="3">
+                                                            <TextBlock
+                                                                FontWeight="Bold"
+                                                                Foreground="White"
+                                                                Text="访客" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        TextWrapping="Wrap">
+                                                        仅可查看公开数据，无修改权限
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </hc:Card>
+
+                                    <!--  权限矩阵  -->
+                                    <hc:Card>
+                                        <StackPanel Margin="20">
+                                            <TextBlock
+                                                Margin="0,0,0,15"
+                                                FontSize="18"
+                                                FontWeight="Bold"
+                                                Text="功能权限矩阵" />
+                                            <DataGrid
+                                                AutoGenerateColumns="False"
+                                                CanUserAddRows="False"
+                                                HeadersVisibility="All"
+                                                ItemsSource="{Binding PermissionMatrix}">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn
+                                                        Width="150"
+                                                        Binding="{Binding FunctionName}"
+                                                        Header="功能名称" />
+                                                    <DataGridCheckBoxColumn
+                                                        Width="80"
+                                                        Binding="{Binding Admin}"
+                                                        Header="管理员" />
+                                                    <DataGridCheckBoxColumn
+                                                        Width="80"
+                                                        Binding="{Binding Engineer}"
+                                                        Header="工程师" />
+                                                    <DataGridCheckBoxColumn
+                                                        Width="80"
+                                                        Binding="{Binding Guest}"
+                                                        Header="访客" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </StackPanel>
+                                    </hc:Card>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!--  操作日志标签  -->
+                        <!--<TabItem Header="操作日志" Visibility="{Binding CanViewLogs, Converter={StaticResource BoolToVisibility}}">
+                            <Grid Margin="20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>-->
+
+                        <!--  筛选条件  -->
+                        <!--<hc:Card Grid.Row="0" Margin="0,0,0,10">
+                                    <Grid Margin="15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="200" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="200" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Margin="0,0,10,0"
+                                            VerticalAlignment="Center"
+                                            Text="开始日期：" />
+                                        <DatePicker Grid.Column="1" SelectedDate="{Binding LogStartDate}" />
+
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            Margin="20,0,10,0"
+                                            VerticalAlignment="Center"
+                                            Text="结束日期：" />
+                                        <DatePicker Grid.Column="3" SelectedDate="{Binding LogEndDate}" />
+
+                                        <Button
+                                            Grid.Column="5"
+                                            Command="{Binding SearchLogsCommand}"
+                                            Content="查询"
+                                            Style="{StaticResource ButtonPrimary}" />
+                                    </Grid>
+                                </hc:Card>-->
+
+                        <!--  日志列表  -->
+                        <!--<DataGrid
+                                    Grid.Row="1"
+                                    AutoGenerateColumns="False"
+                                    CanUserAddRows="False"
+                                    ItemsSource="{Binding OperationLogs}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="150"
+                                            Binding="{Binding DateTime}"
+                                            Header="时间" />
+                                        <DataGridTextColumn
+                                            Width="100"
+                                            Binding="{Binding Username}"
+                                            Header="用户" />
+                                        <DataGridTextColumn
+                                            Width="100"
+                                            Binding="{Binding Action}"
+                                            Header="操作类型" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding Description}"
+                                            Header="详细描述" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </TabItem>-->
+                    </TabControl>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

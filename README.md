@@ -1,4 +1,4 @@
-# 单机数字化平台
+﻿# 单机数字化平台
 
 [toc]
 
@@ -151,46 +151,46 @@ private string _flagStr;
 
 ```mermaid
 graph TD;
-    单机数字化平台-->SUNWODA_SEVB;
-    单机数字化平台-->SUNWODA_SEVB.Component;
-    单机数字化平台-->SUNWODA_SEVB.Core;
-    单机数字化平台-->SUNWODA_SEVB.Data;
-    单机数字化平台-->SUNWODA_SEVB.Logging;
-    单机数字化平台-->SUNWODA_SEVB.PLC;
-    单机数字化平台-->SUNWODA_SEVB.Tool;
-    SUNWODA_SEVB-->Asset;
-    SUNWODA_SEVB-->Services;
-    SUNWODA_SEVB-->ViewModels;
-    SUNWODA_SEVB-->Views;
+    单机数字化平台-->HTHIUM;
+    单机数字化平台-->HTHIUM.Component;
+    单机数字化平台-->HTHIUM.Core;
+    单机数字化平台-->HTHIUM.Data;
+    单机数字化平台-->HTHIUM.Logging;
+    单机数字化平台-->HTHIUM.PLC;
+    单机数字化平台-->HTHIUM.Tool;
+    HTHIUM-->Asset;
+    HTHIUM-->Services;
+    HTHIUM-->ViewModels;
+    HTHIUM-->Views;
     
-    SUNWODA_SEVB.Component-->Animations;
-    SUNWODA_SEVB.Component-->Behaviors;
-    SUNWODA_SEVB.Component-->CustomControls;
-    SUNWODA_SEVB.Component-->Selectors;
-    SUNWODA_SEVB.Component-->Themes;
-    SUNWODA_SEVB.Component-->UserControls;
+    HTHIUM.Component-->Animations;
+    HTHIUM.Component-->Behaviors;
+    HTHIUM.Component-->CustomControls;
+    HTHIUM.Component-->Selectors;
+    HTHIUM.Component-->Themes;
+    HTHIUM.Component-->UserControls;
     
-    SUNWODA_SEVB.Core-->Attributes;
-    SUNWODA_SEVB.Core-->Common;
-    SUNWODA_SEVB.Core-->Converters;
-    SUNWODA_SEVB.Core-->Enumerations;
-    SUNWODA_SEVB.Core-->Interfaces;
-    SUNWODA_SEVB.Core-->Models;
+    HTHIUM.Core-->Attributes;
+    HTHIUM.Core-->Common;
+    HTHIUM.Core-->Converters;
+    HTHIUM.Core-->Enumerations;
+    HTHIUM.Core-->Interfaces;
+    HTHIUM.Core-->Models;
     
-    SUNWODA_SEVB.Data-->Configurations;
-    SUNWODA_SEVB.Data-->Context;
-    SUNWODA_SEVB.Data-->Mappings;
-    SUNWODA_SEVB.Data-->Models;
-    SUNWODA_SEVB.Data-->Repositories;
+    HTHIUM.Data-->Configurations;
+    HTHIUM.Data-->Context;
+    HTHIUM.Data-->Mappings;
+    HTHIUM.Data-->Models;
+    HTHIUM.Data-->Repositories;
     
-    SUNWODA_SEVB.Logging-->Targets;
+    HTHIUM.Logging-->Targets;
     
-    SUNWODA_SEVB.Tool-->Converter;
-    SUNWODA_SEVB.Tool-->Extension;
-    SUNWODA_SEVB.Tool-->Helper;
+    HTHIUM.Tool-->Converter;
+    HTHIUM.Tool-->Extension;
+    HTHIUM.Tool-->Helper;
 ```
 
-### 3.1、SUNWODA_SEVB
+### 3.1、HTHIUM
 
 #### 3.1.1、描述
 
@@ -252,11 +252,11 @@ DevelopProjectDemoPage.xaml
 
 ```xaml
 <Page
-    x:Class="SUNWODA_SEVB.Views.Pages.Demo.DevelopProjectDemoPage"
+    x:Class="HTHIUM.Views.Pages.Demo.DevelopProjectDemoPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:SUNWODA_SEVB.Views.Pages.Demo"
+    xmlns:local="clr-namespace:HTHIUM.Views.Pages.Demo"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="DevelopProjectDemoPage"
     d:DesignHeight="450"
@@ -279,7 +279,7 @@ DevelopProjectDemoPage.xaml.cs
 ```c#
 using System.Windows.Controls;
 
-namespace SUNWODA_SEVB.Views.Pages.Demo
+namespace HTHIUM.Views.Pages.Demo
 {
     /// <summary>
     /// DevelopProjectDemoPage.xaml 的交互逻辑
@@ -304,10 +304,10 @@ namespace SUNWODA_SEVB.Views.Pages.Demo
 VM_DevelopProjectDemoPage.cs
 
 ```c#
-using SUNWODA_SEVB.Core.Attributes;
-using SUNWODA_SEVB.Core.Common;
+using HTHIUM.Core.Attributes;
+using HTHIUM.Core.Common;
 
-namespace SUNWODA_SEVB.ViewModels.Pages.Demo
+namespace HTHIUM.ViewModels.Pages.Demo
 {
     [Module("VM_DevelopProjectDemoPage", "业务项目开发Demo")]
     class VM_DevelopProjectDemoPage : ViewModelBase
@@ -338,11 +338,11 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
   - 如需要使用日志，添加日志服务
 
     ```c#
-    using SUNWODA_SEVB.Core.Attributes;
-    using SUNWODA_SEVB.Core.Common;
-    using SUNWODA_SEVB.Core.Interfaces;
+    using HTHIUM.Core.Attributes;
+    using HTHIUM.Core.Common;
+    using HTHIUM.Core.Interfaces;
     
-    namespace SUNWODA_SEVB.ViewModels.Pages.Demo
+    namespace HTHIUM.ViewModels.Pages.Demo
     {
         [Module("VM_DevelopProjectDemoPage", "业务项目开发Demo")]
         class VM_DevelopProjectDemoPage : ViewModelBase
@@ -360,12 +360,12 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
   - 需要读写全局变量，添加全局变量库操作服务（其他数据库表类似）
 
     ```c#
-    using SUNWODA_SEVB.Core.Attributes;
-    using SUNWODA_SEVB.Core.Common;
-    using SUNWODA_SEVB.Core.Interfaces;
-    using SUNWODA_SEVB.Core.Interfaces.Data;
+    using HTHIUM.Core.Attributes;
+    using HTHIUM.Core.Common;
+    using HTHIUM.Core.Interfaces;
+    using HTHIUM.Core.Interfaces.Data;
     
-    namespace SUNWODA_SEVB.ViewModels.Pages.Demo
+    namespace HTHIUM.ViewModels.Pages.Demo
     {
         [Module("VM_DevelopProjectDemoPage", "业务项目开发Demo")]
         class VM_DevelopProjectDemoPage : ViewModelBase
@@ -388,12 +388,12 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
   - 根据业务需要重写一些ViewModelBase方法
 
     ```c#
-    using SUNWODA_SEVB.Core.Attributes;
-    using SUNWODA_SEVB.Core.Common;
-    using SUNWODA_SEVB.Core.Interfaces;
-    using SUNWODA_SEVB.Core.Interfaces.Data;
+    using HTHIUM.Core.Attributes;
+    using HTHIUM.Core.Common;
+    using HTHIUM.Core.Interfaces;
+    using HTHIUM.Core.Interfaces.Data;
     
-    namespace SUNWODA_SEVB.ViewModels.Pages.Demo
+    namespace HTHIUM.ViewModels.Pages.Demo
     {
         [Module("VM_DevelopProjectDemoPage", "业务项目开发Demo")]
         class VM_DevelopProjectDemoPage : ViewModelBase
@@ -474,11 +474,11 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
 
     ```xaml
     <Page
-        x:Class="SUNWODA_SEVB.Views.Pages.Demo.DevelopProjectDemoPage"
+        x:Class="HTHIUM.Views.Pages.Demo.DevelopProjectDemoPage"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:SUNWODA_SEVB.Views.Pages.Demo"
+        xmlns:local="clr-namespace:HTHIUM.Views.Pages.Demo"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         Title="DevelopProjectDemoPage"
         d:DesignHeight="450"
@@ -497,7 +497,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
 
     ![image-20250826094943742](E:\Workspace\Code\Company\NET8\WPF\Migrate\SUNWODA\images\README\image-20250826094943742.png)
 
-### 3.2、SUNWODA_SEVB.Component
+### 3.2、HTHIUM.Component
 
 #### 3.2.1、描述
 
@@ -520,7 +520,7 @@ namespace SUNWODA_SEVB.ViewModels.Pages.Demo
 
 
 
-### 3.4、SUNWODA_SEVB.Data
+### 3.4、HTHIUM.Data
 
 #### 3.4.1、描述
 

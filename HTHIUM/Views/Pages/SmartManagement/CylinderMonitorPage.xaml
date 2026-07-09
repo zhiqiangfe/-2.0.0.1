@@ -1,0 +1,270 @@
+﻿<Page
+    x:Class="HTHIUM.Views.Pages.SmartManagement.CylinderMonitorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1600"
+    Background="#F6F8FB"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#D9E3F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style x:Key="MutedText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#637083" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style x:Key="TitleText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#172033" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Background" Value="#F0F4FA" />
+            <Setter Property="BorderBrush" Value="#CAD5E4" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24,14,24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="72" />
+            <RowDefinition Height="70" />
+            <RowDefinition Height="76" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Padding="22,10" Style="{StaticResource PanelStyle}">
+            <Grid>
+                <StackPanel>
+                    <TextBlock FontSize="24" Style="{StaticResource TitleText}" LineHeight="30" Text="气缸动作与气压监控" />
+                    <TextBlock Margin="0,2,0,0" FontSize="13" Foreground="#637083" LineHeight="18" Text="监控多气缸伸出/缩回到位、动作超时、气压异常和疑似漏气，辅助设备点检与维护闭环" />
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Width="84" Margin="0,0,8,0" Background="#2F66F6" BorderBrush="#2F66F6" Command="{Binding RefreshCommand}" Content="查询" Foreground="White" />
+                    <Button Width="84" Margin="0,0,8,0" Background="#EEF3FA" BorderBrush="#CAD5E4" Command="{Binding ExportCommand}" Content="导出" Foreground="#344054" />
+                    <Button Width="70" Background="#EEF3FA" BorderBrush="#CAD5E4" Content="重置" Foreground="#344054" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Margin="0,8,0,0" Padding="14,7" Style="{StaticResource PanelStyle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width=".9*" />
+                    <ColumnDefinition Width="1.05*" />
+                    <ColumnDefinition Width=".95*" />
+                    <ColumnDefinition Width=".85*" />
+                    <ColumnDefinition Width="1.45*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="产线" />
+                    <TextBox Margin="0,2,0,0" Text="{Binding LineName}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="设备" />
+                    <TextBox Margin="0,2,0,0" Text="{Binding DeviceName}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="气缸组" />
+                    <TextBox Margin="0,2,0,0" Text="{Binding StationGroup}" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="状态" />
+                    <TextBox Margin="0,2,0,0" Text="{Binding StateFilter}" />
+                </StackPanel>
+                <StackPanel Grid.Column="4">
+                    <TextBlock Style="{StaticResource MutedText}" Text="时间范围" />
+                    <TextBox Margin="0,2,0,0" Text="{Binding TimeRange}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ItemsControl Grid.Row="2" Margin="0,10,0,0" ItemsSource="{Binding SummaryItems}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="6" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,12,0" Padding="12,9" Style="{StaticResource PanelStyle}">
+                        <Grid>
+                            <Border Width="5" HorizontalAlignment="Left" Background="{Binding Color}" />
+                            <StackPanel Margin="15,0,0,0">
+                                <TextBlock Style="{StaticResource MutedText}" Text="{Binding Title}" />
+                                <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                    <TextBlock FontSize="21" FontWeight="Bold" Foreground="#172033" Text="{Binding Value}" />
+                                    <TextBlock Margin="7,7,0,0" Foreground="#637083" Text="{Binding Unit}" />
+                                </StackPanel>
+                                <TextBlock Margin="0,2,0,0" FontSize="11" Foreground="{Binding Color}" Text="{Binding Description}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Grid Grid.Row="3" Margin="0,12,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="318" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.02*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="2.3*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Padding="18,14" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="52" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="异常气缸 TOP" />
+                        <TextBlock Margin="0,5,0,0" Style="{StaticResource MutedText}" Text="按动作超时、到位异常和压力异常排序" />
+                    </StackPanel>
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding RiskRanks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Height="45" Margin="0,0,0,8" Padding="12,7" Background="#FBFCFE" BorderBrush="#E3EAF4" BorderThickness="1" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="34" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="62" />
+                                            <ColumnDefinition Width="82" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="21" Height="21" Background="{Binding Color}" CornerRadius="10.5">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="White" Text="{Binding Rank}" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1" VerticalAlignment="Top" Foreground="#172033" Text="{Binding CylinderName}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="2" VerticalAlignment="Top" Foreground="{Binding Color}" Text="{Binding AlarmCount}" />
+                                        <TextBlock Grid.Column="3" VerticalAlignment="Top" FontSize="12" Foreground="#637083" Text="{Binding Description}" TextTrimming="CharacterEllipsis" />
+                                        <ProgressBar Grid.Column="1" Grid.ColumnSpan="3" Height="5" Margin="0,27,0,0" Maximum="100" Value="{Binding Percent}" Background="#E9EEF6" BorderBrush="#E9EEF6" Foreground="{Binding Color}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Padding="18,14" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="52" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="实时气缸动作状态" />
+                        <TextBlock Margin="0,5,0,0" Style="{StaticResource MutedText}" Text="适合多气缸筛选和排序，后续可接入 PLC 到位信号与气压传感器数据" />
+                    </StackPanel>
+                    <DataGrid
+                        Grid.Row="1"
+                        AutoGenerateColumns="False"
+                        Background="White"
+                        BorderThickness="0"
+                        CanUserAddRows="False"
+                        HeadersVisibility="Column"
+                        ItemsSource="{Binding RealtimeItems}"
+                        RowHeight="34">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Width="82" Header="气缸号">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Width="52" Height="22" HorizontalAlignment="Center" Background="{Binding Color}" CornerRadius="11">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Foreground="White" Text="{Binding CylinderNo}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Width="150" Binding="{Binding CylinderName}" Header="气缸名称" />
+                            <DataGridTemplateColumn Width="78" Header="状态">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{Binding Color}" Text="{Binding State}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Width="*" Binding="{Binding Message}" Header="当前信息" />
+                            <DataGridTextColumn Width="72" Binding="{Binding ExtendSignal}" Header="伸出" />
+                            <DataGridTextColumn Width="72" Binding="{Binding RetractSignal}" Header="缩回" />
+                            <DataGridTextColumn Width="82" Binding="{Binding Pressure}" Header="气压" />
+                            <DataGridTextColumn Width="88" Binding="{Binding ActionTime}" Header="动作时间" />
+                            <DataGridTextColumn Width="94" Binding="{Binding CycleCount}" Header="动作次数" />
+                            <DataGridTextColumn Width="90" Binding="{Binding LastActionTime}" Header="最近动作" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Grid.ColumnSpan="2" Padding="18,14" Style="{StaticResource PanelStyle}">
+                <StackPanel>
+                    <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="维护建议与闭环动作" />
+                    <ItemsControl Margin="0,14,0,0" ItemsSource="{Binding ActionItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid MinHeight="31">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="28" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="19" Height="19" Background="#2F66F6" CornerRadius="9.5">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Foreground="White" Text="{Binding Index}" />
+                                    </Border>
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="#172033" Text="{Binding Text}" TextWrapping="Wrap" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="2" Grid.Column="2" Padding="18,14" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="气缸报警与动作异常记录" />
+                        <TextBlock Margin="18,5,0,0" Style="{StaticResource MutedText}" Text="默认展示最近 50 条，后续支持时间检索和加载更多" />
+                    </StackPanel>
+                    <DataGrid
+                        Grid.Row="1"
+                        AutoGenerateColumns="False"
+                        Background="White"
+                        BorderThickness="0"
+                        CanUserAddRows="False"
+                        HeadersVisibility="Column"
+                        ItemsSource="{Binding AlarmRecords}"
+                        RowHeight="30">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="90" Binding="{Binding Time}" Header="时间" />
+                            <DataGridTextColumn Width="95" Binding="{Binding CylinderNo}" Header="气缸号" />
+                            <DataGridTextColumn Width="*" Binding="{Binding AlarmName}" Header="异常名称" />
+                            <DataGridTextColumn Width="90" Binding="{Binding ActionTime}" Header="动作时间" />
+                            <DataGridTextColumn Width="120" Binding="{Binding Station}" Header="工位" />
+                            <DataGridTextColumn Width="100" Binding="{Binding Status}" Header="处理状态" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

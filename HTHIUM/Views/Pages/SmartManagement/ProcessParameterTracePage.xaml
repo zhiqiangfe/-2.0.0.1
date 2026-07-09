@@ -1,0 +1,348 @@
+﻿<Page
+    x:Class="HTHIUM.Views.Pages.SmartManagement.ProcessParameterTracePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1600"
+    Background="#F6F8FB"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#D9E3F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style x:Key="MutedText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#637083" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style x:Key="TitleText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#172033" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style x:Key="FlatRecordButton" TargetType="Button">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Background" Value="#F0F4FA" />
+            <Setter Property="BorderBrush" Value="#CAD5E4" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Background" Value="#F0F4FA" />
+            <Setter Property="BorderBrush" Value="#CAD5E4" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24,14,24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="72" />
+            <RowDefinition Height="70" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Padding="22,10" Style="{StaticResource PanelStyle}">
+            <Grid>
+                <StackPanel>
+                    <TextBlock FontSize="24" Style="{StaticResource TitleText}" LineHeight="30" Text="过程参数曲线追溯" />
+                    <TextBlock Margin="0,2,0,0" FontSize="13" Foreground="#637083" LineHeight="18" Text="按设备加载对应过程参数曲线，还原单次工艺过程并定位波动、超限和末段异常" />
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Width="84" Margin="0,0,8,0" Background="#2F66F6" BorderBrush="#2F66F6" Command="{Binding RefreshCommand}" Content="查询" Foreground="White" />
+                    <Button Width="84" Margin="0,0,8,0" Background="#EEF3FA" BorderBrush="#CAD5E4" Command="{Binding ExportCommand}" Content="导出" Foreground="#344054" />
+                    <Button Width="70" Background="#EEF3FA" BorderBrush="#CAD5E4" Content="重置" Foreground="#344054" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Margin="0,8,0,0" Padding="14,7" Style="{StaticResource PanelStyle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width=".78*" />
+                    <ColumnDefinition Width="1.02*" />
+                    <ColumnDefinition Width=".86*" />
+                    <ColumnDefinition Width=".82*" />
+                    <ColumnDefinition Width="1.75*" />
+                    <ColumnDefinition Width=".62*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="产线" />
+                    <TextBox Margin="0,2,0,0" IsReadOnly="True" Text="{Binding LineName, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="设备" />
+                    <ComboBox Margin="0,2,0,0" ItemsSource="{Binding DeviceOptions}" SelectedItem="{Binding SelectedDevice}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="工位" />
+                    <TextBox Margin="0,2,0,0" IsReadOnly="True" Text="{Binding StationName, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="参数" />
+                    <ComboBox Margin="0,2,0,0" ItemsSource="{Binding ParameterOptions}" SelectedItem="{Binding SelectedParameter}" />
+                </StackPanel>
+                <StackPanel Grid.Column="4" Margin="0,0,14,0">
+                    <TextBlock Style="{StaticResource MutedText}" Text="时间范围" />
+                    <Grid Margin="0,2,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="18" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <hc:DateTimePicker
+                            Height="32"
+                            Background="#F0F4FA"
+                            BorderBrush="#CAD5E4"
+                            DateTimeFormat="yyyy-MM-dd HH:mm"
+                            SelectedDateTime="{Binding StartDateTime}" />
+                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#637083" Text="-" />
+                        <hc:DateTimePicker
+                            Grid.Column="2"
+                            Height="32"
+                            Background="#F0F4FA"
+                            BorderBrush="#CAD5E4"
+                            DateTimeFormat="yyyy-MM-dd HH:mm"
+                            SelectedDateTime="{Binding EndDateTime}" />
+                    </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="5">
+                    <TextBlock Style="{StaticResource MutedText}" Text="结果" />
+                    <ComboBox Margin="0,2,0,0" ItemsSource="{Binding ResultOptions}" SelectedItem="{Binding ResultFilter}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="168" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="310" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <Border Padding="18,14" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="52" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="过程记录" />
+                        <TextBlock Margin="0,5,0,0" Style="{StaticResource MutedText}" Text="点击记录刷新右侧曲线与判定摘要" />
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Records}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding DataContext.SelectRecordCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}" Style="{StaticResource FlatRecordButton}">
+                                        <Border MinHeight="72" Padding="12,9" Background="{Binding Background}" BorderBrush="{Binding BorderColor}" BorderThickness="1" CornerRadius="8">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="24" />
+                                                    <RowDefinition Height="22" />
+                                                    <RowDefinition Height="18" />
+                                                </Grid.RowDefinitions>
+                                                <Grid>
+                                                    <TextBlock Foreground="#172033" FontWeight="SemiBold" Text="{Binding Time}" />
+                                                    <TextBlock HorizontalAlignment="Right" Foreground="{Binding Color}" FontWeight="SemiBold" Text="{Binding Result}" />
+                                                </Grid>
+                                                <TextBlock Grid.Row="1" Foreground="#172033" Text="{Binding ProductCode}" TextTrimming="CharacterEllipsis" />
+                                                <Grid Grid.Row="2">
+                                                    <TextBlock FontSize="12" Foreground="#637083" Text="{Binding BatchNo}" />
+                                                    <TextBlock HorizontalAlignment="Right" FontSize="12" Foreground="#637083" Text="{Binding State}" />
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Padding="18,14" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="52" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="24" />
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="{Binding ChartTitle}" />
+                            <TextBlock Margin="0,5,0,0" Style="{StaticResource MutedText}" Text="{Binding ChartSubtitle}" />
+                        </StackPanel>
+                        <ItemsControl HorizontalAlignment="Right" ItemsSource="{Binding Legends}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="14,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Rectangle Width="12" Height="8" Fill="{Binding Color}" />
+                                        <TextBlock Margin="5,0,0,0" FontSize="12" Foreground="#637083" Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+
+                    <Grid Grid.Row="1" Margin="10,12,10,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="22" />
+                        </Grid.RowDefinitions>
+                        <Canvas Height="250" ClipToBounds="True">
+                            <Line X1="0" Y1="0" X2="620" Y2="0" Stroke="#EEF2F7" />
+                            <Line X1="0" Y1="62" X2="620" Y2="62" Stroke="#EEF2F7" />
+                            <Line X1="0" Y1="125" X2="620" Y2="125" Stroke="#EEF2F7" />
+                            <Line X1="0" Y1="188" X2="620" Y2="188" Stroke="#EEF2F7" />
+                            <Line X1="0" Y1="250" X2="620" Y2="250" Stroke="#B8C4D4" />
+                            <Polyline Points="{Binding UpperLimitPoints}" Stroke="#E94855" StrokeDashArray="5 5" StrokeThickness="1.6" />
+                            <Polyline Points="{Binding LowerLimitPoints}" Stroke="#E94855" StrokeDashArray="5 5" StrokeThickness="1.6" />
+                            <Polyline Points="{Binding SetPowerPoints}" Stroke="#7F92AB" StrokeThickness="2" />
+                            <Polyline Points="{Binding ActualPowerPoints}" Stroke="#2F66F6" StrokeThickness="3" StrokeLineJoin="Round" />
+                            <ItemsControl ItemsSource="{Binding Markers}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Ellipse Width="8" Height="8" Fill="{Binding Color}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Canvas>
+                        <UniformGrid Grid.Row="1" Columns="7">
+                            <TextBlock FontSize="11" Foreground="#637083" Text="0.0s" />
+                            <TextBlock FontSize="11" Foreground="#637083" Text="0.3s" />
+                            <TextBlock FontSize="11" Foreground="#637083" Text="0.6s" />
+                            <TextBlock FontSize="11" Foreground="#637083" Text="0.9s" />
+                            <TextBlock FontSize="11" Foreground="#637083" Text="1.2s" />
+                            <TextBlock FontSize="11" Foreground="#637083" Text="1.5s" />
+                            <TextBlock FontSize="11" Foreground="#637083" Text="1.8s" />
+                        </UniformGrid>
+                    </Grid>
+                    <TextBlock Grid.Row="2" HorizontalAlignment="Right" FontSize="12" Foreground="#637083" Text="{Binding RangeLabel}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="4" Padding="18,14" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="64" />
+                        <RowDefinition Height="190" />
+                        <RowDefinition Height="96" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="过程判定摘要" />
+                        <TextBlock Margin="0,7,0,0" Foreground="#172033" FontWeight="SemiBold" Text="{Binding ProductCode}" />
+                        <TextBlock Margin="0,3,0,0" Foreground="#637083" Text="单次焊接过程数据" />
+                    </StackPanel>
+                    <ItemsControl Grid.Row="1" Margin="0,8,0,0" ItemsSource="{Binding Metrics}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="2" Rows="3" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,8,8" Padding="9,7" Background="#FBFCFE" BorderBrush="#E3EAF4" BorderThickness="1" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock FontSize="11" Foreground="#637083" LineHeight="14" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Margin="0,4,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{Binding Color}" LineHeight="19" Text="{Binding Value}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Border Grid.Row="2" Padding="12,9" Background="#FFF7F7" BorderBrush="#F8C5CA" BorderThickness="1" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock Foreground="#E94855" FontWeight="SemiBold" Text="初步判断" />
+                            <TextBlock Margin="0,5,0,0" Foreground="#172033" FontSize="12" LineHeight="17" MaxHeight="52" Text="{Binding Diagnosis}" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Grid.ColumnSpan="5" Padding="18,14" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="18" Style="{StaticResource TitleText}" Text="工艺阶段异常定位" />
+                        <TextBlock Margin="18,5,0,0" Style="{StaticResource MutedText}" Text="把曲线拆成预热、稳定焊接和收尾阶段，便于现场复盘" />
+                    </StackPanel>
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Stages}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="3" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,14,0" Padding="16,12" Background="#FBFCFE" BorderBrush="{Binding Color}" BorderThickness="1" CornerRadius="8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="90" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock FontSize="16" Style="{StaticResource TitleText}" Text="{Binding Name}" />
+                                            <TextBlock Margin="0,6,0,0" Style="{StaticResource MutedText}" Text="{Binding TimeRange}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="{Binding Color}" Text="{Binding State}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>
