@@ -176,6 +176,7 @@ namespace HTHIUM.Data
                 InitializePLCRWConfigs();
                 InitializePLCAddressConfigs();
                 InitializeUsers();
+                InitializeHmiAlarmData();
                 InitializeWorkSpaceProjects();
                 //InitializeMESSettings();// 后续启用
 
@@ -203,6 +204,11 @@ namespace HTHIUM.Data
                 new GlobalSetting { Name = "CurrentUserAccount", Value = "guest", Type = "string", Remark = "当前用户", RoleRank = 0b1000 },//000访客 001工程师  010管理员 100超级管理员 
                 new GlobalSetting { Name = "IsMESEnabled", Value = "false", Type = "bool", Remark = "是否启用MES功能", RoleRank = 2 },
                 new GlobalSetting { Name = "PLCConnectTime", Value = "5000", Type = "int", Unit = "ms", Remark = "PLC重连时间", RoleRank = 2 },
+                new GlobalSetting { Name = "IsHmiAlarmMonitorEnabled", Value = "true", Type = "bool", Remark = "是否启用HMI报警后台采集", RoleRank = 2 },
+                new GlobalSetting { Name = "HmiAlarmMonitorCycleMs", Value = "1000", Type = "int", Unit = "ms", Remark = "HMI报警后台采集周期", RoleRank = 2 },
+                new GlobalSetting { Name = "HmiAlarmActiveParameterName", Value = "报警触发地址", Type = "string", Remark = "PLC报警触发信号对应的parameter_name", RoleRank = 2 },
+                new GlobalSetting { Name = "HmiAlarmCodeParameterName", Value = "报警代码", Type = "string", Remark = "PLC报警代码对应的parameter_name", RoleRank = 2 },
+                new GlobalSetting { Name = "LineName", Value = "L1 密封钉线", Type = "string", Remark = "当前产线名称", RoleRank = 2 },
             };
 
             foreach (var setting in settings)
@@ -321,6 +327,149 @@ namespace HTHIUM.Data
                 }
             }
             _logger.Info("用户数据初始化完成");
+        }
+
+        /// <summary>
+        /// 初始化HMI报警分析页面演示数据
+        /// </summary>
+        private void InitializeHmiAlarmData()
+        {
+            var alarmMaps = new[]
+            {
+                new HmiAlarmCodeMap
+                {
+                    AlarmCode = "HMI-LASER-203",
+                    AlarmName = "激光器通信异常",
+                    AlarmLevel = "高",
+                    DeviceName = "密封钉设备 01",
+                    StationName = "激光焊接",
+                    ProcessName = "密封钉焊接",
+                    PossibleReason = "1. 激光器网口通信中断\r\n2. 交换机端口异常\r\n3. PLC通信点位未刷新\r\n4. 激光器控制器掉电或重启",
+                    HandleSuggestion = "优先检查激光器网线、交换机端口和控制器电源；通信丢失超过3秒时同步抓取PLC快照和HMI操作记录。"
+                },
+                new HmiAlarmCodeMap
+                {
+                    AlarmCode = "HMI-SCAN-104",
+                    AlarmName = "条码枪读取超时",
+                    AlarmLevel = "中",
+                    DeviceName = "密封钉设备 01",
+                    StationName = "扫码工位",
+                    ProcessName = "扫码上料",
+                    PossibleReason = "1. 条码污损或反光\r\n2. 扫码枪焦距偏移\r\n3. 光源亮度不足\r\n4. 产品到位信号延迟",
+                    HandleSuggestion = "检查扫码枪焦距、光源亮度和条码表面；连续超时超过3次时推送班组复扫提醒。"
+                },
+                new HmiAlarmCodeMap
+                {
+                    AlarmCode = "HMI-GLUE-087",
+                    AlarmName = "胶压低于下限",
+                    AlarmLevel = "中",
+                    DeviceName = "密封钉设备 01",
+                    StationName = "点胶工位",
+                    ProcessName = "点胶",
+                    PossibleReason = "1. 胶桶余量不足\r\n2. 供胶泵压力波动\r\n3. 点胶阀堵塞\r\n4. 压力传感器漂移",
+                    HandleSuggestion = "联动胶压曲线和供胶泵状态，低压持续超过10秒自动暂停点胶并提示检查胶桶余量。"
+                },
+                new HmiAlarmCodeMap
+                {
+                    AlarmCode = "HMI-TRAY-311",
+                    AlarmName = "料盘满料未取走",
+                    AlarmLevel = "高",
+                    DeviceName = "密封钉设备 01",
+                    StationName = "下料工位",
+                    ProcessName = "下料",
+                    PossibleReason = "1. AGV取料任务未响应\r\n2. 下料缓存区已满\r\n3. 满料传感器误触发\r\n4. 人工取料未确认",
+                    HandleSuggestion = "将满料信号与AGV取料任务绑定，超过60秒未取走时升级通知并打开缓存预警。"
+                },
+                new HmiAlarmCodeMap
+                {
+                    AlarmCode = "HMI-SENSOR-066",
+                    AlarmName = "传感器波动",
+                    AlarmLevel = "低",
+                    DeviceName = "密封钉设备 01",
+                    StationName = "检测工位",
+                    ProcessName = "视觉检测",
+                    PossibleReason = "1. 传感器安装松动\r\n2. 环境温度或振动影响\r\n3. 信号线屏蔽不良\r\n4. 检测位置存在偏移",
+                    HandleSuggestion = "记录传感器波动频次与温度、振动数据，超过阈值时安排点检并更换易漂移传感器。"
+                },
+                new HmiAlarmCodeMap
+                {
+                    AlarmCode = "HMI-MES-502",
+                    AlarmName = "MES 上传重试",
+                    AlarmLevel = "中",
+                    DeviceName = "密封钉设备 01",
+                    StationName = "MES 通讯",
+                    ProcessName = "过站上传",
+                    PossibleReason = "1. MES接口响应超时\r\n2. 网络延迟过高\r\n3. 批次校验失败\r\n4. 本地缓存补传队列阻塞",
+                    HandleSuggestion = "统计接口响应时间和重试次数，连续重试时先缓存过站数据，恢复后自动补传。"
+                }
+            };
+
+            foreach (var map in alarmMaps)
+            {
+                if (!_db.Queryable<HmiAlarmCodeMap>().Any(it => it.AlarmCode == map.AlarmCode && it.DeviceName == map.DeviceName))
+                {
+                    _db.Insertable(map).ExecuteCommand();
+                }
+            }
+
+            var alarmDate = new DateTime(2026, 7, 2);
+            if (!_db.Queryable<HmiAlarmRecord>().Any(it => it.TriggerTime >= alarmDate && it.TriggerTime < alarmDate.AddDays(1)))
+            {
+                var records = new[]
+                {
+                    CreateHmiAlarmRecord(alarmDate, "10:42:11", "11:00:23", "HMI-LASER-203", "激光器通信异常", "高", "激光焊接", "密封钉焊接", -320, 128, "LaserCommLost"),
+                    CreateHmiAlarmRecord(alarmDate, "11:18:06", "11:22:41", "HMI-SCAN-104", "条码枪读取超时", "中", "扫码工位", "扫码上料", -54, 76, "ScannerReadDone"),
+                    CreateHmiAlarmRecord(alarmDate, "13:52:48", "13:57:09", "HMI-GLUE-087", "胶压低于下限", "中", "点胶工位", "点胶", -62, 94, "GluePressureLow"),
+                    CreateHmiAlarmRecord(alarmDate, "16:31:12", "16:43:18", "HMI-TRAY-311", "料盘满料未取走", "高", "下料工位", "下料", -145, 168, "TrayFull"),
+                    CreateHmiAlarmRecord(alarmDate, "17:08:19", "17:19:30", "HMI-SENSOR-066", "传感器波动", "低", "检测工位", "视觉检测", -96, 132, "SensorFluctuation"),
+                    CreateHmiAlarmRecord(alarmDate, "19:04:10", "19:08:36", "HMI-MES-502", "MES 上传重试", "中", "MES 通讯", "过站上传", -38, 85, "MesUploadRetry"),
+                    CreateHmiAlarmRecord(alarmDate, "09:16:32", "09:18:46", "HMI-LASER-203", "激光器通信异常", "高", "激光焊接", "密封钉焊接", -45, 92, "LaserCommLost"),
+                    CreateHmiAlarmRecord(alarmDate, "14:27:08", "14:30:54", "HMI-SCAN-104", "条码枪读取超时", "中", "扫码工位", "扫码上料", -41, 118, "ScannerReadDone"),
+                    CreateHmiAlarmRecord(alarmDate, "15:41:36", "15:47:20", "HMI-GLUE-087", "胶压低于下限", "中", "点胶工位", "点胶", -58, 147, "GluePressureLow"),
+                    CreateHmiAlarmRecord(alarmDate, "18:22:15", "18:30:05", "HMI-TRAY-311", "料盘满料未取走", "高", "下料工位", "下料", -82, 175, "TrayFull")
+                };
+
+                _db.Insertable(records).ExecuteCommand();
+            }
+
+            _logger.Info("HMI报警数据初始化完成");
+        }
+
+        private static HmiAlarmRecord CreateHmiAlarmRecord(
+            DateTime alarmDate,
+            string triggerTime,
+            string recoverTime,
+            string alarmCode,
+            string alarmName,
+            string alarmLevel,
+            string stationName,
+            string processName,
+            int impactQty,
+            int responseSeconds,
+            string rawValue)
+        {
+            var trigger = alarmDate.Add(TimeSpan.Parse(triggerTime));
+            var recover = alarmDate.Add(TimeSpan.Parse(recoverTime));
+
+            return new HmiAlarmRecord
+            {
+                LineName = "L1 密封钉线",
+                DeviceName = "密封钉设备 01",
+                StationName = stationName,
+                ProcessName = processName,
+                AlarmCode = alarmCode,
+                AlarmName = alarmName,
+                AlarmLevel = alarmLevel,
+                TriggerTime = trigger,
+                RecoverTime = recover,
+                DurationSeconds = (int)(recover - trigger).TotalSeconds,
+                AlarmStatus = "已恢复",
+                Source = "HMI",
+                RawValue = rawValue,
+                ImpactQty = impactQty,
+                ResponseSeconds = responseSeconds,
+                CreatedTime = trigger
+            };
         }
 
         /// <summary>

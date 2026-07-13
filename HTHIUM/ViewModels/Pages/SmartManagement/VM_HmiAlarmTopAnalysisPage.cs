@@ -1,28 +1,39 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using HTHIUM.Core.Attributes;
 using HTHIUM.Core.Common;
 using HTHIUM.Core.Common.Commands;
+using HTHIUM.Data.Models;
+using SqlSugar;
 
 namespace HTHIUM.ViewModels.Pages.SmartManagement
 {
     [Module("HmiAlarmTopAnalysisPage", "HMI 报警 Top 分析", Category = "设备智慧管理", Order = 22)]
     public class VM_HmiAlarmTopAnalysisPage : ViewModelBase
     {
+        private readonly ISqlSugarClient? _db;
         private readonly List<HmiAlarmScenario> _scenarios = new();
+        private DateTime? _startDateTime = new DateTime(2026, 7, 2, 8, 0, 0);
+        private DateTime? _endDateTime = new DateTime(2026, 7, 2, 20, 0, 0);
         private string _selectedLine = "L1 密封钉线";
         private string _selectedDevice = "全部设备";
         private string _selectedShift = "白班";
         private string _selectedDate = "2026-07-02";
         private string _selectedAlarmName = "激光器通信异常";
-        private string _selectedAlarmDetail = "激光焊接工位 | 10:42:11 - 11:00:23 | 影响 -320 pcs";
-        private string _recommendation = "建议增加激光器通信心跳监控，通信丢失超过 3s 自动抓取 PLC 快照、网口状态和 HMI 操作记录。";
+        private string _selectedAlarmDetail = "激光焊接 | 10:42:11 - 11:00:23 | 影响 -320 pcs";
+        private string _recommendation = "建议增加激光器通信心跳监控，通信丢失超过3秒自动抓取 PLC 快照、网口状态和 HMI 操作记录。";
 
         public VM_HmiAlarmTopAnalysisPage()
+            : this(null)
         {
-            RefreshCommand = new RelayCommand(LoadMockData);
+        }
+
+        public VM_HmiAlarmTopAnalysisPage(ISqlSugarClient? db)
+        {
+            _db = db;
+            RefreshCommand = new RelayCommand(LoadData);
             SelectAlarmCommand = new RelayCommand<object?>(SelectAlarm);
-            LoadMockData();
+            LoadData();
         }
 
         public ObservableCollection<AlarmSummaryItem> SummaryItems { get; } = new();
@@ -35,6 +46,8 @@ namespace HTHIUM.ViewModels.Pages.SmartManagement
         public ICommand RefreshCommand { get; }
         public ICommand SelectAlarmCommand { get; }
 
+        public DateTime? StartDateTime { get => _startDateTime; set => SetProperty(ref _startDateTime, value); }
+        public DateTime? EndDateTime { get => _endDateTime; set => SetProperty(ref _endDateTime, value); }
         public string SelectedLine { get => _selectedLine; private set => SetProperty(ref _selectedLine, value); }
         public string SelectedDevice { get => _selectedDevice; private set => SetProperty(ref _selectedDevice, value); }
         public string SelectedShift { get => _selectedShift; private set => SetProperty(ref _selectedShift, value); }
@@ -43,17 +56,63 @@ namespace HTHIUM.ViewModels.Pages.SmartManagement
         public string SelectedAlarmDetail { get => _selectedAlarmDetail; private set => SetProperty(ref _selectedAlarmDetail, value); }
         public string Recommendation { get => _recommendation; private set => SetProperty(ref _recommendation, value); }
 
-        private void LoadMockData()
+        private void LoadData()
         {
-            _scenarios.Clear();
-            _scenarios.Add(CreateLaserScenario());
-            _scenarios.Add(CreateBarcodeScenario());
-            _scenarios.Add(CreateGlueScenario());
-            _scenarios.Add(CreateTrayScenario());
-            _scenarios.Add(CreateSensorScenario());
-            _scenarios.Add(CreateMesScenario());
-            LoadPeriodStatistics();
-            SelectScenario("laser");
+            if (!TryLoadDatabaseData())
+            {
+                LoadFallbackData();
+            }
+        }
+
+        private bool TryLoadDatabaseData()
+        {
+            if (_db == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var start = StartDateTime ?? new DateTime(2026, 7, 2, 8, 0, 0);
+                var end = EndDateTime ?? start.AddHours(12);
+                if (end <= start)
+                {
+                    end = start.AddMinutes(1);
+                    EndDateTime = end;
+                }
+
+                var records = _db.Queryable<HmiAlarmRecord>()
+                    .Where(it => it.TriggerTime >= start && it.TriggerTime <= end)
+                    .OrderBy(it => it.TriggerTime, OrderByType.Desc)
+                    .ToList();
+
+                if (records.Count == 0)
+                {
+                    LoadEmptyData(start, end);
+                    return true;
+                }
+
+                var maps = _db.Queryable<HmiAlarmCodeMap>()
+                    .Where(it => it.IsEnable)
+                    .ToList()
+                    .GroupBy(it => it.AlarmCode)
+                    .ToDictionary(it => it.Key, it => it.First());
+
+                _scenarios.Clear();
+                foreach (var record in records)
+                {
+                    maps.TryGetValue(record.AlarmCode, out var map);
+                    _scenarios.Add(CreateScenarioFromRecord(record, map));
+                }
+
+                LoadPeriodStatistics(records);
+                SelectScenario(_scenarios.First().Key);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void SelectAlarm(object? parameter)
@@ -64,33 +123,93 @@ namespace HTHIUM.ViewModels.Pages.SmartManagement
             }
         }
 
-        private void LoadPeriodStatistics()
+        private void LoadPeriodStatistics(IReadOnlyList<HmiAlarmRecord> records)
         {
+            var highCount = records.Count(it => it.AlarmLevel == "高");
+            var responseRecords = records.Where(it => it.ResponseSeconds.HasValue).ToList();
+            var avgResponseSeconds = responseRecords.Count == 0 ? 0 : (int)responseRecords.Average(it => it.ResponseSeconds!.Value);
+            var repeatCount = records
+                .GroupBy(it => new { it.DeviceName, it.AlarmCode })
+                .Where(it => it.Count() > 1)
+                .Sum(it => it.Count());
+            var longest = records
+                .OrderByDescending(it => it.DurationSeconds ?? 0)
+                .FirstOrDefault();
+
             ReplaceCollection(SummaryItems, new[]
             {
-                new AlarmSummaryItem("报警总数", "186", "较昨日 +12%"),
-                new AlarmSummaryItem("高优先级", "18", "未闭环 5"),
-                new AlarmSummaryItem("平均响应", "2m36s", "达标"),
-                new AlarmSummaryItem("重复报警", "43", "需治理"),
-                new AlarmSummaryItem("最长持续", "18m12s", "激光器通信异常")
+                new AlarmSummaryItem("报警总数", records.Count.ToString(), "当前查询范围"),
+                new AlarmSummaryItem("高优先级", highCount.ToString(), $"占比 {GetPercent(highCount, records.Count):0}%"),
+                new AlarmSummaryItem("平均响应", FormatDuration(avgResponseSeconds), "首次响应"),
+                new AlarmSummaryItem("重复报警", repeatCount.ToString(), "按设备+代码"),
+                new AlarmSummaryItem("最长持续", FormatDuration(longest?.DurationSeconds ?? 0), longest?.AlarmName ?? "-")
             });
 
-            ReplaceCollection(AlarmTopItems, new[]
+            var topGroups = records
+                .GroupBy(it => new
+                {
+                    it.AlarmCode,
+                    AlarmName = it.AlarmName ?? it.AlarmCode
+                })
+                .Select(group => new
+                {
+                    group.Key.AlarmCode,
+                    group.Key.AlarmName,
+                    Count = group.Count(),
+                    LastTriggerTime = group.Max(it => it.TriggerTime)
+                })
+                .OrderByDescending(it => it.Count)
+                .ThenByDescending(it => it.LastTriggerTime)
+                .ToList();
+
+            var maxTopCount = topGroups.Count == 0 ? 1 : topGroups.Max(it => it.Count);
+            var topItems = topGroups
+                .Select((group, index) =>
+                {
+                    var percent = GetPercent(group.Count, maxTopCount);
+                    return new AlarmTopItem((index + 1).ToString(), group.AlarmName, $"{group.Count} 次", Math.Max(12, percent), TopColors[index % TopColors.Length]);
+                })
+                .ToArray();
+
+            ReplaceCollection(AlarmTopItems, topItems);
+            ReplaceCollection(HeatRows, CreateHeatRows(records));
+        }
+
+        private void LoadEmptyData(DateTime start, DateTime end)
+        {
+            _scenarios.Clear();
+            AlarmEvents.Clear();
+            AlarmTopItems.Clear();
+            HeatRows.Clear();
+            EvidenceItems.Clear();
+            ProcessSteps.Clear();
+
+            SelectedLine = "-";
+            SelectedDevice = "-";
+            SelectedShift = "-";
+            SelectedDate = $"{start:yyyy-MM-dd HH:mm} - {end:yyyy-MM-dd HH:mm}";
+            SelectedAlarmName = "暂无报警数据";
+            SelectedAlarmDetail = "当前时间范围内没有查询到报警记录";
+            Recommendation = "请调整时间范围后重新查询，或确认报警采集服务是否已写入 hmi_alarm_record。";
+
+            ReplaceCollection(SummaryItems, new[]
             {
-                new AlarmTopItem("1", "激光器通信异常", "32 次", 92, "#E94855"),
-                new AlarmTopItem("2", "条码枪读取超时", "28 次", 79, "#F59E0B"),
-                new AlarmTopItem("3", "胶压低于下限", "24 次", 68, "#F5B23D"),
-                new AlarmTopItem("4", "MES 上传重试", "22 次", 62, "#2F66F6"),
-                new AlarmTopItem("5", "安全门信号异常", "18 次", 51, "#7C3AED")
+                new AlarmSummaryItem("报警总数", "0", "当前查询范围"),
+                new AlarmSummaryItem("高优先级", "0", "占比 0%"),
+                new AlarmSummaryItem("平均响应", "-", "首次响应"),
+                new AlarmSummaryItem("重复报警", "0", "按设备+代码"),
+                new AlarmSummaryItem("最长持续", "-", "-")
             });
-
-            ReplaceCollection(HeatRows, CreatePeriodHeatRows());
         }
 
         private void SelectScenario(string key)
         {
             var scenario = _scenarios.FirstOrDefault(it => it.Key == key) ?? _scenarios.First();
 
+            SelectedLine = scenario.Line;
+            SelectedDevice = scenario.Device;
+            SelectedShift = scenario.Shift;
+            SelectedDate = $"{StartDateTime:yyyy-MM-dd HH:mm} - {EndDateTime:yyyy-MM-dd HH:mm}";
             SelectedAlarmName = scenario.AlarmName;
             SelectedAlarmDetail = $"{scenario.Station} | {scenario.StartTime} - {scenario.EndTime} | 影响 {scenario.Impact}";
             Recommendation = scenario.Recommendation;
@@ -113,221 +232,131 @@ namespace HTHIUM.ViewModels.Pages.SmartManagement
             }
         }
 
-        private static HmiAlarmScenario CreateLaserScenario()
+        private static HmiAlarmScenario CreateScenarioFromRecord(HmiAlarmRecord record, HmiAlarmCodeMap? map)
         {
-            return CreateScenario(
-                "laser",
-                "激光器通信异常",
-                "高",
-                "激光焊接",
-                "10:42:11",
-                "11:00:23",
-                "18m12s",
-                "-320 pcs",
-                "#E94855",
-                "建议增加激光器通信心跳监控，通信丢失超过 3s 自动抓取 PLC 快照、网口状态和 HMI 操作记录。",
-                "HMI-LASER-203",
-                "LaserCommLost",
-                new[] { "激光器通信异常", "真空压力低", "条码枪读取超时", "MES 上传重试", "安全门信号异常" },
-                new[] { 32, 26, 21, 18, 15 });
-        }
-
-        private static HmiAlarmScenario CreateBarcodeScenario()
-        {
-            return CreateScenario(
-                "barcode",
-                "条码枪读取超时",
-                "中",
-                "扫码工位",
-                "11:18:06",
-                "11:22:41",
-                "4m35s",
-                "-54 pcs",
-                "#F59E0B",
-                "建议检查扫码枪焦距、光源亮度和条码污损情况；连续超时超过 3 次时推送班组复扫提醒。",
-                "HMI-SCAN-104",
-                "ScannerReadDone",
-                new[] { "条码枪读取超时", "扫码结果为空", "产品码重复绑定", "MES 上传重试", "定位未完成" },
-                new[] { 28, 19, 16, 14, 10 });
-        }
-
-        private static HmiAlarmScenario CreateGlueScenario()
-        {
-            return CreateScenario(
-                "glue",
-                "胶压低于下限",
-                "中",
-                "点胶工位",
-                "13:52:48",
-                "13:57:09",
-                "4m21s",
-                "-62 pcs",
-                "#F59E0B",
-                "建议联动胶压曲线和供胶泵状态，低压持续超过 10s 自动暂停点胶并提示检查胶桶余量。",
-                "HMI-GLUE-087",
-                "GluePressureLow",
-                new[] { "胶压低于下限", "点胶阀未打开", "胶桶余量低", "压力传感器漂移", "产品到位异常" },
-                new[] { 24, 18, 13, 11, 8 });
-        }
-
-        private static HmiAlarmScenario CreateTrayScenario()
-        {
-            return CreateScenario(
-                "tray",
-                "料盘满料未取走",
-                "高",
-                "下料工位",
-                "16:31:12",
-                "16:43:18",
-                "12m06s",
-                "-145 pcs",
-                "#E94855",
-                "建议将满料信号与 AGV 取料任务绑定，超过 60s 未取走时升级通知并打开缓存预警。",
-                "HMI-TRAY-311",
-                "TrayFull",
-                new[] { "料盘满料未取走", "AGV 响应超时", "下料缓存满", "检测放行等待", "安全门信号异常" },
-                new[] { 30, 24, 22, 12, 9 });
-        }
-
-        private static HmiAlarmScenario CreateSensorScenario()
-        {
-            return CreateScenario(
-                "sensor",
-                "传感器波动",
-                "低",
-                "检测工位",
-                "17:08:19",
-                "17:19:30",
-                "11m11s",
-                "-96 pcs",
-                "#F5B23D",
-                "建议记录传感器波动频次与温度、振动数据，超过阈值时安排点检并更换易漂移传感器。",
-                "HMI-SENSOR-066",
-                "SensorFluctuation",
-                new[] { "传感器波动", "检测结果抖动", "相机取图失败", "定位偏移", "温度超上限" },
-                new[] { 18, 16, 13, 12, 9 });
-        }
-
-        private static HmiAlarmScenario CreateMesScenario()
-        {
-            return CreateScenario(
-                "mes",
-                "MES 上传重试",
-                "中",
-                "MES 通讯",
-                "19:04:10",
-                "19:08:36",
-                "4m26s",
-                "-38 pcs",
-                "#2F66F6",
-                "建议统计接口响应时间和重试次数，连续重试时先缓存过站数据，恢复后自动补传。",
-                "HMI-MES-502",
-                "MesUploadRetry",
-                new[] { "MES 上传重试", "接口响应超时", "过站数据缓存", "批次校验失败", "网络延迟" },
-                new[] { 22, 17, 14, 11, 9 });
-        }
-
-        private static HmiAlarmScenario CreateScenario(
-            string key,
-            string alarmName,
-            string level,
-            string station,
-            string startTime,
-            string endTime,
-            string duration,
-            string impact,
-            string color,
-            string recommendation,
-            string alarmCode,
-            string plcTag,
-            string[] topNames,
-            int[] topCounts)
-        {
-            var topItems = topNames.Select((name, index) =>
+            var level = record.AlarmLevel ?? map?.AlarmLevel ?? "中";
+            var alarmName = record.AlarmName ?? map?.AlarmName ?? record.AlarmCode;
+            var color = level switch
             {
-                var percent = Math.Max(35, 92 - index * 13);
-                return new AlarmTopItem((index + 1).ToString(), name, $"{topCounts[index]} 次", percent, index == 0 ? color : TopColors[index % TopColors.Length]);
-            }).ToArray();
+                "高" => "#E94855",
+                "中" => "#F59E0B",
+                "低" => "#F5B23D",
+                _ => "#2F66F6"
+            };
+
+            var reason = string.IsNullOrWhiteSpace(map?.PossibleReason) ? "未维护报警可能原因。" : map.PossibleReason!;
+            var suggestion = string.IsNullOrWhiteSpace(map?.HandleSuggestion) ? "请根据现场现象补充处理建议。" : map.HandleSuggestion!;
+            var durationSeconds = record.DurationSeconds ?? GetDurationSeconds(record.TriggerTime, record.RecoverTime);
+            var responseSeconds = record.ResponseSeconds ?? 0;
 
             return new HmiAlarmScenario(
-                key,
-                "L1 密封钉线",
-                "全部设备",
+                record.ID.ToString(),
+                record.LineName ?? "-",
+                record.DeviceName,
                 "白班",
-                "2026-07-02",
+                record.TriggerTime.ToString("yyyy-MM-dd"),
                 alarmName,
                 level,
-                station,
-                startTime,
-                endTime,
-                duration,
-                impact,
+                record.StationName ?? "-",
+                record.TriggerTime.ToString("HH:mm:ss"),
+                record.RecoverTime?.ToString("HH:mm:ss") ?? "未恢复",
+                FormatDuration(durationSeconds),
+                $"{record.ImpactQty ?? 0} pcs",
                 color,
-                recommendation,
+                $"报警可能原因：{reason}\r\n处理建议：{suggestion}",
                 new[]
                 {
-                    new AlarmSummaryItem("报警总数", "186", "较昨日 +12%"),
-                    new AlarmSummaryItem("高优先级", "18", "未闭环 5"),
-                    new AlarmSummaryItem("平均响应", "2m36s", "达标"),
-                    new AlarmSummaryItem("重复报警", "43", "需治理"),
-                    new AlarmSummaryItem("最长持续", duration, alarmName)
-                },
-                topItems,
-                CreateHeatRows(station),
-                new[]
-                {
+                    new AlarmEvidenceItem("报警代码", record.AlarmCode),
                     new AlarmEvidenceItem("报警等级", level),
-                    new AlarmEvidenceItem("报警代码", alarmCode),
-                    new AlarmEvidenceItem("持续时长", duration),
-                    new AlarmEvidenceItem("首次响应", "2m08s"),
-                    new AlarmEvidenceItem("关联 PLC", plcTag),
-                    new AlarmEvidenceItem("关联批次", "B20260702-08")
+                    new AlarmEvidenceItem("持续时长", FormatDuration(durationSeconds)),
+                    new AlarmEvidenceItem("首次响应", responseSeconds > 0 ? FormatDuration(responseSeconds) : "-"),
+                    new AlarmEvidenceItem("关联点位", record.RawValue ?? "-"),
+                    new AlarmEvidenceItem("关联设备", record.DeviceName)
                 },
                 new[]
                 {
-                    new AlarmProcessStepItem("报警触发", startTime[..5], "已完成", "#2FAE66"),
-                    new AlarmProcessStepItem("班组响应", "2m后", "已完成", "#2FAE66"),
-                    new AlarmProcessStepItem("工程确认", "待定", level == "高" ? "进行中" : "已完成", level == "高" ? "#F59E0B" : "#2FAE66"),
-                    new AlarmProcessStepItem("原因归类", "待定", "进行中", "#F59E0B"),
+                    new AlarmProcessStepItem("报警触发", record.TriggerTime.ToString("HH:mm"), "已完成", "#2FAE66"),
+                    new AlarmProcessStepItem("班组响应", responseSeconds > 0 ? FormatDuration(responseSeconds) : "待定", responseSeconds > 0 ? "已完成" : "待处理", responseSeconds > 0 ? "#2FAE66" : "#F59E0B"),
+                    new AlarmProcessStepItem("报警恢复", record.RecoverTime?.ToString("HH:mm") ?? "未恢复", record.RecoverTime.HasValue ? "已完成" : "进行中", record.RecoverTime.HasValue ? "#2FAE66" : "#F59E0B"),
+                    new AlarmProcessStepItem("原因确认", "待定", "待处理", "#637083"),
                     new AlarmProcessStepItem("改善验证", "未开始", "待处理", "#637083")
                 });
         }
 
-        private static AlarmHeatRowItem[] CreateHeatRows(string activeStation)
+        private static AlarmHeatRowItem[] CreateHeatRows(IReadOnlyList<HmiAlarmRecord> records)
         {
-            var rows = new[]
-            {
-                ("扫码", new[] { 1, 2, 1, 0, 1, 2, 1 }),
-                ("定位", new[] { 0, 1, 2, 2, 1, 1, 0 }),
-                ("焊接", new[] { 2, 3, 4, 5, 3, 4, 2 }),
-                ("点胶", new[] { 1, 1, 2, 4, 2, 1, 1 }),
-                ("检测", new[] { 0, 1, 1, 2, 3, 2, 1 }),
-                ("下料", new[] { 1, 1, 2, 2, 5, 3, 2 })
-            };
+            var stations = records
+                .Select(it => it.StationName)
+                .Where(it => !string.IsNullOrWhiteSpace(it))
+                .Distinct()
+                .Take(6)
+                .ToList();
 
-            return rows.Select(row =>
+            if (stations.Count == 0)
             {
-                var values = row.Item2.ToArray();
-                if (activeStation.Contains(row.Item1))
+                stations.Add("未分配");
+            }
+
+            return stations.Select(station =>
+            {
+                var values = new int[7];
+                foreach (var record in records.Where(it => it.StationName == station))
                 {
-                    values[3] = 5;
-                    values[4] = Math.Max(values[4], 4);
+                    var hour = record.TriggerTime.Hour;
+                    var index = hour switch
+                    {
+                        < 10 => 0,
+                        < 12 => 1,
+                        < 14 => 2,
+                        < 16 => 3,
+                        < 18 => 4,
+                        < 20 => 5,
+                        _ => 6
+                    };
+                    values[index]++;
                 }
-                return new AlarmHeatRowItem(row.Item1, values);
+
+                return new AlarmHeatRowItem(station!, values);
             }).ToArray();
         }
 
-        private static AlarmHeatRowItem[] CreatePeriodHeatRows()
+        private void LoadFallbackData()
         {
-            return new[]
+            _scenarios.Clear();
+            var fallback = new[]
             {
-                new AlarmHeatRowItem("扫码", new[] { 1, 2, 1, 0, 1, 2, 1 }),
-                new AlarmHeatRowItem("定位", new[] { 0, 1, 2, 2, 1, 1, 0 }),
-                new AlarmHeatRowItem("焊接", new[] { 2, 3, 4, 5, 3, 4, 2 }),
-                new AlarmHeatRowItem("点胶", new[] { 1, 1, 2, 4, 2, 1, 1 }),
-                new AlarmHeatRowItem("检测", new[] { 0, 1, 1, 2, 3, 2, 1 }),
-                new AlarmHeatRowItem("下料", new[] { 1, 1, 2, 2, 5, 3, 2 })
+                new HmiAlarmRecord { ID = 1, LineName = "L1 密封钉线", DeviceName = "密封钉设备 01", StationName = "激光焊接", ProcessName = "密封钉焊接", AlarmCode = "HMI-LASER-203", AlarmName = "激光器通信异常", AlarmLevel = "高", TriggerTime = new DateTime(2026, 7, 2, 10, 42, 11), RecoverTime = new DateTime(2026, 7, 2, 11, 0, 23), DurationSeconds = 1092, ImpactQty = -320, ResponseSeconds = 128, RawValue = "LaserCommLost" },
+                new HmiAlarmRecord { ID = 2, LineName = "L1 密封钉线", DeviceName = "密封钉设备 01", StationName = "扫码工位", ProcessName = "扫码上料", AlarmCode = "HMI-SCAN-104", AlarmName = "条码枪读取超时", AlarmLevel = "中", TriggerTime = new DateTime(2026, 7, 2, 11, 18, 6), RecoverTime = new DateTime(2026, 7, 2, 11, 22, 41), DurationSeconds = 275, ImpactQty = -54, ResponseSeconds = 76, RawValue = "ScannerReadDone" },
+                new HmiAlarmRecord { ID = 3, LineName = "L1 密封钉线", DeviceName = "密封钉设备 01", StationName = "点胶工位", ProcessName = "点胶", AlarmCode = "HMI-GLUE-087", AlarmName = "胶压低于下限", AlarmLevel = "中", TriggerTime = new DateTime(2026, 7, 2, 13, 52, 48), RecoverTime = new DateTime(2026, 7, 2, 13, 57, 9), DurationSeconds = 261, ImpactQty = -62, ResponseSeconds = 94, RawValue = "GluePressureLow" }
             };
+
+            foreach (var record in fallback.OrderByDescending(it => it.TriggerTime))
+            {
+                _scenarios.Add(CreateScenarioFromRecord(record, null));
+            }
+
+            LoadPeriodStatistics(fallback);
+            SelectScenario(_scenarios.First().Key);
+        }
+
+        private static int GetDurationSeconds(DateTime triggerTime, DateTime? recoverTime)
+        {
+            return recoverTime.HasValue ? Math.Max(0, (int)(recoverTime.Value - triggerTime).TotalSeconds) : 0;
+        }
+
+        private static double GetPercent(int value, int total)
+        {
+            return total <= 0 ? 0 : value * 100.0 / total;
+        }
+
+        private static string FormatDuration(int seconds)
+        {
+            if (seconds <= 0)
+            {
+                return "-";
+            }
+
+            return seconds >= 60 ? $"{seconds / 60}m{seconds % 60:00}s" : $"{seconds}s";
         }
 
         private static readonly string[] TopColors = { "#E94855", "#F59E0B", "#F5B23D", "#2F66F6", "#7C3AED" };
@@ -357,9 +386,6 @@ namespace HTHIUM.ViewModels.Pages.SmartManagement
         string Impact,
         string Color,
         string Recommendation,
-        IReadOnlyList<AlarmSummaryItem> SummaryItems,
-        IReadOnlyList<AlarmTopItem> TopItems,
-        IReadOnlyList<AlarmHeatRowItem> HeatRows,
         IReadOnlyList<AlarmEvidenceItem> EvidenceItems,
         IReadOnlyList<AlarmProcessStepItem> ProcessSteps);
 

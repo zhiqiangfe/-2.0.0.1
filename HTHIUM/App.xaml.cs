@@ -14,6 +14,7 @@ using HTHIUM.Logging.Targets;
 using HTHIUM.MES.Extensions;
 using HTHIUM.PLC;
 using HTHIUM.Services;
+using HTHIUM.Services.SmartManagement;
 using HTHIUM.Services.TcpDevices;
 using HTHIUM.Tool.Configuration;
 using HTHIUM.ViewModels.Windows.Common;
@@ -150,6 +151,9 @@ namespace HTHIUM
 
             // 注册扫码枪/相机/机器人等 TCP 设备通讯服务
             services.AddTcpDeviceServices();
+
+            // 注册设备智慧管理后台采集服务
+            services.AddHostedService<HmiAlarmMonitorHostedService>();
 
             // 添加MVVM框架服务
             services.AddMvvmFramework();

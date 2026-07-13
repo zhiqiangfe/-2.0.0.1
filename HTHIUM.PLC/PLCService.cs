@@ -729,9 +729,9 @@ namespace HTHIUM.PLC
 
             return type switch
             {
-                "STRING" => length == 1
-                    ? byteTransform.TransString(bytes, offset, length, Encoding.ASCII)[0]
-                    : byteTransform.TransString(bytes, offset, length, Encoding.ASCII),
+                "STRING" => NormalizePlcString(
+                    byteTransform.TransString(bytes, offset, length, Encoding.ASCII)
+                ),
                 "FLOAT" => length == 1
                     ? byteTransform.TransSingle(bytes, offset, length)[0]
                     : byteTransform.TransSingle(bytes, offset, length),
@@ -764,6 +764,20 @@ namespace HTHIUM.PLC
                     : byteTransform.TransBool(bytes, offset, length),
                 _ => null,
             };
+        }
+
+        private static string NormalizePlcString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            var chars = value.ToCharArray();
+            for (var i = 0; i + 1 < chars.Length; i += 2)
+            {
+                (chars[i], chars[i + 1]) = (chars[i + 1], chars[i]);
+            }
+
+            return new string(chars).TrimEnd('\0', ' ');
         }
 
         /// <summary>
