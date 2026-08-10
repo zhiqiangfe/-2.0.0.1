@@ -1,0 +1,264 @@
+<Window x:Class="FactoryTwinDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:h="http://helix-toolkit.org/wpf"
+        Title="食品包装产线数字孪生教学平台"
+        Width="1080" Height="650" MinWidth="600" MinHeight="360"
+        WindowState="Maximized" WindowStartupLocation="CenterScreen" Background="#09121F">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="146"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部工具栏 -->
+        <Border Grid.Row="0" Background="#0D1827" BorderBrush="#263B55" BorderThickness="0,0,0,1">
+            <Grid Margin="18,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="36" Height="36" CornerRadius="9" Background="#0F766E">
+                        <TextBlock Text="DT" FontWeight="Bold" FontSize="14"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="食品包装产线数字孪生" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="WPF · HelixToolkit · 实时设备状态教学项目"
+                                   Foreground="{StaticResource MutedBrush}" FontSize="11"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                            VerticalAlignment="Center" Visibility="Collapsed">
+                    <Border Background="#12243A" CornerRadius="6" Padding="12,6" Margin="4">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="#2DD4BF" Margin="0,0,7,0"/>
+                            <TextBlock Text="模拟 PLC 已连接" FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="ClockText" Foreground="{StaticResource MutedBrush}"
+                               VerticalAlignment="Center" Margin="14,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="RunButton" Content="暂停" Padding="9,7" Click="RunButton_Click"/>
+                    <Button Content="故障" Padding="9,7" Background="#7F1D1D" BorderBrush="#B91C1C"
+                            Click="InjectFaultButton_Click"/>
+                    <Button Content="复位" Padding="9,7" Click="ResetButton_Click"/>
+                    <Button Content="导入 CAD" Padding="9,7" Background="#0F766E" BorderBrush="#14B8A6"
+                            Click="ImportCadButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.23*" MinWidth="160" MaxWidth="250"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="0.24*" MinWidth="180" MaxWidth="270"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧设备树 -->
+            <Border Grid.Column="0" Margin="12,12,6,8" Background="{StaticResource PanelBrush}"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+                <Grid Margin="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="设备列表" FontSize="15" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="1" Text="点击设备可定位三维视角"
+                               Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,3,0,10"/>
+                    <ListBox Grid.Row="2" x:Name="EquipmentList" ItemsSource="{Binding Equipment}"
+                             SelectedItem="{Binding SelectedEquipment}" SelectionChanged="EquipmentList_SelectionChanged"
+                             Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#162438" CornerRadius="6" Padding="10"
+                                        BorderBrush="#263B55" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Ellipse Width="8" Height="8" Fill="{Binding StatusBrush}"
+                                                 VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" Margin="8,0">
+                                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Id}" FontSize="10"
+                                                       Foreground="{StaticResource MutedBrush}"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Text="{Binding StatusText}"
+                                                   Foreground="{Binding StatusBrush}" FontSize="11"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Border Grid.Row="3" Background="#0C1725" CornerRadius="6" Padding="10" Margin="0,10,0,0">
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="10"
+                                   Text="颜色说明：绿色运行 · 黄色待机 · 红色告警 · 灰色离线"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 三维主视图 -->
+            <Border Grid.Column="1" Margin="6,12,6,8" Background="#07111D"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8"
+                    ClipToBounds="True">
+                <Grid>
+                    <h:HelixViewport3D x:Name="Viewport" Background="#07111D"
+                                       ShowCoordinateSystem="True" ShowViewCube="True"
+                                       ShowFrameRate="True" ZoomExtentsWhenLoaded="False"
+                                       IsHeadLightEnabled="False">
+                        <h:SunLight/>
+                    </h:HelixViewport3D>
+                    <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14"
+                            Background="#CC0D1827" CornerRadius="6" Padding="10,7">
+                        <StackPanel>
+                            <TextBlock Text="3D 实时场景" FontWeight="SemiBold"/>
+                            <TextBlock Text="左键旋转 · 右键平移 · 滚轮缩放"
+                                       Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom" Margin="14">
+                        <Button Content="全景" Click="HomeViewButton_Click"/>
+                        <Button Content="俯视" Click="TopViewButton_Click"/>
+                        <Button Content="正视" Click="FrontViewButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 右侧指标 -->
+            <Border Grid.Column="2" Margin="6,12,12,8" Background="{StaticResource PanelBrush}"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="14">
+                        <TextBlock Text="产线总览" FontSize="15" FontWeight="SemiBold"/>
+                        <UniformGrid Columns="2" Margin="0,10,0,14">
+                            <Border Background="#162438" CornerRadius="6" Margin="0,0,5,5" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="OEE" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                    <TextBlock x:Name="OeeText" Text="87.6%" FontSize="22" Foreground="#2DD4BF"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#162438" CornerRadius="6" Margin="5,0,0,5" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="今日产量" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                    <TextBlock x:Name="OutputText" Text="1,248" FontSize="22"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#162438" CornerRadius="6" Margin="0,5,5,0" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="节拍" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                    <TextBlock x:Name="CycleText" Text="3.2 s" FontSize="18"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#162438" CornerRadius="6" Margin="5,5,0,0" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="告警" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                    <TextBlock x:Name="AlarmCountText" Text="0" FontSize="18" Foreground="#FBBF24"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Separator Background="#263B55"/>
+                        <TextBlock Text="选中设备" FontSize="13" FontWeight="SemiBold" Margin="0,14,0,8"/>
+                        <Border Background="#162438" CornerRadius="7" Padding="12">
+                            <StackPanel DataContext="{Binding SelectedEquipment}">
+                                <TextBlock Text="{Binding Name, FallbackValue=未选择设备}" FontSize="16"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Category}" Foreground="{StaticResource MutedBrush}"
+                                           FontSize="11" Margin="0,2,0,12"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="状态" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                        <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}"
+                                                   FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="速度" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                        <TextBlock Text="{Binding SpeedText}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="温度" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                        <TextBlock Text="{Binding TemperatureText}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="累计处理" Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                                        <TextBlock Text="{Binding Processed, StringFormat={}{0:N0}}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="数据链路" FontSize="13" FontWeight="SemiBold" Margin="0,16,0,8"/>
+                        <Border Background="#0C1725" CornerRadius="7" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="SIM.PLC.LINE01" Foreground="#7DD3FC" FontFamily="Consolas"/>
+                                <ProgressBar x:Name="DataQualityBar" Value="98" Maximum="100" Height="5"
+                                             Margin="0,8,0,5" Foreground="#2DD4BF" Background="#24364C"/>
+                                <TextBlock Text="数据质量 98% · 刷新周期 100 ms"
+                                           Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- 底部事件日志 -->
+        <Border Grid.Row="2" Margin="12,0,12,12" Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+            <Grid Margin="14,9">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid>
+                    <TextBlock Text="实时事件" FontWeight="SemiBold"/>
+                    <TextBlock Text="最近 8 条" HorizontalAlignment="Right"
+                               Foreground="{StaticResource MutedBrush}" FontSize="10"/>
+                </Grid>
+                <ListBox Grid.Row="1" ItemsSource="{Binding EventLogs}" Background="Transparent"
+                         BorderThickness="0" IsHitTestVisible="False">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="65"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding TimeText}" Foreground="{StaticResource MutedBrush}"
+                                           FontFamily="Consolas" FontSize="11"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Level}" Foreground="#7DD3FC"
+                                           FontSize="11"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="11"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

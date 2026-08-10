@@ -367,3 +367,8 @@ FodyWeavers.xsd
 /SUNWODA_SEVB.Logging/Core
 /SUNWODA_SEVB.Logging/Datebase
 /SUNWODA_SEVB.Logging/Targets
+
+# Local Codex research and generated model previews
+/tmp/
+**/research-previews/
+*.bak
